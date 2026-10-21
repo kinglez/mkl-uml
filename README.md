@@ -27,19 +27,33 @@ Each skill includes its local references, scripts, LICENSE and NOTICE. For the P
 
 ## Use
 
-In Codex, send:
+Open your project in Codex or Claude Code after installation. Paste the following into the **agent chat**, not your terminal.
+
+**Codex — create your first domain model:**
 
 ```text
-$mkl-uml-domain-modeler Model the domain of a hotel reservation system in PlantUML.
+$mkl-uml-domain-modeler
+Model a technical support desk in PlantUML:
+- A Requester reports an Incident in a Category.
+- Each Category has a current ServiceAgreement defining its deadline.
+- Only requesters authorized for that category may register incidents.
+- A registered incident has a description, registration date and due date.
+Save the conceptual model to uml/domain.puml and explain your assumptions.
 ```
 
-In Claude Code, send:
+**Claude Code:** use `/mkl-uml-domain-modeler` instead of `$mkl-uml-domain-modeler`, followed by the same request.
+
+Expected result: `uml/domain.puml` containing the four domain concepts and their relationships, plus an explanation of assumptions. This requests PlantUML source; ask for SVG/PNG as well if you want a rendered image and a renderer is available.
+
+**Review the file you just generated:**
 
 ```text
-/mkl-uml-domain-modeler Model the domain of a hotel reservation system in PlantUML.
+$mkl-uml-domain-modeler
+Review uml/domain.puml against the requirements above. Locate modeling
+problems, explain their impact, and suggest corrections. Preserve existing IDs.
 ```
 
-Codex detects skill changes automatically; restart it if the new skills do not appear. In Claude Code, open `/skills` to check availability. Installation only makes the skills available; it does not generate a model until you request one.
+See [Usage examples](docs/EXAMPLES.md) for copyable prompts for **all eight skills**, the full modeling sequence, existing-file review, and a complete worked input/output set. The prompts describe work to request; installation alone does not generate files.
 
 ## Choose a skill
 
@@ -59,6 +73,7 @@ Standalone work is the default. Formal reviews are requested explicitly. Operati
 ## Documentation
 
 - [Operating contract](docs/OPERATING_CONTRACT.md): modes, required inputs, coverage and stable IDs.
+- [Usage examples](docs/EXAMPLES.md): first model, all eight skills and worked artifacts.
 - [MKL methodology](docs/MKL_METHODOLOGY.md): the complete design workflow.
 - [Bibliography](docs/BIBLIOGRAPHY.md): primary sources and attribution.
 - [Validation record](docs/VALIDATION.md): executed checks and known limits.

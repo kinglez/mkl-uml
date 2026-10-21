@@ -58,7 +58,7 @@ class DistributionTests(unittest.TestCase):
             for filename in ("LICENSE", "NOTICE"):
                 self.assertEqual(directory_files[filename], (ROOT / filename).read_bytes())
             self.assertIn("package-docs/README.md", directory_files)
-            for filename in ("BIBLIOGRAPHY.md", "MKL_METHODOLOGY.md", "INSTALLATION.md"):
+            for filename in ("BIBLIOGRAPHY.md", "MKL_METHODOLOGY.md", "INSTALLATION.md", "EXAMPLES.md"):
                 self.assertIn("package-docs/docs/" + filename, directory_files)
             self.assertFalse(any("__pycache__" in name or name.endswith((".pyc", ".DS_Store"))
                                  for name in directory_files))

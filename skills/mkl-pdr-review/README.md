@@ -13,6 +13,8 @@ Read [SKILL.md](SKILL.md) for the operating instructions and conditional referen
 
 Missing upstream evidence limits dependent checks. Report **checked**, **partial**, or **blocked** coverage; never turn missing evidence into an acceptance claim. Preserve existing IDs across reordering and refactoring. See [Operating contract](https://github.com/kinglez/mkl-uml/blob/main/docs/OPERATING_CONTRACT.md) for the shared input and identifier lifecycle rules.
 
+For a copyable prompt, required files and expected output, see the [worked usage example](https://github.com/kinglez/mkl-uml/blob/main/docs/EXAMPLES.md#5-pdr-preparation).
+
 ## Validation
 
 From this skill directory, the following is executable. Every `path/to/...` argument is a placeholder; documentation examples are not a record of execution:
