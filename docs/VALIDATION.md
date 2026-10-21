@@ -21,7 +21,7 @@ Validation date: **2026-10-21**. Local environment: macOS, Python **3.14.7**, Pl
 | Temporary installation | Single/all-skill installs, explicit destination, existing-target preservation, unsafe names and symlink rejection checked |
 | Independent forward test | Three standalone ticketing views render; final validators report 6 participants, 5 ordinary operations, 1 Signal reception, no errors/warnings, with missing-source coverage still partial |
 
-CI now runs the assertion suite on Linux and Windows, alongside the original smoke and structure jobs. **These hosted jobs were configured, not executed during this local session.** Local results do not establish hosted-platform results.
+CI runs the assertion suite on Linux and Windows, alongside the original smoke and structure jobs. Hosted results are recorded in [GitHub Actions](https://github.com/kinglez/mkl-uml/actions). Local results alone do not establish hosted-platform results.
 
 ## Repaired behavior and regression evidence
 
@@ -44,9 +44,11 @@ This is behavioral evidence for the tested scenario, not a guarantee that every 
 
 ## Operating and distribution changes
 
-The local npm package adds `bin/mkl-uml.mjs` and a `mkl-uml install` command for Codex or Claude Code. It uses the existing Python installer; no separate copy/provenance rules are introduced. Seven new tests cover help, all/selected skill installation, existing targets, invalid arguments, Python discovery failures, and installation from an actual npm-packed tarball. The package test also runs npm exec offline against that tarball. A separate actual npx run from a local directory installed all eight into a temporary destination. The full suite now has 145 passing tests. Local runtime was Node.js 26.1.0 with npm 12.0.2; the configured CI uses Node.js 20 on Linux/Windows and has not been run remotely here.
+The npm package adds `bin/mkl-uml.mjs` and a `mkl-uml install` command for Codex or Claude Code. It uses the existing Python installer; no separate copy/provenance rules are introduced. Seven new tests cover help, all/selected skill installation, existing targets, invalid arguments, Python discovery failures, and installation from an actual npm-packed tarball. The package test also runs npm exec offline against that tarball. A separate actual npx run from a local directory installed all eight into a temporary destination. The full suite has 145 tests. Local runtime was Node.js 26.1.0 with npm 12.0.2; hosted CI uses Node.js 20 on Linux/Windows.
 
-An npm tarball is built as `dist/mkl-uml-1.0.0.tgz`. No npm registry publication or installation into personal skill directories was performed. Local commands use `--package .` or an explicit tarball path.
+An npm tarball is built as `dist/mkl-uml-1.0.0.tgz`. No npm registry publication or installation into personal skill directories was performed. An actual npx command using `git+https://github.com/kinglez/mkl-uml.git#main` installed all eight from the public GitHub repository into a temporary destination. npm 12 rejected Git dependencies with its default policy; repeating with the command-scoped `--allow-git=all` option passed. The installation guide documents this requirement.
+
+The first hosted Windows assertion run exposed two test portability assumptions: archive keys were compared with platform-native paths, and a synthetic text fixture used the host's default newline translation. Tests now use POSIX keys and explicit fixture bytes. The actual Windows npm-packed installation test and all sixteen hosted validator jobs passed on that initial run. Subsequent hosted outcomes are available in GitHub Actions.
 
 All eight skill identifiers and directories now use the `mkl-` prefix. Frontmatter names, UI display names, internal invocation references, fixture contracts, CI matrices and plugin paths were synchronized. After the rename, all 138 tests, 85 smoke executions, eight metadata checks and plugin validation passed; the eight archives were rebuilt using the current names.
 

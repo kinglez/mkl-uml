@@ -40,7 +40,7 @@ class DistributionTests(unittest.TestCase):
                 archive_files = {name.split("/", 1)[1]: zipped.read(name) for name in zipped.namelist()}
                 zipped.extractall(target / "extracted")
             self.assert_markdown_links_resolve(target / "extracted" / SKILL)
-            directory_files = {str(path.relative_to(installed)): path.read_bytes()
+            directory_files = {path.relative_to(installed).as_posix(): path.read_bytes()
                                for path in installed.rglob("*") if path.is_file()}
             self.assertEqual(archive_files, directory_files)
             for filename in ("LICENSE", "NOTICE"):
@@ -123,9 +123,9 @@ class DistributionTests(unittest.TestCase):
                 (root / name).write_text("notice")
             (root / "docs").mkdir()
             contract = root / "docs" / "OPERATING_CONTRACT.md"
-            contract.write_text("# Contract version 1\n")
+            contract.write_bytes(b"# Contract version 1\n")
             first = skill_payload.build_payload("safe-name", root=root)
-            contract.write_text("# Contract version 2\n")
+            contract.write_bytes(b"# Contract version 2\n")
             second = skill_payload.build_payload("safe-name", root=root)
             self.assertEqual(first["package-docs/docs/OPERATING_CONTRACT.md"], b"# Contract version 1\n")
             self.assertEqual(second["package-docs/docs/OPERATING_CONTRACT.md"], b"# Contract version 2\n")
