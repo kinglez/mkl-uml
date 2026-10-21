@@ -7,29 +7,23 @@ Author: **kingle.zhuang** · <kinglezhuang@vip.qq.com> · Organization: **mkl** 
 
 ## Install
 
-Requires Node.js 20+ (with npm/npx), Python 3.9+ and Git. Choose your application; each command installs all eight skills, documentation and license notices from [kinglez/mkl-uml](https://github.com/kinglez/mkl-uml).
+Use the [Skills CLI](https://github.com/vercel-labs/skills), with Node.js 22.20+ and Git. Python 3.9+ is needed to run the bundled validators. Run from the project where you want to use the skills.
 
-**Codex — personal installation:**
-
-```bash
-npx --yes --allow-git=all --package "git+https://github.com/kinglez/mkl-uml.git#v1.0.0" mkl-uml install --agent codex
-```
-
-**Claude Code — personal installation:**
+**Codex:**
 
 ```bash
-npx --yes --allow-git=all --package "git+https://github.com/kinglez/mkl-uml.git#v1.0.0" mkl-uml install --agent claude-code
+npx skills@latest add kinglez/mkl-uml -a codex
 ```
 
-These are executable instructions, not a record of installation into your account. Existing skill directories are never overwritten. To install just one skill, add `--skill mkl-uml-domain-modeler`. Use `--destination` for a custom directory or `--python` to select a Python executable.
-
-The commands use the GitHub release tag directly; npm registry publication is not required. npm 12 requires the command-scoped `--allow-git=all` option; npm 11 and earlier can omit it. For a local checkout, replace the Git URL with `.`. Without Node.js, clone the repository, enter its root and use the Python installer:
+**Claude Code:**
 
 ```bash
-python3 tools/install_skills.py --destination "$HOME/.agents/skills"
+npx skills@latest add kinglez/mkl-uml -a claude-code
 ```
 
-For Claude Code's Python command, project-only installation, Windows, tarball distribution, the local plugin, or Claude web uploads, see [Installation](docs/INSTALLATION.md).
+Choose skills when prompted. Installation is project-scoped by default; add `-g` for personal installation across projects. Add `--skill mkl-uml-domain-modeler` to select one, or `--skill '*' -y` to install all eight without prompts. These are executable instructions; verification used temporary projects, not your personal skills directories.
+
+Each skill includes its local references, scripts, LICENSE and NOTICE. For the Python/bundled installer, offline documentation, Windows, the local plugin, or Claude web uploads, see [Installation](docs/INSTALLATION.md).
 
 ## Use
 

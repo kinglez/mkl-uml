@@ -7,7 +7,7 @@ Validation date: **2026-10-21**. Local environment: macOS, Python **3.14.7**, Pl
 
 | Check | Observed result |
 |---|---|
-| Persistent assertion suite | **145 tests passed** |
+| Persistent assertion suite | **147 tests passed** |
 | Original fixture behavior contracts | All **85** scenarios have literal expected exit codes and important diagnostic assertions |
 | Full pipeline handoffs | All **8** validators exercised against the shared coherent pipeline fixture |
 | Original smoke suite | **85/85** execute without crashes or unexpected statuses; deliberately invalid fixtures retain their expected findings |
@@ -43,6 +43,8 @@ The result retained CU-07/CU-12, marked CU-13 provisional because the complete r
 This is behavioral evidence for the tested scenario, not a guarantee that every future model or agent run will be correct.
 
 ## Operating and distribution changes
+
+The recommended installation now uses the standard Skills CLI: `npx skills@latest add kinglez/mkl-uml -a codex` (or `-a claude-code`). Registry `skills@latest` resolved to 1.7.2 during verification, requiring Node.js 22.20+. Discovery found all eight skills. An initial temporary project install exposed absent root-level legal files and root-relative README links; each source folder now includes LICENSE/NOTICE and links shared project docs on GitHub. Two new regression tests check all eight source folders for legal-notice parity and links that remain valid when only that folder is installed. The updated local suite passed all 147 tests. A separate actual Skills CLI run installed all eight from the local source into a temporary Codex project with notices intact. Shared project docs remain available offline through the bundled installer and archives.
 
 The npm package adds `bin/mkl-uml.mjs` and a `mkl-uml install` command for Codex or Claude Code. It uses the existing Python installer; no separate copy/provenance rules are introduced. Seven new tests cover help, all/selected skill installation, existing targets, invalid arguments, Python discovery failures, and installation from an actual npm-packed tarball. The package test also runs npm exec offline against that tarball. A separate actual npx run from a local directory installed all eight into a temporary destination. The full suite has 145 tests. Local runtime was Node.js 26.1.0 with npm 12.0.2; hosted CI uses Node.js 20 on Linux/Windows.
 

@@ -11,7 +11,7 @@ Read [SKILL.md](SKILL.md) for the operating instructions and conditional referen
 
 **Result:** Located findings and coverage; a formal record with traceability, decisions and actions when requested.
 
-Missing upstream evidence limits dependent checks. Report **checked**, **partial**, or **blocked** coverage; never turn missing evidence into an acceptance claim. Preserve existing IDs across reordering and refactoring. See [Operating contract](../../docs/OPERATING_CONTRACT.md) for the shared input and identifier lifecycle rules.
+Missing upstream evidence limits dependent checks. Report **checked**, **partial**, or **blocked** coverage; never turn missing evidence into an acceptance claim. Preserve existing IDs across reordering and refactoring. See [Operating contract](https://github.com/kinglez/mkl-uml/blob/main/docs/OPERATING_CONTRACT.md) for the shared input and identifier lifecycle rules.
 
 ## Validation
 
@@ -27,10 +27,10 @@ The repository-level assertion suite checks fixed expected exits and important d
 
 ## Install and distribute
 
-Use the package builder/installer in [Installation](../../docs/INSTALLATION.md); it includes legal notices and standalone documentation. Raw copying of this source folder omits those root resources. Directory installation and `.skill` archives use the same payload builder.
+Install with `npx skills@latest add kinglez/mkl-uml --skill mkl-pdr-review -a codex`; use `-a claude-code` for Claude Code or add `-g` for personal scope. This folder includes its instructions, references, validator scripts, `LICENSE` and `NOTICE`. Shared project documentation is linked on GitHub. The Python installer and `.skill` archives additionally bundle offline project documentation. See [Installation](https://github.com/kinglez/mkl-uml/blob/main/docs/INSTALLATION.md).
 
 ## Sources and ownership
 
-Consult the focused references linked from [SKILL.md](SKILL.md), the [bibliography](../../docs/BIBLIOGRAPHY.md), and the [method overview](../../docs/MKL_METHODOLOGY.md). Historical source checks are attributed records, not newly repeated verification or required audit ceremonies.
+Consult the focused references linked from [SKILL.md](SKILL.md), the [bibliography](https://github.com/kinglez/mkl-uml/blob/main/docs/BIBLIOGRAPHY.md), and the [method overview](https://github.com/kinglez/mkl-uml/blob/main/docs/MKL_METHODOLOGY.md). Historical source checks are attributed records, not newly repeated verification or required audit ceremonies.
 
 English edition: **kingle.zhuang**, <kinglezhuang@vip.qq.com>, organization **mkl**, copyright **2026**. Licensed under Apache-2.0; upstream attribution is retained in the distribution's `NOTICE` and `LICENSE`.

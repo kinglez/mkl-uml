@@ -18,6 +18,18 @@ SKILL = "mkl-uml-domain-modeler"
 
 
 class DistributionTests(unittest.TestCase):
+    def test_source_skill_folders_include_license_and_upstream_notice(self):
+        for name in skill_payload.skill_names():
+            for filename in ("LICENSE", "NOTICE"):
+                with self.subTest(skill=name, notice=filename):
+                    source = ROOT / "skills" / name / filename
+                    self.assertTrue(source.is_file(), str(source))
+                    self.assertEqual(source.read_bytes(), (ROOT / filename).read_bytes())
+
+    def test_source_skill_links_work_when_copied_without_repository_root(self):
+        for name in skill_payload.skill_names():
+            self.assert_markdown_links_resolve(ROOT / "skills" / name)
+
     def assert_markdown_links_resolve(self, skill_dir):
         for document in skill_dir.rglob("*.md"):
             text = document.read_text(encoding="utf-8")

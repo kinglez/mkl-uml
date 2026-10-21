@@ -2,9 +2,29 @@
 
 The package contains eight independent skills and a local Claude Code marketplace. Select the method supported by the host. UI metadata does not supply a runtime integration or tool authorization.
 
-The commands below are executable examples from the repository root. They are instructions, not a record of installation. `path/to/...` arguments are placeholders. The validation record identifies what was actually executed in a temporary directory.
+The commands below are executable instructions, not a record of installation into your account. Run the Skills CLI from your target project; repository tools require a local checkout. `path/to/...` arguments are placeholders. The validation record identifies checks performed in temporary directories.
 
-## Install with npx
+## Recommended: Skills CLI
+
+Requires Node.js 22.20+ and Git. Python 3.9+ is needed only when running the validators, not when copying the skills. From your target project, choose your agent:
+
+```bash
+npx skills@latest add kinglez/mkl-uml -a codex
+npx skills@latest add kinglez/mkl-uml -a claude-code
+```
+
+The CLI prompts for skills and installs to the current project by default. Add `-g` for user-level installation across projects. To select one or all eight explicitly:
+
+```bash
+npx skills@latest add kinglez/mkl-uml -a codex --skill mkl-uml-domain-modeler
+npx skills@latest add kinglez/mkl-uml -a codex --skill '*' -y
+```
+
+Use `--list` to discover skills without installing. `--copy` selects file copies rather than links when supported. The standard CLI manages discovery, agent locations and updates; no MKL npm registry publication is required. See the [official CLI reference](https://github.com/vercel-labs/skills/blob/main/docs/commands.md).
+
+Every source skill folder includes its entrypoint, local references, scripts, LICENSE and NOTICE. Shared project documentation is linked on GitHub. For an installation that also carries offline copies of the shared project documentation, use the bundled installer or per-skill archive below.
+
+## Alternative: bundled npx installer
 
 Requires Node.js 20+ with npm/npx and Python 3.9+. Git is also required for the GitHub source below. The Node entrypoint reuses the same Python payload builder and installer, including legal notices, standalone docs and refusal to overwrite existing targets.
 
@@ -98,7 +118,7 @@ Codex detects skill changes automatically; restart it if the new skills do not a
 /mkl-uml-domain-modeler Model the domain of a hotel reservation system in PlantUML.
 ```
 
-This local directory installation applies to the local application. Claude web/Cowork account skills require the separate upload flow below.
+Directory installation applies to the local application. Claude web/Cowork account skills require the separate upload flow below.
 
 ## Custom destination or project-only installation
 
@@ -109,7 +129,7 @@ python3 tools/install_skills.py --destination path/to/skills mkl-uml-domain-mode
 python3 tools/install_skills.py --destination path/to/skills
 ```
 
-The second command installs all eight. Destinations can be a host's user skills directory or a project's skills directory. Discovery/reload and invocation syntax depend on the host; these commands do not configure host permissions or create an account integration. Do not raw-copy `skills/*`: those source directories reference root resources absent from a plain copy.
+The second command installs all eight. Destinations can be a host's user skills directory or a project's skills directory. Discovery/reload and invocation syntax depend on the host; these commands do not configure host permissions or create an account integration. The Python payload adds offline project documentation; source folders installed by the standard Skills CLI link that shared documentation on GitHub.
 
 For a project-only installation, use the absolute path to the project's `.agents/skills` (Codex) or `.claude/skills` (Claude Code) as the destination. The repository's own `skills/` directory is a source collection, not automatically an installed host location.
 

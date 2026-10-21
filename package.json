@@ -35,6 +35,8 @@
     "tools/*.py",
     "skills/*/SKILL.md",
     "skills/*/README.md",
+    "skills/*/LICENSE",
+    "skills/*/NOTICE",
     "skills/*/agents/*.yaml",
     "skills/*/assets/*",
     "skills/*/scripts/*.py",
