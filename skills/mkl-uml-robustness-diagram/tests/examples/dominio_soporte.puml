@@ -1,0 +1,7 @@
+@startuml
+/' English-edition adaptation: Copyright 2026 kingle.zhuang. See NOTICE for upstream attribution. '/
+class Customer
+class SupportRequest
+class Category
+class Agent
+@enduml

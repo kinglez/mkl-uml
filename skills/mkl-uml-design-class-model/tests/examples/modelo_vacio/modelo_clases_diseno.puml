@@ -1,0 +1,5 @@
+@startuml
+/' English-edition adaptation: Copyright 2026 kingle.zhuang. See NOTICE for upstream attribution. '/
+' Delivered without assembly: zero classes. Must be reported as an error, never
+' as "ready for CDR" when the file contains nothing that could fail.
+@enduml

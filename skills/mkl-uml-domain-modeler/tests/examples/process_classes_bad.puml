@@ -1,0 +1,21 @@
+@startuml
+/' English-edition adaptation: Copyright 2026 kingle.zhuang. See NOTICE for upstream attribution. '/
+skinparam linetype ortho
+skinparam classAttributeIconSize 0
+hide methods
+hide empty members
+
+class LoanValidation
+class FineCalculation
+class CatalogManagement
+class RegisterReturn
+
+class Borrower {
+  name
+}
+
+Borrower -- LoanValidation : depends on
+LoanValidation -- FineCalculation : corresponds to
+FineCalculation -- CatalogManagement : belongs to
+CatalogManagement -- RegisterReturn : precedes
+@enduml

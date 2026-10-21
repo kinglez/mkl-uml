@@ -1,0 +1,1463 @@
+{
+  "schema_version": 1,
+  "author": "kingle.zhuang",
+  "project": "mkl",
+  "year": 2026,
+  "description": "Reviewed CLI fixture contracts. Exit 0 can carry warnings; enriched_good.puml deliberately violates strict domain notation. Diagnostic fragments protect actual rule behavior without snapshotting entire reports.",
+  "cases": [
+    {
+      "id": "mkl-uml-domain-modeler/design_patterns_bad.puml",
+      "script": "skills/mkl-uml-domain-modeler/scripts/validate_domain_puml.py",
+      "args": [
+        "skills/mkl-uml-domain-modeler/tests/examples/design_patterns_bad.puml"
+      ],
+      "exit_code": 0,
+      "contains": [
+        "design-pattern/solution-space class: LoanFactory"
+      ]
+    },
+    {
+      "id": "mkl-uml-domain-modeler/enriched_good.puml",
+      "script": "skills/mkl-uml-domain-modeler/scripts/validate_domain_puml.py",
+      "args": [
+        "skills/mkl-uml-domain-modeler/tests/examples/enriched_good.puml"
+      ],
+      "exit_code": 1,
+      "contains": [
+        "Multiplicity/cardinality markers were detected",
+        "Visibility marker detected in Borrower",
+        "Type annotation detected in Copy"
+      ]
+    },
+    {
+      "id": "mkl-uml-domain-modeler/missing_directives_warn.puml",
+      "script": "skills/mkl-uml-domain-modeler/scripts/validate_domain_puml.py",
+      "args": [
+        "skills/mkl-uml-domain-modeler/tests/examples/missing_directives_warn.puml"
+      ],
+      "exit_code": 0,
+      "contains": [
+        "Missing recommended line: skinparam linetype ortho"
+      ]
+    },
+    {
+      "id": "mkl-uml-domain-modeler/procedural_labels_bad.puml",
+      "script": "skills/mkl-uml-domain-modeler/scripts/validate_domain_puml.py",
+      "args": [
+        "skills/mkl-uml-domain-modeler/tests/examples/procedural_labels_bad.puml"
+      ],
+      "exit_code": 0,
+      "contains": [
+        "Procedural relationship label between Borrower and Loan: 'validates'"
+      ]
+    },
+    {
+      "id": "mkl-uml-domain-modeler/process_classes_bad.puml",
+      "script": "skills/mkl-uml-domain-modeler/scripts/validate_domain_puml.py",
+      "args": [
+        "skills/mkl-uml-domain-modeler/tests/examples/process_classes_bad.puml"
+      ],
+      "exit_code": 0,
+      "contains": [
+        "Possible process/action class: LoanValidation"
+      ]
+    },
+    {
+      "id": "mkl-uml-domain-modeler/strict_good.puml",
+      "script": "skills/mkl-uml-domain-modeler/scripts/validate_domain_puml.py",
+      "args": [
+        "skills/mkl-uml-domain-modeler/tests/examples/strict_good.puml"
+      ],
+      "exit_code": 0,
+      "contains": [
+        "ERRORS: none",
+        "WARNINGS: none"
+      ]
+    },
+    {
+      "id": "mkl-uml-domain-modeler/technical_bare_bad.puml",
+      "script": "skills/mkl-uml-domain-modeler/scripts/validate_domain_puml.py",
+      "args": [
+        "skills/mkl-uml-domain-modeler/tests/examples/technical_bare_bad.puml"
+      ],
+      "exit_code": 0,
+      "contains": [
+        "Possible technical/UI class: System"
+      ]
+    },
+    {
+      "id": "mkl-uml-domain-modeler/technical_compound_bad.puml",
+      "script": "skills/mkl-uml-domain-modeler/scripts/validate_domain_puml.py",
+      "args": [
+        "skills/mkl-uml-domain-modeler/tests/examples/technical_compound_bad.puml"
+      ],
+      "exit_code": 0,
+      "contains": [
+        "Possible technical/UI class: LoanRepository"
+      ]
+    },
+    {
+      "id": "mkl-uml-use-case-diagram/academic_enrollment_good.puml",
+      "script": "skills/mkl-uml-use-case-diagram/scripts/validate_use_case_puml.py",
+      "args": [
+        "skills/mkl-uml-use-case-diagram/tests/examples/academic_enrollment_good.puml"
+      ],
+      "exit_code": 0,
+      "contains": [
+        "system-output use case 'Issue enrollment"
+      ]
+    },
+    {
+      "id": "mkl-uml-use-case-diagram/hotel_reservation_bad.puml",
+      "script": "skills/mkl-uml-use-case-diagram/scripts/validate_use_case_puml.py",
+      "args": [
+        "skills/mkl-uml-use-case-diagram/tests/examples/hotel_reservation_bad.puml"
+      ],
+      "exit_code": 0,
+      "contains": [
+        "possible internal-step use case 'Validate actual availability'",
+        "include should not model workflow internals"
+      ]
+    },
+    {
+      "id": "mkl-uml-use-case-diagram/hotel_reservation_enriched_good.puml",
+      "script": "skills/mkl-uml-use-case-diagram/scripts/validate_use_case_puml.py",
+      "args": [
+        "skills/mkl-uml-use-case-diagram/tests/examples/hotel_reservation_enriched_good.puml"
+      ],
+      "exit_code": 0,
+      "contains": [
+        "system-output use case 'Report reservation"
+      ]
+    },
+    {
+      "id": "mkl-uml-use-case-diagram/iot_monitoring_good.puml",
+      "script": "skills/mkl-uml-use-case-diagram/scripts/validate_use_case_puml.py",
+      "args": [
+        "skills/mkl-uml-use-case-diagram/tests/examples/iot_monitoring_good.puml"
+      ],
+      "exit_code": 0,
+      "contains": [
+        "ERRORS: none",
+        "WARNINGS: none"
+      ]
+    },
+    {
+      "id": "mkl-use-case-specifier/spec_bad.md",
+      "script": "skills/mkl-use-case-specifier/scripts/validate_use_case_spec.py",
+      "args": [
+        "skills/mkl-use-case-specifier/tests/examples/spec_bad.md"
+      ],
+      "exit_code": 1,
+      "contains": [
+        "missing minimum specification field: postconditions",
+        "RN-05 is referenced but not defined",
+        "identifier PRE-01 is defined 2 times",
+        "flow FA-01 has no declared outcome"
+      ]
+    },
+    {
+      "id": "mkl-use-case-specifier/spec_good.md",
+      "script": "skills/mkl-use-case-specifier/scripts/validate_use_case_spec.py",
+      "args": [
+        "skills/mkl-use-case-specifier/tests/examples/spec_good.md"
+      ],
+      "exit_code": 0,
+      "contains": [
+        "ERRORS: none",
+        "WARNINGS: none",
+        "Basic-flow steps: 5"
+      ]
+    },
+    {
+      "id": "mkl-use-case-specifier/spec_subpasos.md",
+      "script": "skills/mkl-use-case-specifier/scripts/validate_use_case_spec.py",
+      "args": [
+        "skills/mkl-use-case-specifier/tests/examples/spec_subpasos.md"
+      ],
+      "exit_code": 0,
+      "contains": [
+        "ERRORS: none",
+        "WARNINGS: none",
+        "Basic-flow steps: 3"
+      ]
+    },
+    {
+      "id": "mkl-uml-robustness-diagram/actor_actor_y_color_bad.puml",
+      "script": "skills/mkl-uml-robustness-diagram/scripts/validate_robustness_puml.py",
+      "args": [
+        "skills/mkl-uml-robustness-diagram/tests/examples/actor_actor_y_color_bad.puml"
+      ],
+      "exit_code": 1,
+      "contains": [
+        "actors cannot communicate directly",
+        "participates only in alternatives but is uncolored"
+      ]
+    },
+    {
+      "id": "mkl-uml-robustness-diagram/atajos_actor_bad.puml",
+      "script": "skills/mkl-uml-robustness-diagram/scripts/validate_robustness_puml.py",
+      "args": [
+        "skills/mkl-uml-robustness-diagram/tests/examples/atajos_actor_bad.puml"
+      ],
+      "exit_code": 1,
+      "contains": [
+        "an actor cannot communicate directly with a control",
+        "an actor cannot communicate directly with an entity"
+      ]
+    },
+    {
+      "id": "mkl-uml-robustness-diagram/cobertura_bad.puml",
+      "script": "skills/mkl-uml-robustness-diagram/scripts/validate_robustness_puml.py",
+      "args": [
+        "skills/mkl-uml-robustness-diagram/tests/examples/cobertura_bad.puml"
+      ],
+      "exit_code": 0,
+      "contains": [
+        "flow coverage: use case text declares FE1"
+      ]
+    },
+    {
+      "id": "mkl-uml-robustness-diagram/cobertura_sin_guion.puml",
+      "script": "skills/mkl-uml-robustness-diagram/scripts/validate_robustness_puml.py",
+      "args": [
+        "skills/mkl-uml-robustness-diagram/tests/examples/cobertura_sin_guion.puml"
+      ],
+      "exit_code": 0,
+      "contains": [
+        "flow coverage: use case text declares FA3"
+      ]
+    },
+    {
+      "id": "mkl-uml-robustness-diagram/color_fa_good.puml",
+      "script": "skills/mkl-uml-robustness-diagram/scripts/validate_robustness_puml.py",
+      "args": [
+        "skills/mkl-uml-robustness-diagram/tests/examples/color_fa_good.puml"
+      ],
+      "exit_code": 0,
+      "contains": [
+        "ERRORS: none",
+        "WARNINGS: none"
+      ]
+    },
+    {
+      "id": "mkl-uml-robustness-diagram/con_nota_regresion.puml",
+      "script": "skills/mkl-uml-robustness-diagram/scripts/validate_robustness_puml.py",
+      "args": [
+        "skills/mkl-uml-robustness-diagram/tests/examples/con_nota_regresion.puml"
+      ],
+      "exit_code": 0,
+      "contains": [
+        "ERRORS: none",
+        "WARNINGS: none"
+      ]
+    },
+    {
+      "id": "mkl-uml-robustness-diagram/dios_bad.puml",
+      "script": "skills/mkl-uml-robustness-diagram/scripts/validate_robustness_puml.py",
+      "args": [
+        "skills/mkl-uml-robustness-diagram/tests/examples/dios_bad.puml"
+      ],
+      "exit_code": 0,
+      "contains": [
+        "directed arrows used",
+        "control 'Orchestrate everything' has 7 connections"
+      ]
+    },
+    {
+      "id": "mkl-uml-robustness-diagram/dominio_ejemplo.puml",
+      "script": "skills/mkl-uml-robustness-diagram/scripts/validate_robustness_puml.py",
+      "args": [
+        "skills/mkl-uml-robustness-diagram/tests/examples/dominio_ejemplo.puml"
+      ],
+      "exit_code": 1,
+      "contains": [
+        "no actor/boundary/control/entity elements declared"
+      ]
+    },
+    {
+      "id": "mkl-uml-robustness-diagram/dominio_soporte.puml",
+      "script": "skills/mkl-uml-robustness-diagram/scripts/validate_robustness_puml.py",
+      "args": [
+        "skills/mkl-uml-robustness-diagram/tests/examples/dominio_soporte.puml"
+      ],
+      "exit_code": 1,
+      "contains": [
+        "no actor/boundary/control/entity elements declared"
+      ]
+    },
+    {
+      "id": "mkl-uml-robustness-diagram/nombres_bad.puml",
+      "script": "skills/mkl-uml-robustness-diagram/scripts/validate_robustness_puml.py",
+      "args": [
+        "skills/mkl-uml-robustness-diagram/tests/examples/nombres_bad.puml"
+      ],
+      "exit_code": 0,
+      "contains": [
+        "boundary 'Page' has a generic name",
+        "control 'Show' is too generic"
+      ]
+    },
+    {
+      "id": "mkl-uml-robustness-diagram/nouny_experimento.puml",
+      "script": "skills/mkl-uml-robustness-diagram/scripts/validate_robustness_puml.py",
+      "args": [
+        "skills/mkl-uml-robustness-diagram/tests/examples/nouny_experimento.puml"
+      ],
+      "exit_code": 0,
+      "contains": [
+        "control 'Form of Results' begins with a noun"
+      ]
+    },
+    {
+      "id": "mkl-uml-robustness-diagram/object_discovery.puml",
+      "script": "skills/mkl-uml-robustness-diagram/scripts/validate_robustness_puml.py",
+      "args": [
+        "skills/mkl-uml-robustness-diagram/tests/examples/object_discovery.puml"
+      ],
+      "exit_code": 0,
+      "contains": [
+        "ERRORS: none",
+        "WARNINGS: none"
+      ]
+    },
+    {
+      "id": "mkl-uml-robustness-diagram/registrar_autor_bad.puml",
+      "script": "skills/mkl-uml-robustness-diagram/scripts/validate_robustness_puml.py",
+      "args": [
+        "skills/mkl-uml-robustness-diagram/tests/examples/registrar_autor_bad.puml"
+      ],
+      "exit_code": 1,
+      "contains": [
+        "an actor cannot communicate directly with an entity",
+        "directed arrows used"
+      ]
+    },
+    {
+      "id": "mkl-uml-robustness-diagram/reserva_hotel_good.puml",
+      "script": "skills/mkl-uml-robustness-diagram/scripts/validate_robustness_puml.py",
+      "args": [
+        "skills/mkl-uml-robustness-diagram/tests/examples/reserva_hotel_good.puml"
+      ],
+      "exit_code": 0,
+      "contains": [
+        "ERRORS: none",
+        "WARNINGS: none"
+      ]
+    },
+    {
+      "id": "mkl-uml-robustness-diagram/sin_controllers_bad.puml",
+      "script": "skills/mkl-uml-robustness-diagram/scripts/validate_robustness_puml.py",
+      "args": [
+        "skills/mkl-uml-robustness-diagram/tests/examples/sin_controllers_bad.puml"
+      ],
+      "exit_code": 1,
+      "contains": [
+        "diagram has no controls"
+      ]
+    },
+    {
+      "id": "mkl-uml-robustness-diagram/sustantivo_sustantivo_bad.puml",
+      "script": "skills/mkl-uml-robustness-diagram/scripts/validate_robustness_puml.py",
+      "args": [
+        "skills/mkl-uml-robustness-diagram/tests/examples/sustantivo_sustantivo_bad.puml"
+      ],
+      "exit_code": 1,
+      "contains": [
+        "boundaries cannot communicate directly",
+        "a boundary cannot communicate directly with an entity",
+        "entities cannot communicate directly"
+      ]
+    },
+    {
+      "id": "mkl-pdr-review/alterno_sin_comportamiento",
+      "script": "skills/mkl-pdr-review/scripts/validate_pdr.py",
+      "args": [
+        "--dominio",
+        "skills/mkl-pdr-review/tests/examples/alterno_sin_comportamiento/dominio.puml",
+        "--casos-uso",
+        "skills/mkl-pdr-review/tests/examples/alterno_sin_comportamiento/casos_uso.puml",
+        "--robustez",
+        "skills/mkl-pdr-review/tests/examples/alterno_sin_comportamiento/robustez.puml",
+        "--spec",
+        "skills/mkl-pdr-review/tests/examples/alterno_sin_comportamiento/especificacion.md"
+      ],
+      "exit_code": 1,
+      "contains": [
+        "flow FA-02 is listed but does not specify system behavior"
+      ]
+    },
+    {
+      "id": "mkl-pdr-review/alterno_sin_rama",
+      "script": "skills/mkl-pdr-review/scripts/validate_pdr.py",
+      "args": [
+        "--dominio",
+        "skills/mkl-pdr-review/tests/examples/alterno_sin_rama/dominio.puml",
+        "--casos-uso",
+        "skills/mkl-pdr-review/tests/examples/alterno_sin_rama/casos_uso.puml",
+        "--robustez",
+        "skills/mkl-pdr-review/tests/examples/alterno_sin_rama/robustez.puml",
+        "--spec",
+        "skills/mkl-pdr-review/tests/examples/alterno_sin_rama/especificacion.md"
+      ],
+      "exit_code": 1,
+      "contains": [
+        "flow FE-02 is declared",
+        "but has no branch in the diagram"
+      ]
+    },
+    {
+      "id": "mkl-pdr-review/bueno",
+      "script": "skills/mkl-pdr-review/scripts/validate_pdr.py",
+      "args": [
+        "--dominio",
+        "skills/mkl-pdr-review/tests/examples/bueno/dominio.puml",
+        "--casos-uso",
+        "skills/mkl-pdr-review/tests/examples/bueno/casos_uso.puml",
+        "--robustez",
+        "skills/mkl-pdr-review/tests/examples/bueno/robustez.puml",
+        "--spec",
+        "skills/mkl-pdr-review/tests/examples/bueno/especificacion.md"
+      ],
+      "exit_code": 0,
+      "contains": [
+        "ERRORS: none",
+        "WARNINGS: none",
+        "ACCEPTED"
+      ]
+    },
+    {
+      "id": "mkl-pdr-review/cobertura_parcial",
+      "script": "skills/mkl-pdr-review/scripts/validate_pdr.py",
+      "args": [
+        "--dominio",
+        "skills/mkl-pdr-review/tests/examples/cobertura_parcial/dominio.puml",
+        "--casos-uso",
+        "skills/mkl-pdr-review/tests/examples/cobertura_parcial/casos_uso.puml",
+        "--robustez",
+        "skills/mkl-pdr-review/tests/examples/cobertura_parcial/robustez.puml",
+        "--spec",
+        "skills/mkl-pdr-review/tests/examples/cobertura_parcial/especificacion.md"
+      ],
+      "exit_code": 0,
+      "contains": [
+        "step 6 has no counterpart"
+      ]
+    },
+    {
+      "id": "mkl-pdr-review/deriva_vocabulario",
+      "script": "skills/mkl-pdr-review/scripts/validate_pdr.py",
+      "args": [
+        "--dominio",
+        "skills/mkl-pdr-review/tests/examples/deriva_vocabulario/dominio.puml",
+        "--casos-uso",
+        "skills/mkl-pdr-review/tests/examples/deriva_vocabulario/casos_uso.puml",
+        "--robustez",
+        "skills/mkl-pdr-review/tests/examples/deriva_vocabulario/robustez.puml",
+        "--spec",
+        "skills/mkl-pdr-review/tests/examples/deriva_vocabulario/especificacion.md"
+      ],
+      "exit_code": 1,
+      "contains": [
+        "entity 'VaccinationRecords' does not exist in the domain model",
+        "possible vocabulary drift"
+      ]
+    },
+    {
+      "id": "mkl-pdr-review/dialogo_unilateral",
+      "script": "skills/mkl-pdr-review/scripts/validate_pdr.py",
+      "args": [
+        "--dominio",
+        "skills/mkl-pdr-review/tests/examples/dialogo_unilateral/dominio.puml",
+        "--casos-uso",
+        "skills/mkl-pdr-review/tests/examples/dialogo_unilateral/casos_uso.puml",
+        "--robustez",
+        "skills/mkl-pdr-review/tests/examples/dialogo_unilateral/robustez.puml",
+        "--spec",
+        "skills/mkl-pdr-review/tests/examples/dialogo_unilateral/especificacion.md"
+      ],
+      "exit_code": 1,
+      "contains": [
+        "no steps in the basic flow describe the system response"
+      ]
+    },
+    {
+      "id": "mkl-pdr-review/entidad_flotante",
+      "script": "skills/mkl-pdr-review/scripts/validate_pdr.py",
+      "args": [
+        "--dominio",
+        "skills/mkl-pdr-review/tests/examples/entidad_flotante/dominio.puml",
+        "--casos-uso",
+        "skills/mkl-pdr-review/tests/examples/entidad_flotante/casos_uso.puml",
+        "--robustez",
+        "skills/mkl-pdr-review/tests/examples/entidad_flotante/robustez.puml",
+        "--spec",
+        "skills/mkl-pdr-review/tests/examples/entidad_flotante/especificacion.md"
+      ],
+      "exit_code": 1,
+      "contains": [
+        "entity 'Allergy' does not exist in the domain model"
+      ]
+    },
+    {
+      "id": "mkl-pdr-review/falsos_positivos",
+      "script": "skills/mkl-pdr-review/scripts/validate_pdr.py",
+      "args": [
+        "--dominio",
+        "skills/mkl-pdr-review/tests/examples/falsos_positivos/dominio.puml",
+        "--robustez",
+        "skills/mkl-pdr-review/tests/examples/falsos_positivos/robustez.puml",
+        "--spec",
+        "skills/mkl-pdr-review/tests/examples/falsos_positivos/especificacion.md"
+      ],
+      "exit_code": 0,
+      "contains": [
+        "ERRORS: none",
+        "WARNINGS: none"
+      ]
+    },
+    {
+      "id": "mkl-pdr-review/pattern_itis",
+      "script": "skills/mkl-pdr-review/scripts/validate_pdr.py",
+      "args": [
+        "--dominio",
+        "skills/mkl-pdr-review/tests/examples/pattern_itis/dominio.puml",
+        "--casos-uso",
+        "skills/mkl-pdr-review/tests/examples/pattern_itis/casos_uso.puml",
+        "--robustez",
+        "skills/mkl-pdr-review/tests/examples/pattern_itis/robustez.puml",
+        "--spec",
+        "skills/mkl-pdr-review/tests/examples/pattern_itis/especificacion.md"
+      ],
+      "exit_code": 0,
+      "contains": [
+        "uses implementation vocabulary ('factory')"
+      ]
+    },
+    {
+      "id": "mkl-pdr-review/secuencia_disfrazada",
+      "script": "skills/mkl-pdr-review/scripts/validate_pdr.py",
+      "args": [
+        "--dominio",
+        "skills/mkl-pdr-review/tests/examples/secuencia_disfrazada/dominio.puml",
+        "--casos-uso",
+        "skills/mkl-pdr-review/tests/examples/secuencia_disfrazada/casos_uso.puml",
+        "--robustez",
+        "skills/mkl-pdr-review/tests/examples/secuencia_disfrazada/robustez.puml",
+        "--spec",
+        "skills/mkl-pdr-review/tests/examples/secuencia_disfrazada/especificacion.md"
+      ],
+      "exit_code": 1,
+      "contains": [
+        "this diagram looks like a SEQUENCE diagram",
+        "has no branch in the diagram"
+      ]
+    },
+    {
+      "id": "mkl-pdr-review/sintaxis_mala",
+      "script": "skills/mkl-pdr-review/scripts/validate_pdr.py",
+      "args": [
+        "--dominio",
+        "skills/mkl-pdr-review/tests/examples/sintaxis_mala/dominio.puml",
+        "--casos-uso",
+        "skills/mkl-pdr-review/tests/examples/sintaxis_mala/casos_uso.puml",
+        "--robustez",
+        "skills/mkl-pdr-review/tests/examples/sintaxis_mala/robustez.puml",
+        "--spec",
+        "skills/mkl-pdr-review/tests/examples/sintaxis_mala/especificacion.md"
+      ],
+      "exit_code": 1,
+      "contains": [
+        "banned link boundary<->entity",
+        "banned link actor<->entity",
+        "banned link entity<->entity",
+        "banned link boundary<->boundary"
+      ]
+    },
+    {
+      "id": "mkl-uml-sequence-diagram/actor_atajo",
+      "script": "skills/mkl-uml-sequence-diagram/scripts/validate_sequence_puml.py",
+      "args": [
+        "--secuencia",
+        "skills/mkl-uml-sequence-diagram/tests/examples/actor_atajo/secuencia.puml",
+        "--robustez",
+        "skills/mkl-uml-sequence-diagram/tests/examples/actor_atajo/robustez.puml",
+        "--spec",
+        "skills/mkl-uml-sequence-diagram/tests/examples/actor_atajo/especificacion.md",
+        "--dominio",
+        "skills/mkl-uml-sequence-diagram/tests/examples/actor_atajo/dominio.puml"
+      ],
+      "exit_code": 1,
+      "contains": [
+        "Actors interact only with Boundary objects"
+      ]
+    },
+    {
+      "id": "mkl-uml-sequence-diagram/bueno",
+      "script": "skills/mkl-uml-sequence-diagram/scripts/validate_sequence_puml.py",
+      "args": [
+        "--secuencia",
+        "skills/mkl-uml-sequence-diagram/tests/examples/bueno/secuencia.puml",
+        "--robustez",
+        "skills/mkl-uml-sequence-diagram/tests/examples/bueno/robustez.puml",
+        "--spec",
+        "skills/mkl-uml-sequence-diagram/tests/examples/bueno/especificacion.md",
+        "--dominio",
+        "skills/mkl-uml-sequence-diagram/tests/examples/bueno/dominio.puml"
+      ],
+      "exit_code": 0,
+      "contains": [
+        "ERRORS: none",
+        "WARNINGS: none"
+      ]
+    },
+    {
+      "id": "mkl-uml-sequence-diagram/centralizado",
+      "script": "skills/mkl-uml-sequence-diagram/scripts/validate_sequence_puml.py",
+      "args": [
+        "--secuencia",
+        "skills/mkl-uml-sequence-diagram/tests/examples/centralizado/secuencia.puml",
+        "--robustez",
+        "skills/mkl-uml-sequence-diagram/tests/examples/centralizado/robustez.puml",
+        "--spec",
+        "skills/mkl-uml-sequence-diagram/tests/examples/centralizado/especificacion.md",
+        "--dominio",
+        "skills/mkl-uml-sequence-diagram/tests/examples/centralizado/dominio.puml"
+      ],
+      "exit_code": 0,
+      "contains": [
+        "centralized control:"
+      ]
+    },
+    {
+      "id": "mkl-uml-sequence-diagram/controlador_sin_cobertura",
+      "script": "skills/mkl-uml-sequence-diagram/scripts/validate_sequence_puml.py",
+      "args": [
+        "--secuencia",
+        "skills/mkl-uml-sequence-diagram/tests/examples/controlador_sin_cobertura/secuencia.puml",
+        "--robustez",
+        "skills/mkl-uml-sequence-diagram/tests/examples/controlador_sin_cobertura/robustez.puml",
+        "--spec",
+        "skills/mkl-uml-sequence-diagram/tests/examples/controlador_sin_cobertura/especificacion.md",
+        "--dominio",
+        "skills/mkl-uml-sequence-diagram/tests/examples/controlador_sin_cobertura/dominio.puml"
+      ],
+      "exit_code": 1,
+      "contains": [
+        "robustness Controller 'Issue ticket' appears neither as message nor participant"
+      ]
+    },
+    {
+      "id": "mkl-uml-sequence-diagram/estereotipo_redundante",
+      "script": "skills/mkl-uml-sequence-diagram/scripts/validate_sequence_puml.py",
+      "args": [
+        "--secuencia",
+        "skills/mkl-uml-sequence-diagram/tests/examples/estereotipo_redundante/secuencia.puml",
+        "--robustez",
+        "skills/mkl-uml-sequence-diagram/tests/examples/estereotipo_redundante/robustez.puml",
+        "--spec",
+        "skills/mkl-uml-sequence-diagram/tests/examples/estereotipo_redundante/especificacion.md",
+        "--dominio",
+        "skills/mkl-uml-sequence-diagram/tests/examples/estereotipo_redundante/dominio.puml"
+      ],
+      "exit_code": 0,
+      "contains": [
+        "repeats its stereotype in the label"
+      ]
+    },
+    {
+      "id": "mkl-uml-sequence-diagram/fa_sin_fragmento",
+      "script": "skills/mkl-uml-sequence-diagram/scripts/validate_sequence_puml.py",
+      "args": [
+        "--secuencia",
+        "skills/mkl-uml-sequence-diagram/tests/examples/fa_sin_fragmento/secuencia.puml",
+        "--robustez",
+        "skills/mkl-uml-sequence-diagram/tests/examples/fa_sin_fragmento/robustez.puml",
+        "--spec",
+        "skills/mkl-uml-sequence-diagram/tests/examples/fa_sin_fragmento/especificacion.md",
+        "--dominio",
+        "skills/mkl-uml-sequence-diagram/tests/examples/fa_sin_fragmento/dominio.puml"
+      ],
+      "exit_code": 1,
+      "contains": [
+        "flow FE-02, declared",
+        "has no fragment in the diagram"
+      ]
+    },
+    {
+      "id": "mkl-uml-sequence-diagram/falsos_positivos",
+      "script": "skills/mkl-uml-sequence-diagram/scripts/validate_sequence_puml.py",
+      "args": [
+        "--secuencia",
+        "skills/mkl-uml-sequence-diagram/tests/examples/falsos_positivos/secuencia.puml",
+        "--robustez",
+        "skills/mkl-uml-sequence-diagram/tests/examples/falsos_positivos/robustez.puml",
+        "--spec",
+        "skills/mkl-uml-sequence-diagram/tests/examples/falsos_positivos/especificacion.md",
+        "--dominio",
+        "skills/mkl-uml-sequence-diagram/tests/examples/falsos_positivos/dominio.puml"
+      ],
+      "exit_code": 0,
+      "contains": [
+        "ERRORS: none",
+        "WARNINGS: none"
+      ]
+    },
+    {
+      "id": "mkl-uml-sequence-diagram/flowchart",
+      "script": "skills/mkl-uml-sequence-diagram/scripts/validate_sequence_puml.py",
+      "args": [
+        "--secuencia",
+        "skills/mkl-uml-sequence-diagram/tests/examples/flowchart/secuencia.puml",
+        "--robustez",
+        "skills/mkl-uml-sequence-diagram/tests/examples/flowchart/robustez.puml",
+        "--spec",
+        "skills/mkl-uml-sequence-diagram/tests/examples/flowchart/especificacion.md",
+        "--dominio",
+        "skills/mkl-uml-sequence-diagram/tests/examples/flowchart/dominio.puml"
+      ],
+      "exit_code": 0,
+      "contains": [
+        "3 consecutive self-calls"
+      ]
+    },
+    {
+      "id": "mkl-uml-sequence-diagram/fuga_activacion",
+      "script": "skills/mkl-uml-sequence-diagram/scripts/validate_sequence_puml.py",
+      "args": [
+        "--secuencia",
+        "skills/mkl-uml-sequence-diagram/tests/examples/fuga_activacion/secuencia.puml",
+        "--robustez",
+        "skills/mkl-uml-sequence-diagram/tests/examples/fuga_activacion/robustez.puml",
+        "--spec",
+        "skills/mkl-uml-sequence-diagram/tests/examples/fuga_activacion/especificacion.md",
+        "--dominio",
+        "skills/mkl-uml-sequence-diagram/tests/examples/fuga_activacion/dominio.puml"
+      ],
+      "exit_code": 1,
+      "contains": [
+        "activation leak: 'B_Console' remains active"
+      ]
+    },
+    {
+      "id": "mkl-uml-sequence-diagram/huerfano",
+      "script": "skills/mkl-uml-sequence-diagram/scripts/validate_sequence_puml.py",
+      "args": [
+        "--secuencia",
+        "skills/mkl-uml-sequence-diagram/tests/examples/huerfano/secuencia.puml",
+        "--robustez",
+        "skills/mkl-uml-sequence-diagram/tests/examples/huerfano/robustez.puml",
+        "--spec",
+        "skills/mkl-uml-sequence-diagram/tests/examples/huerfano/especificacion.md",
+        "--dominio",
+        "skills/mkl-uml-sequence-diagram/tests/examples/huerfano/dominio.puml"
+      ],
+      "exit_code": 1,
+      "contains": [
+        "participant 'Rate' neither sends nor receives any messages"
+      ]
+    },
+    {
+      "id": "mkl-uml-sequence-diagram/orm_como_entity",
+      "script": "skills/mkl-uml-sequence-diagram/scripts/validate_sequence_puml.py",
+      "args": [
+        "--secuencia",
+        "skills/mkl-uml-sequence-diagram/tests/examples/orm_como_entity/secuencia.puml",
+        "--robustez",
+        "skills/mkl-uml-sequence-diagram/tests/examples/orm_como_entity/robustez.puml",
+        "--spec",
+        "skills/mkl-uml-sequence-diagram/tests/examples/orm_como_entity/especificacion.md",
+        "--dominio",
+        "skills/mkl-uml-sequence-diagram/tests/examples/orm_como_entity/dominio.puml"
+      ],
+      "exit_code": 1,
+      "contains": [
+        "is declared `entity` but is infrastructure ('orm')"
+      ]
+    },
+    {
+      "id": "mkl-uml-sequence-diagram/retornitis",
+      "script": "skills/mkl-uml-sequence-diagram/scripts/validate_sequence_puml.py",
+      "args": [
+        "--secuencia",
+        "skills/mkl-uml-sequence-diagram/tests/examples/retornitis/secuencia.puml",
+        "--robustez",
+        "skills/mkl-uml-sequence-diagram/tests/examples/retornitis/robustez.puml",
+        "--spec",
+        "skills/mkl-uml-sequence-diagram/tests/examples/retornitis/especificacion.md",
+        "--dominio",
+        "skills/mkl-uml-sequence-diagram/tests/examples/retornitis/dominio.puml"
+      ],
+      "exit_code": 0,
+      "contains": [
+        "9 of 16 messages are returns"
+      ]
+    },
+    {
+      "id": "mkl-uml-sequence-diagram/se_quedo_en_robustez",
+      "script": "skills/mkl-uml-sequence-diagram/scripts/validate_sequence_puml.py",
+      "args": [
+        "--secuencia",
+        "skills/mkl-uml-sequence-diagram/tests/examples/se_quedo_en_robustez/secuencia.puml",
+        "--robustez",
+        "skills/mkl-uml-sequence-diagram/tests/examples/se_quedo_en_robustez/robustez.puml",
+        "--spec",
+        "skills/mkl-uml-sequence-diagram/tests/examples/se_quedo_en_robustez/especificacion.md",
+        "--dominio",
+        "skills/mkl-uml-sequence-diagram/tests/examples/se_quedo_en_robustez/dominio.puml"
+      ],
+      "exit_code": 0,
+      "contains": [
+        "copying Controllers does not allocate them to a class"
+      ]
+    },
+    {
+      "id": "mkl-uml-design-class-model/accesores",
+      "script": "skills/mkl-uml-design-class-model/scripts/validate_design_class_puml.py",
+      "args": [
+        "--clases",
+        "skills/mkl-uml-design-class-model/tests/examples/accesores/modelo_clases_diseno.puml",
+        "--dominio",
+        "skills/mkl-uml-design-class-model/tests/examples/accesores/dominio.puml",
+        "--secuencia",
+        "skills/mkl-uml-design-class-model/tests/examples/accesores/secuencia.puml",
+        "--spec",
+        "skills/mkl-uml-design-class-model/tests/examples/accesores/especificacion.md"
+      ],
+      "exit_code": 0,
+      "contains": [
+        "declares 2 accessor(s)"
+      ]
+    },
+    {
+      "id": "mkl-uml-design-class-model/anemia",
+      "script": "skills/mkl-uml-design-class-model/scripts/validate_design_class_puml.py",
+      "args": [
+        "--clases",
+        "skills/mkl-uml-design-class-model/tests/examples/anemia/modelo_clases_diseno.puml",
+        "--dominio",
+        "skills/mkl-uml-design-class-model/tests/examples/anemia/dominio.puml",
+        "--secuencia",
+        "skills/mkl-uml-design-class-model/tests/examples/anemia/secuencia.puml",
+        "--spec",
+        "skills/mkl-uml-design-class-model/tests/examples/anemia/especificacion.md"
+      ],
+      "exit_code": 0,
+      "contains": [
+        "'Penalty' is a domain class with 2 attribute(s) and NO operations"
+      ]
+    },
+    {
+      "id": "mkl-uml-design-class-model/atributo_derivado",
+      "script": "skills/mkl-uml-design-class-model/scripts/validate_design_class_puml.py",
+      "args": [
+        "--clases",
+        "skills/mkl-uml-design-class-model/tests/examples/atributo_derivado/modelo_clases_diseno.puml",
+        "--dominio",
+        "skills/mkl-uml-design-class-model/tests/examples/atributo_derivado/dominio.puml",
+        "--secuencia",
+        "skills/mkl-uml-design-class-model/tests/examples/atributo_derivado/secuencia.puml",
+        "--spec",
+        "skills/mkl-uml-design-class-model/tests/examples/atributo_derivado/especificacion.md"
+      ],
+      "exit_code": 0,
+      "contains": [
+        "attribute 'Loan.elapsedDays' appears in neither the domain model nor the specification text"
+      ]
+    },
+    {
+      "id": "mkl-uml-design-class-model/bueno",
+      "script": "skills/mkl-uml-design-class-model/scripts/validate_design_class_puml.py",
+      "args": [
+        "--clases",
+        "skills/mkl-uml-design-class-model/tests/examples/bueno/modelo_clases_diseno.puml",
+        "--dominio",
+        "skills/mkl-uml-design-class-model/tests/examples/bueno/dominio.puml",
+        "--secuencia",
+        "skills/mkl-uml-design-class-model/tests/examples/bueno/secuencia.puml",
+        "--spec",
+        "skills/mkl-uml-design-class-model/tests/examples/bueno/especificacion.md"
+      ],
+      "exit_code": 0,
+      "contains": [
+        "ERRORS: none",
+        "WARNINGS: none",
+        "STATUS: READY FOR CDR"
+      ]
+    },
+    {
+      "id": "mkl-uml-design-class-model/clase_dios",
+      "script": "skills/mkl-uml-design-class-model/scripts/validate_design_class_puml.py",
+      "args": [
+        "--clases",
+        "skills/mkl-uml-design-class-model/tests/examples/clase_dios/modelo_clases_diseno.puml",
+        "--dominio",
+        "skills/mkl-uml-design-class-model/tests/examples/clase_dios/dominio.puml",
+        "--secuencia",
+        "skills/mkl-uml-design-class-model/tests/examples/clase_dios/secuencia.puml",
+        "--spec",
+        "skills/mkl-uml-design-class-model/tests/examples/clase_dios/especificacion.md"
+      ],
+      "exit_code": 0,
+      "contains": [
+        "'Loan' declares 15 operations"
+      ]
+    },
+    {
+      "id": "mkl-uml-design-class-model/deriva_vocabulario",
+      "script": "skills/mkl-uml-design-class-model/scripts/validate_design_class_puml.py",
+      "args": [
+        "--clases",
+        "skills/mkl-uml-design-class-model/tests/examples/deriva_vocabulario/modelo_clases_diseno.puml",
+        "--dominio",
+        "skills/mkl-uml-design-class-model/tests/examples/deriva_vocabulario/dominio.puml",
+        "--secuencia",
+        "skills/mkl-uml-design-class-model/tests/examples/deriva_vocabulario/secuencia.puml",
+        "--spec",
+        "skills/mkl-uml-design-class-model/tests/examples/deriva_vocabulario/especificacion.md"
+      ],
+      "exit_code": 1,
+      "contains": [
+        "class 'PenaltySet' is absent from the domain model and lacks <<solution>>",
+        "possible vocabulary drift"
+      ]
+    },
+    {
+      "id": "mkl-uml-design-class-model/falsos_positivos",
+      "script": "skills/mkl-uml-design-class-model/scripts/validate_design_class_puml.py",
+      "args": [
+        "--clases",
+        "skills/mkl-uml-design-class-model/tests/examples/falsos_positivos/modelo_clases_diseno.puml",
+        "--dominio",
+        "skills/mkl-uml-design-class-model/tests/examples/falsos_positivos/dominio.puml",
+        "--secuencia",
+        "skills/mkl-uml-design-class-model/tests/examples/falsos_positivos/secuencia.puml",
+        "--spec",
+        "skills/mkl-uml-design-class-model/tests/examples/falsos_positivos/especificacion.md"
+      ],
+      "exit_code": 0,
+      "contains": [
+        "ERRORS: none",
+        "WARNINGS: none"
+      ]
+    },
+    {
+      "id": "mkl-uml-design-class-model/firmas_incompletas",
+      "script": "skills/mkl-uml-design-class-model/scripts/validate_design_class_puml.py",
+      "args": [
+        "--clases",
+        "skills/mkl-uml-design-class-model/tests/examples/firmas_incompletas/modelo_clases_diseno.puml",
+        "--dominio",
+        "skills/mkl-uml-design-class-model/tests/examples/firmas_incompletas/dominio.puml",
+        "--secuencia",
+        "skills/mkl-uml-design-class-model/tests/examples/firmas_incompletas/secuencia.puml",
+        "--spec",
+        "skills/mkl-uml-design-class-model/tests/examples/firmas_incompletas/especificacion.md"
+      ],
+      "exit_code": 0,
+      "contains": [
+        "attribute 'Copy.callNumber' declares no type",
+        "operation 'Copy.checkAvailability()' does not declare a return type"
+      ]
+    },
+    {
+      "id": "mkl-uml-design-class-model/hide_methods",
+      "script": "skills/mkl-uml-design-class-model/scripts/validate_design_class_puml.py",
+      "args": [
+        "--clases",
+        "skills/mkl-uml-design-class-model/tests/examples/hide_methods/modelo_clases_diseno.puml",
+        "--dominio",
+        "skills/mkl-uml-design-class-model/tests/examples/hide_methods/dominio.puml",
+        "--secuencia",
+        "skills/mkl-uml-design-class-model/tests/examples/hide_methods/secuencia.puml",
+        "--spec",
+        "skills/mkl-uml-design-class-model/tests/examples/hide_methods/especificacion.md"
+      ],
+      "exit_code": 0,
+      "contains": [
+        "the model declares 'hide methods'"
+      ]
+    },
+    {
+      "id": "mkl-uml-design-class-model/modelo_vacio",
+      "script": "skills/mkl-uml-design-class-model/scripts/validate_design_class_puml.py",
+      "args": [
+        "--clases",
+        "skills/mkl-uml-design-class-model/tests/examples/modelo_vacio/modelo_clases_diseno.puml",
+        "--dominio",
+        "skills/mkl-uml-design-class-model/tests/examples/modelo_vacio/dominio.puml",
+        "--secuencia",
+        "skills/mkl-uml-design-class-model/tests/examples/modelo_vacio/secuencia.puml",
+        "--spec",
+        "skills/mkl-uml-design-class-model/tests/examples/modelo_vacio/especificacion.md"
+      ],
+      "exit_code": 1,
+      "contains": [
+        "the model declares no classes",
+        "STATUS: NOT READY FOR CDR"
+      ]
+    },
+    {
+      "id": "mkl-uml-design-class-model/operacion_clase_equivocada",
+      "script": "skills/mkl-uml-design-class-model/scripts/validate_design_class_puml.py",
+      "args": [
+        "--clases",
+        "skills/mkl-uml-design-class-model/tests/examples/operacion_clase_equivocada/modelo_clases_diseno.puml",
+        "--dominio",
+        "skills/mkl-uml-design-class-model/tests/examples/operacion_clase_equivocada/dominio.puml",
+        "--secuencia",
+        "skills/mkl-uml-design-class-model/tests/examples/operacion_clase_equivocada/secuencia.puml",
+        "--spec",
+        "skills/mkl-uml-design-class-model/tests/examples/operacion_clase_equivocada/especificacion.md"
+      ],
+      "exit_code": 0,
+      "contains": [
+        "'Member.calculateDueDate()' appears in the sequence diagrams, but NOT as a message addressed to 'Member'"
+      ]
+    },
+    {
+      "id": "mkl-uml-design-class-model/operacion_huerfana",
+      "script": "skills/mkl-uml-design-class-model/scripts/validate_design_class_puml.py",
+      "args": [
+        "--clases",
+        "skills/mkl-uml-design-class-model/tests/examples/operacion_huerfana/modelo_clases_diseno.puml",
+        "--dominio",
+        "skills/mkl-uml-design-class-model/tests/examples/operacion_huerfana/dominio.puml",
+        "--secuencia",
+        "skills/mkl-uml-design-class-model/tests/examples/operacion_huerfana/secuencia.puml",
+        "--spec",
+        "skills/mkl-uml-design-class-model/tests/examples/operacion_huerfana/especificacion.md"
+      ],
+      "exit_code": 1,
+      "contains": [
+        "operation 'Penalty.exportAudit()' does not match any message"
+      ]
+    },
+    {
+      "id": "mkl-uml-design-class-model/patron_sin_procedencia",
+      "script": "skills/mkl-uml-design-class-model/scripts/validate_design_class_puml.py",
+      "args": [
+        "--clases",
+        "skills/mkl-uml-design-class-model/tests/examples/patron_sin_procedencia/modelo_clases_diseno.puml",
+        "--dominio",
+        "skills/mkl-uml-design-class-model/tests/examples/patron_sin_procedencia/dominio.puml",
+        "--secuencia",
+        "skills/mkl-uml-design-class-model/tests/examples/patron_sin_procedencia/secuencia.puml",
+        "--spec",
+        "skills/mkl-uml-design-class-model/tests/examples/patron_sin_procedencia/especificacion.md"
+      ],
+      "exit_code": 0,
+      "contains": [
+        "'LoanFactory' introduces pattern 'factory', but no sequence message mentions it"
+      ]
+    },
+    {
+      "id": "mkl-uml-design-class-model/solucion_sin_declarar",
+      "script": "skills/mkl-uml-design-class-model/scripts/validate_design_class_puml.py",
+      "args": [
+        "--clases",
+        "skills/mkl-uml-design-class-model/tests/examples/solucion_sin_declarar/modelo_clases_diseno.puml",
+        "--dominio",
+        "skills/mkl-uml-design-class-model/tests/examples/solucion_sin_declarar/dominio.puml",
+        "--secuencia",
+        "skills/mkl-uml-design-class-model/tests/examples/solucion_sin_declarar/secuencia.puml",
+        "--spec",
+        "skills/mkl-uml-design-class-model/tests/examples/solucion_sin_declarar/especificacion.md"
+      ],
+      "exit_code": 1,
+      "contains": [
+        "class 'LoanPolicy' is absent from the domain model and lacks <<solution>>"
+      ]
+    },
+    {
+      "id": "mkl-cdr-review/abstraccion_inestable",
+      "script": "skills/mkl-cdr-review/scripts/validate_cdr.py",
+      "args": [
+        "--clases",
+        "skills/mkl-cdr-review/tests/examples/abstraccion_inestable/modelo_clases_diseno.puml",
+        "--secuencia",
+        "skills/mkl-cdr-review/tests/examples/abstraccion_inestable/secuencia.puml",
+        "--spec",
+        "skills/mkl-cdr-review/tests/examples/abstraccion_inestable/especificacion.md",
+        "--robustez",
+        "skills/mkl-cdr-review/tests/examples/abstraccion_inestable/robustez.puml",
+        "--dominio",
+        "skills/mkl-cdr-review/tests/examples/abstraccion_inestable/dominio.puml",
+        "--requisitos",
+        "skills/mkl-cdr-review/tests/examples/abstraccion_inestable/requisitos.md",
+        "--pruebas",
+        "skills/mkl-cdr-review/tests/examples/abstraccion_inestable/plan_pruebas.md"
+      ],
+      "exit_code": 0,
+      "contains": [
+        "'JdbcDeadlinePolicy' names a technology ('jdbc')"
+      ]
+    },
+    {
+      "id": "mkl-cdr-review/bueno",
+      "script": "skills/mkl-cdr-review/scripts/validate_cdr.py",
+      "args": [
+        "--clases",
+        "skills/mkl-cdr-review/tests/examples/bueno/modelo_clases_diseno.puml",
+        "--secuencia",
+        "skills/mkl-cdr-review/tests/examples/bueno/secuencia.puml",
+        "--spec",
+        "skills/mkl-cdr-review/tests/examples/bueno/especificacion.md",
+        "--robustez",
+        "skills/mkl-cdr-review/tests/examples/bueno/robustez.puml",
+        "--dominio",
+        "skills/mkl-cdr-review/tests/examples/bueno/dominio.puml",
+        "--requisitos",
+        "skills/mkl-cdr-review/tests/examples/bueno/requisitos.md",
+        "--pruebas",
+        "skills/mkl-cdr-review/tests/examples/bueno/plan_pruebas.md"
+      ],
+      "exit_code": 0,
+      "contains": [
+        "ERRORS: none",
+        "WARNINGS: none",
+        "PROPOSED VERDICT: ACCEPTED"
+      ]
+    },
+    {
+      "id": "mkl-cdr-review/clase_envoltorio",
+      "script": "skills/mkl-cdr-review/scripts/validate_cdr.py",
+      "args": [
+        "--clases",
+        "skills/mkl-cdr-review/tests/examples/clase_envoltorio/modelo_clases_diseno.puml",
+        "--secuencia",
+        "skills/mkl-cdr-review/tests/examples/clase_envoltorio/secuencia.puml",
+        "--spec",
+        "skills/mkl-cdr-review/tests/examples/clase_envoltorio/especificacion.md",
+        "--robustez",
+        "skills/mkl-cdr-review/tests/examples/clase_envoltorio/robustez.puml",
+        "--dominio",
+        "skills/mkl-cdr-review/tests/examples/clase_envoltorio/dominio.puml",
+        "--requisitos",
+        "skills/mkl-cdr-review/tests/examples/clase_envoltorio/requisitos.md",
+        "--pruebas",
+        "skills/mkl-cdr-review/tests/examples/clase_envoltorio/plan_pruebas.md"
+      ],
+      "exit_code": 0,
+      "contains": [
+        "looks like a WRAPPER CLASS of 'Incident'"
+      ]
+    },
+    {
+      "id": "mkl-cdr-review/clase_sin_operaciones",
+      "script": "skills/mkl-cdr-review/scripts/validate_cdr.py",
+      "args": [
+        "--clases",
+        "skills/mkl-cdr-review/tests/examples/clase_sin_operaciones/modelo_clases_diseno.puml",
+        "--secuencia",
+        "skills/mkl-cdr-review/tests/examples/clase_sin_operaciones/secuencia.puml",
+        "--spec",
+        "skills/mkl-cdr-review/tests/examples/clase_sin_operaciones/especificacion.md",
+        "--robustez",
+        "skills/mkl-cdr-review/tests/examples/clase_sin_operaciones/robustez.puml",
+        "--dominio",
+        "skills/mkl-cdr-review/tests/examples/clase_sin_operaciones/dominio.puml",
+        "--requisitos",
+        "skills/mkl-cdr-review/tests/examples/clase_sin_operaciones/requisitos.md",
+        "--pruebas",
+        "skills/mkl-cdr-review/tests/examples/clase_sin_operaciones/plan_pruebas.md"
+      ],
+      "exit_code": 0,
+      "contains": [
+        "'ServiceAgreement' has 2 attribute(s) and NO operation"
+      ]
+    },
+    {
+      "id": "mkl-cdr-review/criterio_entrada",
+      "script": "skills/mkl-cdr-review/scripts/validate_cdr.py",
+      "args": [
+        "--clases",
+        "skills/mkl-cdr-review/tests/examples/criterio_entrada/modelo_clases_diseno.puml",
+        "--secuencia",
+        "skills/mkl-cdr-review/tests/examples/criterio_entrada/secuencia.puml",
+        "--spec",
+        "skills/mkl-cdr-review/tests/examples/criterio_entrada/especificacion.md",
+        "--robustez",
+        "skills/mkl-cdr-review/tests/examples/criterio_entrada/robustez.puml",
+        "--dominio",
+        "skills/mkl-cdr-review/tests/examples/criterio_entrada/dominio.puml",
+        "--requisitos",
+        "skills/mkl-cdr-review/tests/examples/criterio_entrada/requisitos.md",
+        "--pruebas",
+        "skills/mkl-cdr-review/tests/examples/criterio_entrada/plan_pruebas.md"
+      ],
+      "exit_code": 1,
+      "contains": [
+        "ENTRY CRITERIA: CU-08 appears in the specification but no sequence diagram identifies",
+        "ENTRY CRITERIA NOT MET"
+      ]
+    },
+    {
+      "id": "mkl-cdr-review/entidad_sin_atributos",
+      "script": "skills/mkl-cdr-review/scripts/validate_cdr.py",
+      "args": [
+        "--clases",
+        "skills/mkl-cdr-review/tests/examples/entidad_sin_atributos/modelo_clases_diseno.puml",
+        "--secuencia",
+        "skills/mkl-cdr-review/tests/examples/entidad_sin_atributos/secuencia.puml",
+        "--spec",
+        "skills/mkl-cdr-review/tests/examples/entidad_sin_atributos/especificacion.md",
+        "--robustez",
+        "skills/mkl-cdr-review/tests/examples/entidad_sin_atributos/robustez.puml",
+        "--dominio",
+        "skills/mkl-cdr-review/tests/examples/entidad_sin_atributos/dominio.puml",
+        "--requisitos",
+        "skills/mkl-cdr-review/tests/examples/entidad_sin_atributos/requisitos.md",
+        "--pruebas",
+        "skills/mkl-cdr-review/tests/examples/entidad_sin_atributos/plan_pruebas.md"
+      ],
+      "exit_code": 0,
+      "contains": [
+        "entity 'Category' does not declare no attribute"
+      ]
+    },
+    {
+      "id": "mkl-cdr-review/falsos_positivos",
+      "script": "skills/mkl-cdr-review/scripts/validate_cdr.py",
+      "args": [
+        "--clases",
+        "skills/mkl-cdr-review/tests/examples/falsos_positivos/modelo_clases_diseno.puml",
+        "--secuencia",
+        "skills/mkl-cdr-review/tests/examples/falsos_positivos/secuencia.puml",
+        "--spec",
+        "skills/mkl-cdr-review/tests/examples/falsos_positivos/especificacion.md",
+        "--robustez",
+        "skills/mkl-cdr-review/tests/examples/falsos_positivos/robustez.puml",
+        "--dominio",
+        "skills/mkl-cdr-review/tests/examples/falsos_positivos/dominio.puml",
+        "--requisitos",
+        "skills/mkl-cdr-review/tests/examples/falsos_positivos/requisitos.md",
+        "--pruebas",
+        "skills/mkl-cdr-review/tests/examples/falsos_positivos/plan_pruebas.md"
+      ],
+      "exit_code": 0,
+      "contains": [
+        "ERRORS: none",
+        "WARNINGS: none"
+      ]
+    },
+    {
+      "id": "mkl-cdr-review/flujo_sin_disenar",
+      "script": "skills/mkl-cdr-review/scripts/validate_cdr.py",
+      "args": [
+        "--clases",
+        "skills/mkl-cdr-review/tests/examples/flujo_sin_disenar/modelo_clases_diseno.puml",
+        "--secuencia",
+        "skills/mkl-cdr-review/tests/examples/flujo_sin_disenar/secuencia.puml",
+        "--spec",
+        "skills/mkl-cdr-review/tests/examples/flujo_sin_disenar/especificacion.md",
+        "--robustez",
+        "skills/mkl-cdr-review/tests/examples/flujo_sin_disenar/robustez.puml",
+        "--dominio",
+        "skills/mkl-cdr-review/tests/examples/flujo_sin_disenar/dominio.puml",
+        "--requisitos",
+        "skills/mkl-cdr-review/tests/examples/flujo_sin_disenar/requisitos.md",
+        "--pruebas",
+        "skills/mkl-cdr-review/tests/examples/flujo_sin_disenar/plan_pruebas.md"
+      ],
+      "exit_code": 1,
+      "contains": [
+        "the flow FA-02 is specified but does not appear in no sequence diagram"
+      ]
+    },
+    {
+      "id": "mkl-cdr-review/linea_vida_huerfana",
+      "script": "skills/mkl-cdr-review/scripts/validate_cdr.py",
+      "args": [
+        "--clases",
+        "skills/mkl-cdr-review/tests/examples/linea_vida_huerfana/modelo_clases_diseno.puml",
+        "--secuencia",
+        "skills/mkl-cdr-review/tests/examples/linea_vida_huerfana/secuencia.puml",
+        "--spec",
+        "skills/mkl-cdr-review/tests/examples/linea_vida_huerfana/especificacion.md",
+        "--robustez",
+        "skills/mkl-cdr-review/tests/examples/linea_vida_huerfana/robustez.puml",
+        "--dominio",
+        "skills/mkl-cdr-review/tests/examples/linea_vida_huerfana/dominio.puml",
+        "--requisitos",
+        "skills/mkl-cdr-review/tests/examples/linea_vida_huerfana/requisitos.md",
+        "--pruebas",
+        "skills/mkl-cdr-review/tests/examples/linea_vida_huerfana/plan_pruebas.md"
+      ],
+      "exit_code": 0,
+      "contains": [
+        "lifeline 'Notifier' does not receive any message"
+      ]
+    },
+    {
+      "id": "mkl-cdr-review/modelo_vacio",
+      "script": "skills/mkl-cdr-review/scripts/validate_cdr.py",
+      "args": [
+        "--clases",
+        "skills/mkl-cdr-review/tests/examples/modelo_vacio/modelo_clases_diseno.puml",
+        "--secuencia",
+        "skills/mkl-cdr-review/tests/examples/modelo_vacio/secuencia.puml",
+        "--spec",
+        "skills/mkl-cdr-review/tests/examples/modelo_vacio/especificacion.md",
+        "--robustez",
+        "skills/mkl-cdr-review/tests/examples/modelo_vacio/robustez.puml",
+        "--dominio",
+        "skills/mkl-cdr-review/tests/examples/modelo_vacio/dominio.puml",
+        "--requisitos",
+        "skills/mkl-cdr-review/tests/examples/modelo_vacio/requisitos.md",
+        "--pruebas",
+        "skills/mkl-cdr-review/tests/examples/modelo_vacio/plan_pruebas.md"
+      ],
+      "exit_code": 1,
+      "contains": [
+        "the class model does not declare any classes",
+        "REINSPECTION REQUIRED"
+      ]
+    },
+    {
+      "id": "mkl-cdr-review/nombres_sin_intencion",
+      "script": "skills/mkl-cdr-review/scripts/validate_cdr.py",
+      "args": [
+        "--clases",
+        "skills/mkl-cdr-review/tests/examples/nombres_sin_intencion/modelo_clases_diseno.puml",
+        "--secuencia",
+        "skills/mkl-cdr-review/tests/examples/nombres_sin_intencion/secuencia.puml",
+        "--spec",
+        "skills/mkl-cdr-review/tests/examples/nombres_sin_intencion/especificacion.md",
+        "--robustez",
+        "skills/mkl-cdr-review/tests/examples/nombres_sin_intencion/robustez.puml",
+        "--dominio",
+        "skills/mkl-cdr-review/tests/examples/nombres_sin_intencion/dominio.puml",
+        "--requisitos",
+        "skills/mkl-cdr-review/tests/examples/nombres_sin_intencion/requisitos.md",
+        "--pruebas",
+        "skills/mkl-cdr-review/tests/examples/nombres_sin_intencion/plan_pruebas.md"
+      ],
+      "exit_code": 0,
+      "contains": [
+        "'Incident.process()' is a unintentional name"
+      ]
+    },
+    {
+      "id": "mkl-cdr-review/operacion_clase_equivocada",
+      "script": "skills/mkl-cdr-review/scripts/validate_cdr.py",
+      "args": [
+        "--clases",
+        "skills/mkl-cdr-review/tests/examples/operacion_clase_equivocada/modelo_clases_diseno.puml",
+        "--secuencia",
+        "skills/mkl-cdr-review/tests/examples/operacion_clase_equivocada/secuencia.puml",
+        "--spec",
+        "skills/mkl-cdr-review/tests/examples/operacion_clase_equivocada/especificacion.md",
+        "--robustez",
+        "skills/mkl-cdr-review/tests/examples/operacion_clase_equivocada/robustez.puml",
+        "--dominio",
+        "skills/mkl-cdr-review/tests/examples/operacion_clase_equivocada/dominio.puml",
+        "--requisitos",
+        "skills/mkl-cdr-review/tests/examples/operacion_clase_equivocada/requisitos.md",
+        "--pruebas",
+        "skills/mkl-cdr-review/tests/examples/operacion_clase_equivocada/plan_pruebas.md"
+      ],
+      "exit_code": 0,
+      "contains": [
+        "'Requester.calculateDueDate()' appears in the diagrams sequence but NOT as a message addressed to 'Requester'"
+      ]
+    },
+    {
+      "id": "mkl-cdr-review/operacion_huerfana",
+      "script": "skills/mkl-cdr-review/scripts/validate_cdr.py",
+      "args": [
+        "--clases",
+        "skills/mkl-cdr-review/tests/examples/operacion_huerfana/modelo_clases_diseno.puml",
+        "--secuencia",
+        "skills/mkl-cdr-review/tests/examples/operacion_huerfana/secuencia.puml",
+        "--spec",
+        "skills/mkl-cdr-review/tests/examples/operacion_huerfana/especificacion.md",
+        "--robustez",
+        "skills/mkl-cdr-review/tests/examples/operacion_huerfana/robustez.puml",
+        "--dominio",
+        "skills/mkl-cdr-review/tests/examples/operacion_huerfana/dominio.puml",
+        "--requisitos",
+        "skills/mkl-cdr-review/tests/examples/operacion_huerfana/requisitos.md",
+        "--pruebas",
+        "skills/mkl-cdr-review/tests/examples/operacion_huerfana/plan_pruebas.md"
+      ],
+      "exit_code": 1,
+      "contains": [
+        "the operation 'ServiceAgreement.isla()' does not correspond to any message",
+        "the operation 'Incident.exportAudit()' does not correspond to any message"
+      ]
+    },
+    {
+      "id": "mkl-cdr-review/requisito_huerfano",
+      "script": "skills/mkl-cdr-review/scripts/validate_cdr.py",
+      "args": [
+        "--clases",
+        "skills/mkl-cdr-review/tests/examples/requisito_huerfano/modelo_clases_diseno.puml",
+        "--secuencia",
+        "skills/mkl-cdr-review/tests/examples/requisito_huerfano/secuencia.puml",
+        "--spec",
+        "skills/mkl-cdr-review/tests/examples/requisito_huerfano/especificacion.md",
+        "--robustez",
+        "skills/mkl-cdr-review/tests/examples/requisito_huerfano/robustez.puml",
+        "--dominio",
+        "skills/mkl-cdr-review/tests/examples/requisito_huerfano/dominio.puml",
+        "--requisitos",
+        "skills/mkl-cdr-review/tests/examples/requisito_huerfano/requisitos.md",
+        "--pruebas",
+        "skills/mkl-cdr-review/tests/examples/requisito_huerfano/plan_pruebas.md"
+      ],
+      "exit_code": 0,
+      "contains": [
+        "requirement RF-90 has no vocabulary in common"
+      ]
+    },
+    {
+      "id": "mkl-cdr-review/sin_multiplicidades",
+      "script": "skills/mkl-cdr-review/scripts/validate_cdr.py",
+      "args": [
+        "--clases",
+        "skills/mkl-cdr-review/tests/examples/sin_multiplicidades/modelo_clases_diseno.puml",
+        "--secuencia",
+        "skills/mkl-cdr-review/tests/examples/sin_multiplicidades/secuencia.puml",
+        "--spec",
+        "skills/mkl-cdr-review/tests/examples/sin_multiplicidades/especificacion.md",
+        "--robustez",
+        "skills/mkl-cdr-review/tests/examples/sin_multiplicidades/robustez.puml",
+        "--dominio",
+        "skills/mkl-cdr-review/tests/examples/sin_multiplicidades/dominio.puml",
+        "--requisitos",
+        "skills/mkl-cdr-review/tests/examples/sin_multiplicidades/requisitos.md",
+        "--pruebas",
+        "skills/mkl-cdr-review/tests/examples/sin_multiplicidades/plan_pruebas.md"
+      ],
+      "exit_code": 0,
+      "contains": [
+        "1 relationship(s) without multiplicity"
+      ]
+    },
+    {
+      "id": "mkl-cdr-review/tipos_imprecisos",
+      "script": "skills/mkl-cdr-review/scripts/validate_cdr.py",
+      "args": [
+        "--clases",
+        "skills/mkl-cdr-review/tests/examples/tipos_imprecisos/modelo_clases_diseno.puml",
+        "--secuencia",
+        "skills/mkl-cdr-review/tests/examples/tipos_imprecisos/secuencia.puml",
+        "--spec",
+        "skills/mkl-cdr-review/tests/examples/tipos_imprecisos/especificacion.md",
+        "--robustez",
+        "skills/mkl-cdr-review/tests/examples/tipos_imprecisos/robustez.puml",
+        "--dominio",
+        "skills/mkl-cdr-review/tests/examples/tipos_imprecisos/dominio.puml",
+        "--requisitos",
+        "skills/mkl-cdr-review/tests/examples/tipos_imprecisos/requisitos.md",
+        "--pruebas",
+        "skills/mkl-cdr-review/tests/examples/tipos_imprecisos/plan_pruebas.md"
+      ],
+      "exit_code": 0,
+      "contains": [
+        "'Incident.identifier()' returns vague type 'Object'"
+      ]
+    }
+  ]
+}

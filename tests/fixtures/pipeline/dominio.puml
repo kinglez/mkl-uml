@@ -1,0 +1,33 @@
+@startuml
+/' mkl fixture. Copyright 2026 kingle.zhuang. '/
+skinparam linetype ortho
+skinparam classAttributeIconSize 0
+hide methods
+hide empty members
+
+class Requester {
+  name
+  email
+}
+
+class Category {
+  name
+  code
+}
+
+class ServiceAgreement {
+  deadlineHours
+  effectiveFrom
+}
+
+class Incident {
+  description
+  registrationDate
+  dueDate
+}
+
+Requester -- Incident : reports
+Incident -- Category : is classified into
+Category -- ServiceAgreement : governed by
+Requester -- Category : is authorized for
+@enduml

@@ -1,0 +1,33 @@
+@startuml
+/' mkl fixture. Copyright 2026 kingle.zhuang. '/
+' DS-07 - Sequence diagram for CU-07 Register incident
+skinparam style strictuml
+skinparam shadowing false
+skinparam responseMessageBelowArrow true
+
+actor "Requester" as ACT_Requester
+boundary "Incident Form" as B_Form
+entity "Requester" as E_Requester
+entity "Category" as E_Category
+entity "ServiceAgreement" as E_Agreement
+entity "Incident" as E_Incident
+participant "DeadlinePolicy" as S_Policy
+
+ACT_Requester -> B_Form : describe the problem
+B_Form -> E_Category : exists()
+alt FA-02 category does not exist
+  E_Category --> B_Form : unknown category
+else valid category
+  B_Form -> E_Requester : isAuthorizedFor(category)
+  alt FA-01 requester is not authorized
+    E_Requester --> B_Form : reason for rejection
+  else authorized requester
+    B_Form -> E_Category : currentAgreement()
+    E_Category -> E_Agreement : isCurrent()
+    B_Form -> S_Policy : calculateDueDate(agreement)
+    S_Policy -> E_Agreement : deadlineHours()
+    B_Form -> E_Incident : register(requester, category, dueDate)
+    B_Form -> E_Incident : identifier()
+  end
+end
+@enduml

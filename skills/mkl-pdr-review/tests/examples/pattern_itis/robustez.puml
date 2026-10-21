@@ -1,0 +1,32 @@
+@startuml
+/' English-edition adaptation: Copyright 2026 kingle.zhuang. See NOTICE for upstream attribution. '/
+' DR-01 - Robustness of CU-01 Register vaccination
+left to right direction
+skinparam linetype ortho
+skinparam shadowing false
+
+actor "Veterinarian" as ACT_Veterinario
+
+boundary "Pet Clinical Record" as B_FichaClinica
+boundary "Vaccination Certificate" as B_Comprobante
+
+control "Verify vaccination schedule" as C_VerificarEsquema
+control "VaccinationRecordDAOFactory" as C_RegistrarVacunacion
+control "CertificateStrategyHandler" as C_EmitirComprobante
+control "Show message 'Vaccine not applicable'" as C_MsgNoCorresponde #LightCoral
+
+entity "Pet" as E_Mascota
+entity "Vaccine" as E_Vacuna
+entity "VaccinationRecord" as E_RegistroVacunacion
+
+ACT_Veterinario -- B_FichaClinica
+B_FichaClinica -- C_VerificarEsquema : select vaccine and request schedule verification
+C_VerificarEsquema -- E_Mascota
+C_VerificarEsquema -- E_Vacuna
+C_VerificarEsquema -- C_RegistrarVacunacion
+C_RegistrarVacunacion -- E_RegistroVacunacion
+C_RegistrarVacunacion -- C_EmitirComprobante
+C_EmitirComprobante -- B_Comprobante
+C_VerificarEsquema -- C_MsgNoCorresponde : FA-01 vaccine does not match the vaccination scheduletic
+C_MsgNoCorresponde -- B_FichaClinica : FA-01 returns to the clinical record
+@enduml

@@ -1,0 +1,17 @@
+@startuml
+/' English-edition adaptation: Copyright 2026 kingle.zhuang. See NOTICE for upstream attribution. '/
+skinparam style strictuml
+skinparam shadowing false
+skinparam responseMessageBelowArrow true
+
+actor "Therapist" as ACT_Ter
+boundary "Agenda" as B_Agenda
+entity "Patient" as E_Pac
+entity "Therapy" as E_Ter
+entity "Session" as E_Ses
+
+ACT_Ter -> B_Agenda : find patient
+B_Agenda -> E_Pac : checkActiveStatus()
+B_Agenda -> E_Ter : standardDuration()
+B_Agenda -> E_Ses : schedule(patient, therapy, date)
+@enduml

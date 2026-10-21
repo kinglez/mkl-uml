@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+  <title>Domain model: conceptual classes and relationships, no operations</title>
+  <rect x="22" y="5" width="20" height="16" rx="1.5"/>
+  <path d="M22 12h20"/>
+  <rect x="3" y="43" width="20" height="16" rx="1.5"/>
+  <path d="M3 50h20"/>
+  <rect x="41" y="43" width="20" height="16" rx="1.5"/>
+  <path d="M41 50h20"/>
+  <path d="M27 21L16 43M37 21l11 22"/>
+  <path d="M23 51h18"/>
+</svg>

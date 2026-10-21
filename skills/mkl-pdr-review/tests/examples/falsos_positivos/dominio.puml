@@ -1,0 +1,18 @@
+@startuml
+/' English-edition adaptation: Copyright 2026 kingle.zhuang. See NOTICE for upstream attribution. '/
+skinparam classAttributeIconSize 0
+hide methods
+hide empty members
+
+class Request {
+  +date : Date
+  +status : String
+}
+
+class Capacity {
+  +total : Integer
+  +occupied : Integer
+}
+
+Capacity "1" -- "0..*" Request
+@enduml

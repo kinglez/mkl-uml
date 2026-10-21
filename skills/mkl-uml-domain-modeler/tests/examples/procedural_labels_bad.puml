@@ -1,0 +1,28 @@
+@startuml
+/' English-edition adaptation: Copyright 2026 kingle.zhuang. See NOTICE for upstream attribution. '/
+skinparam linetype ortho
+skinparam classAttributeIconSize 0
+hide methods
+hide empty members
+
+class Borrower {
+  name
+}
+
+class Loan {
+  startDate
+}
+
+class Copy {
+  shelfMark
+}
+
+class Fine {
+  amount
+}
+
+Borrower -- Loan : validates
+Loan -- Copy : queries
+Loan -- Fine : calculates
+Copy -- Fine : generates
+@enduml

@@ -1,0 +1,25 @@
+@startuml
+/' English-edition adaptation: Copyright 2026 kingle.zhuang. See NOTICE for upstream attribution. '/
+skinparam linetype ortho
+skinparam classAttributeIconSize 0
+hide methods
+hide empty members
+
+class Borrower {
+  +name : String
+  +address : String
+}
+
+class Loan {
+  +startDate : Date
+  +returnDate : Date
+}
+
+class Copy {
+  +shelfMark : String
+  +state : String
+}
+
+Borrower "1" -- "0..*" Loan
+Loan "1" -- "1" Copy
+@enduml

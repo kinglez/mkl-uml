@@ -1,0 +1,15 @@
+@startuml
+/' English-edition adaptation: Copyright 2026 kingle.zhuang. See NOTICE for upstream attribution. '/
+left to right direction
+skinparam linetype ortho
+skinparam shadowing false
+actor "Customer" as ACT_C
+boundary "Payment Page" as B_Payment
+control "Show payment form" as C_ShowForm
+control "Form of Results" as C_FormRes
+entity "Payment" as E_Payment
+ACT_C -- B_Payment
+B_Payment -- C_ShowForm
+C_ShowForm -- E_Payment
+C_ShowForm -- C_FormRes
+@enduml

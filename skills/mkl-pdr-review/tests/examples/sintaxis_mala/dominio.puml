@@ -1,0 +1,36 @@
+@startuml
+/' English-edition adaptation: Copyright 2026 kingle.zhuang. See NOTICE for upstream attribution. '/
+' Reference domain model for the "good" set.
+' Domain: veterinary clinic. Deliberately chosen outside this skill
+' and the regression examples of the related skills.
+skinparam classAttributeIconSize 0
+hide methods
+hide empty members
+
+class Pet {
+  +name : String
+  +species : String
+  +dateOfBirth : Date
+}
+
+class Vaccine {
+  +name : String
+  +manufacturerBatch : String
+  +intervalMonths : Integer
+}
+
+class VaccinationRecord {
+  +administrationDate : Date
+  +dose : String
+  +notes : String
+}
+
+class Owner {
+  +name : String
+  +phone : String
+}
+
+Owner "1" -- "0..*" Pet
+Pet "1" -- "0..*" VaccinationRecord
+Vaccine "1" -- "0..*" VaccinationRecord
+@enduml

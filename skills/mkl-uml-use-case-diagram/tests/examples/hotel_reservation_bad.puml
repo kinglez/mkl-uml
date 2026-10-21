@@ -1,0 +1,28 @@
+@startuml
+/' English-edition adaptation: Copyright 2026 kingle.zhuang. See NOTICE for upstream attribution. '/
+left to right direction
+skinparam linetype ortho
+skinparam packageStyle rectangle
+skinparam shadowing false
+
+actor "Customer" as Customer
+
+rectangle "Hotel Reservation System" {
+  usecase "Reserve room" as CU_ReservarHabitacion
+  usecase "Validate actual availability" as CU_ValidarDisponibilidad
+  usecase "Calculate total amount" as CU_CalcularValor
+  usecase "Update availability" as CU_ActualizarDisponibilidad
+  usecase "Generate unique identifier" as CU_GenerarIdentificador
+}
+
+Customer --> CU_ReservarHabitacion
+Customer --> CU_ValidarDisponibilidad
+Customer --> CU_CalcularValor
+Customer --> CU_ActualizarDisponibilidad
+Customer --> CU_GenerarIdentificador
+
+CU_ReservarHabitacion .> CU_ValidarDisponibilidad : <<include>>
+CU_ReservarHabitacion .> CU_CalcularValor : <<include>>
+CU_ReservarHabitacion .> CU_ActualizarDisponibilidad : <<include>>
+CU_ReservarHabitacion .> CU_GenerarIdentificador : <<include>>
+@enduml

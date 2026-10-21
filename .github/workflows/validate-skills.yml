@@ -1,0 +1,60 @@
+name: Validate skills
+
+on:
+  pull_request:
+    paths: ["skills/**", "tools/**", "bin/**", "package.json", "tests/**", "docs/**", "README.md", "LICENSE", "NOTICE", ".github/workflows/validate-skills.yml"]
+  push:
+    branches: [main]
+    paths: ["skills/**", "tools/**", "bin/**", "package.json", "tests/**", "docs/**", "README.md", "LICENSE", "NOTICE", ".github/workflows/validate-skills.yml"]
+  workflow_dispatch: {}
+
+jobs:
+  assertions:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - run: python -m unittest discover -s tests -v
+        env:
+          PYTHONUTF8: "1"
+          PYTHONDONTWRITEBYTECODE: "1"
+
+  validate:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        skill:
+          - mkl-uml-domain-modeler
+          - mkl-uml-use-case-diagram
+          - mkl-use-case-specifier
+          - mkl-uml-robustness-diagram
+          - mkl-pdr-review
+          - mkl-uml-sequence-diagram
+          - mkl-uml-design-class-model
+          - mkl-cdr-review
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+      - run: python tools/run_all_validators.py --skill ${{ matrix.skill }}
+
+  structure-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+      - run: python tools/run_all_validators.py --check-structure

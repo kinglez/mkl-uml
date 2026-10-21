@@ -1,0 +1,31 @@
+@startuml
+/' mkl fixture. Copyright 2026 kingle.zhuang. '/
+' DR-07 - Robustness diagram for CU-07 Register incident
+left to right direction
+skinparam linetype ortho
+skinparam style strictuml
+skinparam shadowing false
+
+actor "Requester" as ACT_Requester
+boundary "Incident Form" as B_Form
+control "Verify Requester Authorization" as C_Authorization
+control "Resolve Agreement" as C_Agreement
+control "Calculate Due Date" as C_DueDate
+control "Register Incident" as C_Registration
+entity "Requester" as E_Requester
+entity "Category" as E_Category
+entity "ServiceAgreement" as E_Agreement
+entity "Incident" as E_Incident
+
+ACT_Requester -- B_Form
+B_Form -- C_Authorization : FA-01 report rejection
+C_Authorization -- E_Requester
+C_Authorization -- E_Category
+B_Form -- C_Agreement : FA-02 report unknown category
+C_Agreement -- E_Category
+C_Agreement -- E_Agreement
+B_Form -- C_DueDate
+C_DueDate -- E_Agreement
+B_Form -- C_Registration
+C_Registration -- E_Incident
+@enduml

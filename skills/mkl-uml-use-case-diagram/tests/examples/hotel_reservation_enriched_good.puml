@@ -1,0 +1,56 @@
+@startuml
+/' English-edition adaptation: Copyright 2026 kingle.zhuang. See NOTICE for upstream attribution. '/
+title UML use case diagram - Hotel Reservation System
+
+left to right direction
+
+skinparam linetype ortho
+skinparam packageStyle rectangle
+skinparam shadowing false
+
+actor Customer
+actor "Payment gateway\n/ Financial institution" as PasarelaPagos
+actor "Electronic notification\nservice" as ServicioNotificacion
+
+rectangle "Hotel Reservation System" {
+
+  package "Accommodation search and selection" {
+    usecase "Check accommodation\navailability" as CU_ConsultarDisponibilidad
+    usecase "View accommodation\noptions" as CU_ConsultarOpciones
+  }
+
+  package "Reservation management" {
+    usecase "Reserve room" as CU_Reservar
+    usecase "Submit reservation\nrequest" as CU_RegistrarSolicitud
+    usecase "Evaluate reservation\nconditions" as CU_EvaluarCondiciones
+    usecase "Get reservation\nquotation" as CU_CotizarReserva
+    usecase "Confirm reservation" as CU_ConfirmarReserva
+  }
+
+  package "Payment, guarantee, and communication" {
+    usecase "Validate payment method\nor guarantee" as CU_ValidarPagoGarantia
+    usecase "Issue electronic\nconfirmation" as CU_EmitirConfirmacion
+    usecase "Report reservation\ninconsistency" as CU_NotificarInconsistencia
+  }
+}
+
+Customer --> CU_Reservar
+Customer --> CU_ConsultarDisponibilidad
+
+CU_Reservar ..> CU_ConsultarDisponibilidad : <<include>>
+CU_ConsultarDisponibilidad ..> CU_ConsultarOpciones : <<include>>
+
+CU_Reservar ..> CU_RegistrarSolicitud : <<include>>
+CU_Reservar ..> CU_EvaluarCondiciones : <<include>>
+CU_Reservar ..> CU_CotizarReserva : <<include>>
+CU_Reservar ..> CU_ValidarPagoGarantia : <<include>>
+CU_Reservar ..> CU_ConfirmarReserva : <<include>>
+CU_ConfirmarReserva ..> CU_EmitirConfirmacion : <<include>>
+
+CU_NotificarInconsistencia ..> CU_Reservar : <<extend>>
+
+PasarelaPagos --> CU_ValidarPagoGarantia
+ServicioNotificacion --> CU_EmitirConfirmacion
+ServicioNotificacion --> CU_NotificarInconsistencia
+
+@enduml

@@ -1,0 +1,24 @@
+@startuml
+/' English-edition adaptation: Copyright 2026 kingle.zhuang. See NOTICE for upstream attribution. '/
+left to right direction
+skinparam linetype ortho
+skinparam shadowing false
+
+actor "Customer" as ACT_Customer
+boundary "Registration Form" as B_Formulario
+control "Validate category" as C_Validar
+control "Record request" as C_Registrar
+entity "Request" as E_Request
+
+ACT_Customer -- B_Formulario
+B_Formulario -- C_Validar : FA-01 inactive category
+C_Validar -- C_Registrar
+C_Registrar -- E_Request
+
+note as TextoCU
+BASIC COURSE: The Customer records the request.
+ALTERNATIVE COURSES:
+FA-01 If the Category is inactive, request another.
+FE-01 If the Attachment exceeds the size limit, reject it.
+end note
+@enduml

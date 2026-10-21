@@ -1,0 +1,30 @@
+#!/bin/sh
+# English-edition adaptation: Copyright 2026 kingle.zhuang. See NOTICE for upstream attribution.
+# commit-msg: preserve human authorship in commit trailers.
+# Remove AI tool, assistant, and model coauthor trailers before committing.
+# Keep all other content and internal paragraph spacing. Remove only trailing
+# blank lines left after removing those trailers.
+# Optional activation for a clone: git config core.hooksPath .githooks
+
+MSG_FILE="$1"
+[ -f "$MSG_FILE" ] || exit 0
+
+PATRON='^[[:space:]]*co-authored-by:.*(claude|anthropic|copilot|cursor|codex|chatgpt|gpt-|gemini|noreply@anthropic\.com)'
+
+if ! grep -qiE "$PATRON" "$MSG_FILE"; then
+    exit 0
+fi
+
+TMP="$MSG_FILE.hooktmp"
+
+# Remove matching trailers while preserving all other lines, including blank lines.
+grep -viE "$PATRON" "$MSG_FILE" > "$TMP"
+
+# Remove only trailing blank lines left by deletion.
+awk 'NF{ultima=NR} {linea[NR]=$0} END{for(i=1;i<=ultima;i++) print linea[i]}' "$TMP" > "$MSG_FILE"
+
+rm -f "$TMP"
+
+echo "commit-msg: removed an AI tool coauthor trailer." >&2
+
+exit 0

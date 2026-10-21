@@ -1,0 +1,31 @@
+@startuml
+/' English-edition adaptation: Copyright 2026 kingle.zhuang. See NOTICE for upstream attribution. '/
+skinparam linetype ortho
+skinparam classAttributeIconSize 0
+hide methods
+hide empty members
+
+class Vehicle {
+  licensePlate
+  type
+}
+
+class ParkingSpace {
+  code
+  status
+}
+
+class Ticket {
+  number
+  entryDateTime
+}
+
+class Rate {
+  hourlyRate
+  effectiveFrom
+}
+
+Vehicle -- Ticket : covers
+ParkingSpace -- Ticket : recorded in
+Rate -- Ticket : applies to
+@enduml

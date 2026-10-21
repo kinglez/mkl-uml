@@ -1,0 +1,36 @@
+@startuml
+/' English-edition adaptation: Copyright 2026 kingle.zhuang. See NOTICE for upstream attribution. '/
+' DS-04 - Sequence for CU-04 Manage loan
+skinparam style strictuml
+skinparam shadowing false
+skinparam responseMessageBelowArrow true
+
+actor "Librarian" as ACT_Bib
+boundary "Loan Console" as B_Console
+entity "Member" as E_Member
+entity "Copy" as E_Copy
+entity "Loan" as E_Loan
+entity "Work" as E_Work
+entity "Penalty" as E_Penalty
+participant "LoanPolicy" as S_Politica
+
+ACT_Bib -> B_Console : find member by identity document
+B_Console -> E_Member : checkActivePenalty()
+E_Member -> E_Penalty : checkActiveStatus()
+alt FA-01 member has active penalty
+  E_Member --> B_Console : penalty reason
+else eligible member
+  ACT_Bib -> B_Console : enter copy call number
+  B_Console -> E_Copy : checkAvailability()
+  alt FA-02 copy unavailable
+    E_Copy --> B_Console : unavailable
+  else copy available
+    B_Console -> S_Politica : calculateDueDate(copy)
+    S_Politica -> E_Copy : basePeriod()
+E_Copy -> E_Work : basePeriod()
+    B_Console -> E_Loan : register(member, copy, dueDate)
+    E_Loan -> E_Copy : markLoaned()
+    B_Console -> E_Loan : generateReceipt()
+  end
+end
+@enduml

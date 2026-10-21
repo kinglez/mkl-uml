@@ -1,0 +1,23 @@
+@startuml
+/' English-edition adaptation: Copyright 2026 kingle.zhuang. See NOTICE for upstream attribution. '/
+' Anti-pattern 10: it is presented as a robustness diagram but it is a sequence diagram.
+' Synthetic fixture built to exercise the check.
+autonumber
+
+participant "Veterinarian" as ACT_Veterinario
+participant "Pet Clinical Record" as B_FichaClinica
+participant "Verify vaccination schedule" as C_VerificarEsquema
+participant "Pet" as E_Mascota
+participant "VaccinationRecord" as E_RegistroVacunacion
+
+ACT_Veterinario -> B_FichaClinica : selectVaccine(vaccineId)
+activate B_FichaClinica
+B_FichaClinica -> C_VerificarEsquema : verifySchedule(petId, vaccineId)
+C_VerificarEsquema -> E_Mascota : getLastDose(petId)
+alt valid vaccination schedule
+  C_VerificarEsquema -> E_RegistroVacunacion : create(petId, vaccineId, date)
+else vaccine does not apply
+  C_VerificarEsquema -> B_FichaClinica : showError("Vaccine does not match the schedule")
+end
+deactivate B_FichaClinica
+@enduml

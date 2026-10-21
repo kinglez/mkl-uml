@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+  <title>PDR: four artifacts converge at a review gate with a verdict</title>
+  <rect x="4" y="8" width="13" height="9" rx="1.5"/>
+  <rect x="4" y="21" width="13" height="9" rx="1.5"/>
+  <rect x="4" y="34" width="13" height="9" rx="1.5"/>
+  <rect x="4" y="47" width="13" height="9" rx="1.5"/>
+  <path d="M17 12.5h9l4 19.5M17 25.5h13l0 6.5M17 38.5h13l0-6.5M17 51.5h9l4-19.5"/>
+  <path d="M34 6v52"/>
+  <circle cx="49" cy="32" r="11"/>
+  <path d="M44 32l3.5 3.5L55 28"/>
+</svg>

@@ -1,0 +1,20 @@
+@startuml
+/' English-edition adaptation: Copyright 2026 kingle.zhuang. See NOTICE for upstream attribution. '/
+left to right direction
+skinparam linetype ortho
+skinparam shadowing false
+
+actor "Salesperson" as ACT_Salesperson
+actor "Supervisor" as ACT_Supervisor
+boundary "Product Creation Window" as B_Ventana
+control "Check fields" as C_Verificar
+control "Show blank fields message" as C_MsgCampos
+entity "Product" as E_Product
+
+ACT_Salesperson -- ACT_Supervisor
+ACT_Salesperson -- B_Ventana
+B_Ventana -- C_Verificar
+C_Verificar -- E_Product
+C_Verificar -- C_MsgCampos : FA-01 blank fields
+C_MsgCampos -- B_Ventana : FA-01 return to window
+@enduml

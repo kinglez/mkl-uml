@@ -1,0 +1,45 @@
+@startuml
+/' English-edition adaptation: Copyright 2026 kingle.zhuang. See NOTICE for upstream attribution. '/
+title UML use case diagram - Academic Enrollment System
+
+left to right direction
+skinparam linetype ortho
+skinparam packageStyle rectangle
+skinparam shadowing false
+
+actor Student
+actor "External academic system" as SistemaAcademicoExterno
+
+rectangle "Academic Enrollment System" {
+  package "Academic offering" {
+    usecase "View academic offering" as CU_ConsultarOferta
+    usecase "Check course\navailability" as CU_ConsultarDisponibilidad
+  }
+
+  package "Enrollment" {
+    usecase "Complete enrollment" as CU_RealizarMatricula
+    usecase "Select courses" as CU_SeleccionarAsignaturas
+    usecase "Evaluate enrollment\nconditions" as CU_EvaluarCondiciones
+    usecase "Confirm enrollment" as CU_ConfirmarMatricula
+  }
+
+  package "Academic communication" {
+    usecase "Issue enrollment\nreceipt" as CU_EmitirComprobante
+    usecase "Report enrollment\ninconsistency" as CU_NotificarInconsistencia
+  }
+}
+
+Student --> CU_RealizarMatricula
+Student --> CU_ConsultarOferta
+
+CU_RealizarMatricula ..> CU_ConsultarOferta : <<include>>
+CU_ConsultarOferta ..> CU_ConsultarDisponibilidad : <<include>>
+CU_RealizarMatricula ..> CU_SeleccionarAsignaturas : <<include>>
+CU_RealizarMatricula ..> CU_EvaluarCondiciones : <<include>>
+CU_RealizarMatricula ..> CU_ConfirmarMatricula : <<include>>
+CU_ConfirmarMatricula ..> CU_EmitirComprobante : <<include>>
+CU_NotificarInconsistencia ..> CU_RealizarMatricula : <<extend>>
+
+SistemaAcademicoExterno --> CU_EvaluarCondiciones
+
+@enduml

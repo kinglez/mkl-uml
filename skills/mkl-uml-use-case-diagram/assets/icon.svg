@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+  <title>Use case diagram: actor, system boundary, use cases</title>
+  <circle cx="11" cy="15" r="4.5"/>
+  <path d="M11 19.5v13M5 24h12M11 32.5l-5 9M11 32.5l5 9"/>
+  <rect x="27" y="6" width="34" height="52" rx="2"/>
+  <ellipse cx="44" cy="21" rx="12" ry="7"/>
+  <ellipse cx="44" cy="43" rx="12" ry="7"/>
+  <path d="M17 23h15M17 29l12 12"/>
+</svg>

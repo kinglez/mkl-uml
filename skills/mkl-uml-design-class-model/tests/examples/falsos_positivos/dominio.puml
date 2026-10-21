@@ -1,0 +1,24 @@
+@startuml
+/' English-edition adaptation: Copyright 2026 kingle.zhuang. See NOTICE for upstream attribution. '/
+skinparam linetype ortho
+skinparam classAttributeIconSize 0
+hide methods
+hide empty members
+
+class Patient {
+  name
+  identityDocument
+}
+
+class Therapy {
+  designation
+  duration
+}
+
+class Session {
+  date
+}
+
+Patient -- Session : attends
+Session -- Therapy : applies
+@enduml

@@ -1,0 +1,36 @@
+@startuml
+/' English-edition adaptation: Copyright 2026 kingle.zhuang. See NOTICE for upstream attribution. '/
+' Regression from an actual course robustness diagram: Register Author in an
+' online bookstore. Its authentic modeling defects are intentionally retained.
+' Expected findings: entity-to-actor shortcut (database treated as actor),
+' a god control absorbing behavior, directed arrows, and uncolored alternatives.
+left to right direction
+skinparam linetype ortho
+skinparam shadowing false
+
+actor "Administrator" as ACT_Admin
+actor "Database System" as ACT_BD
+
+boundary "Main Menu" as B_Menu
+boundary "Author Registration Form" as B_Form
+boundary "Confirmation Message" as B_Confirm
+boundary "Error Message" as B_Error
+
+control "AuthorRegistrationManager" as C_Gestor
+
+entity "Author" as E_Author
+entity "Audit" as E_Audit
+
+ACT_Admin --> B_Menu : 1. select Register Author
+B_Menu --> C_Gestor : request form
+C_Gestor --> B_Form : 2. show form
+ACT_Admin --> B_Form : 3. enter author data
+B_Form --> C_Gestor : submit captured data
+C_Gestor --> E_Author : 5. validate and store
+E_Author --> ACT_BD : persist record
+C_Gestor --> E_Audit : record audit
+C_Gestor --> B_Confirm : 7. generate confirmation
+C_Gestor --> B_Error : FA-01 blank fields detected
+B_Error --> ACT_Admin : show validation errors
+ACT_BD --> E_Author : FE-03 persistence error
+@enduml

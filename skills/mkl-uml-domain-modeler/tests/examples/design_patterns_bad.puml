@@ -1,0 +1,21 @@
+@startuml
+/' English-edition adaptation: Copyright 2026 kingle.zhuang. See NOTICE for upstream attribution. '/
+skinparam linetype ortho
+skinparam classAttributeIconSize 0
+hide methods
+hide empty members
+
+class LoanFactory
+class CatalogSingleton
+class FineStrategy
+class CopyManager
+
+class Borrower {
+  name
+}
+
+Borrower -- LoanFactory : depends on
+LoanFactory -- CatalogSingleton : corresponds to
+CatalogSingleton -- FineStrategy : aplica a
+FineStrategy -- CopyManager : belongs to
+@enduml

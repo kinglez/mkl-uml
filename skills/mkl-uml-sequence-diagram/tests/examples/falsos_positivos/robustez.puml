@@ -1,0 +1,41 @@
+@startuml
+/' English-edition adaptation: Copyright 2026 kingle.zhuang. See NOTICE for upstream attribution. '/
+' DR-01 - Robustness for CU-01 Register vehicle entry
+left to right direction
+skinparam linetype ortho
+skinparam shadowing false
+
+actor "Operator" as ACT_Operator
+
+boundary "Entry Console" as B_Console
+boundary "Entry Receipt" as B_Receipt
+boundary "Main Menu" as B_Menu
+
+control "Identify vehicle by license plate" as C_Identify
+control "Check parking space availability" as C_Check
+control "Occupy parking space" as C_Occupy
+control "Issue ticket" as C_Issue
+control "Display message 'Parking lot full'" as C_FullMessage #LightCoral
+
+entity "Vehicle" as E_Vehicle
+entity "ParkingSpace" as E_ParkingSpace
+entity "Ticket" as E_Ticket
+entity "Parking Session" as E_Session
+entity "Quick Rate" as E_QuickRate
+
+ACT_Operator -- B_Menu
+ACT_Operator -- B_Console
+B_Console -- C_Identify : registers vehicle entry
+C_Identify -- E_Vehicle
+C_Identify -- C_Check
+C_Check -- E_ParkingSpace
+C_Check -- C_Occupy
+C_Occupy -- E_ParkingSpace
+C_Occupy -- C_Issue
+C_Issue -- E_Ticket
+C_Issue -- E_Session
+C_Issue -- E_QuickRate
+C_Issue -- B_Receipt
+C_Check -- C_FullMessage : FA-01 no parking space available
+C_FullMessage -- B_Console : FA-01 return to console
+@enduml

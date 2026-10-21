@@ -1,0 +1,47 @@
+@startuml
+/' English-edition adaptation: Copyright 2026 kingle.zhuang. See NOTICE for upstream attribution. '/
+' MC-07 - Design class model for CU-07 Register incident
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+skinparam shadowing false
+
+class Requester {
+  -name : String
+  -email : String
+  +isAuthorizedFor(category : Category) : Boolean
+}
+
+class Category {
+  -name : String
+  -code : String
+  +exists() : Boolean
+  +currentAgreement() : ServiceAgreement
+}
+
+class ServiceAgreement {
+  -deadlineHours : Integer
+  -effectiveFrom : Date
+  +isCurrent() : Boolean
+  +isla() : Boolean
+  +deadlineHours() : Integer
+}
+
+class Incident {
+  -description : String
+  -registrationDate : Date
+  -dueDate : Date
+  +register(requester : Requester, category : Category, dueDate : Date) : Incident
+  +identifier() : String
+  +exportAudit(format : String) : String
+}
+
+class DeadlinePolicy <<solucion>> {
+  +calculateDueDate(agreement : ServiceAgreement) : Date
+}
+
+Requester "1" -- "0..*" Incident
+Incident "0..*" -- "1" Category
+Category "1" -- "1" ServiceAgreement
+Requester "1" -- "0..*" Category
+DeadlinePolicy "1" ..> "1" ServiceAgreement
+@enduml

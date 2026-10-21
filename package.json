@@ -1,0 +1,48 @@
+{
+  "name": "mkl-uml",
+  "version": "1.0.0",
+  "description": "Install eight MKL UML skills for Codex or Claude Code.",
+  "type": "module",
+  "bin": {
+    "mkl-uml": "bin/mkl-uml.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "author": {
+    "name": "kingle.zhuang",
+    "email": "kinglezhuang@vip.qq.com"
+  },
+  "license": "Apache-2.0",
+  "homepage": "https://github.com/kinglez/mkl-uml#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kinglez/mkl-uml.git"
+  },
+  "bugs": {
+    "url": "https://github.com/kinglez/mkl-uml/issues"
+  },
+  "keywords": [
+    "mkl",
+    "uml",
+    "plantuml",
+    "agent-skills",
+    "codex",
+    "claude-code"
+  ],
+  "files": [
+    "bin/*.mjs",
+    "tools/*.py",
+    "skills/*/SKILL.md",
+    "skills/*/README.md",
+    "skills/*/agents/*.yaml",
+    "skills/*/assets/*",
+    "skills/*/scripts/*.py",
+    "skills/*/references/*.md",
+    "skills/*/tests/examples/**/*.puml",
+    "skills/*/tests/examples/**/*.md",
+    "docs/*.md",
+    "LICENSE",
+    "NOTICE"
+  ]
+}

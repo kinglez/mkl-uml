@@ -1,0 +1,16 @@
+@startuml
+/' English-edition adaptation: Copyright 2026 kingle.zhuang. See NOTICE for upstream attribution. '/
+left to right direction
+skinparam linetype ortho
+skinparam shadowing false
+
+actor "Veterinarian" as ACT_Veterinario
+
+rectangle "Veterinary Clinic Management System" {
+  usecase "Register vaccination" as CU_RegistrarVacunacion
+  usecase "View clinical history" as CU_ConsultarHistorial
+}
+
+ACT_Veterinario -- CU_RegistrarVacunacion
+ACT_Veterinario -- CU_ConsultarHistorial
+@enduml

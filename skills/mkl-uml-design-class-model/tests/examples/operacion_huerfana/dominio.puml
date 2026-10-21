@@ -1,0 +1,37 @@
+@startuml
+/' English-edition adaptation: Copyright 2026 kingle.zhuang. See NOTICE for upstream attribution. '/
+skinparam linetype ortho
+skinparam classAttributeIconSize 0
+hide methods
+hide empty members
+
+class Member {
+  name
+  identityDocument
+}
+
+class Work {
+  title
+  author
+}
+
+class Copy {
+  callNumber
+  status
+}
+
+class Loan {
+  startDate
+  dueDate
+}
+
+class Penalty {
+  reason
+  endDate
+}
+
+Member -- Loan : makes
+Loan -- Copy : applies to
+Copy -- Work : is copy of
+Member -- Penalty : accumulates
+@enduml

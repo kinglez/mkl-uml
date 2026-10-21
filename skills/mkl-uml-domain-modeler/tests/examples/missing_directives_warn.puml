@@ -1,0 +1,12 @@
+@startuml
+/' English-edition adaptation: Copyright 2026 kingle.zhuang. See NOTICE for upstream attribution. '/
+class Borrower {
+  name
+}
+
+class Loan {
+  startDate
+}
+
+Borrower -- Loan : undertakes
+@enduml

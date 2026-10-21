@@ -1,0 +1,20 @@
+@startuml
+/' English-edition adaptation: Copyright 2026 kingle.zhuang. See NOTICE for upstream attribution. '/
+left to right direction
+skinparam linetype ortho
+skinparam shadowing false
+
+actor "Customer" as ACT_Customer
+boundary "Page" as B_Pagina
+boundary "ReservationServlet JSP" as B_Servlet
+boundary "Confirm Button" as B_Boton
+control "Show" as C_Show
+control "Page of Results" as C_PaginaResultados
+entity "Reservation" as E_Reservation
+
+ACT_Customer -- B_Pagina
+B_Pagina -- C_Show
+C_Show -- E_Reservation
+B_Servlet -- C_PaginaResultados
+B_Boton -- C_Show
+@enduml

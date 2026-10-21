@@ -1,0 +1,36 @@
+@startuml
+/' English-edition adaptation: Copyright 2026 kingle.zhuang. See NOTICE for upstream attribution. '/
+skinparam linetype ortho
+skinparam classAttributeIconSize 0
+hide methods
+hide empty members
+
+class Borrower {
+  name
+  address
+}
+
+class Copy {
+  shelfMark
+  state
+}
+
+class Work {
+  title
+  author
+}
+
+class Loan {
+  startDate
+  returnDate
+}
+
+class Branch {
+  designation
+}
+
+Borrower -- Loan : undertakes
+Loan -- Copy : concerns
+Copy -- Work : is a copy of
+Copy -- Branch : is held at
+@enduml

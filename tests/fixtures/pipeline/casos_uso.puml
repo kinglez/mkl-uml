@@ -1,0 +1,12 @@
+@startuml
+/' mkl fixture. Copyright 2026 kingle.zhuang. '/
+left to right direction
+skinparam linetype ortho
+skinparam packageStyle rectangle
+skinparam shadowing false
+actor "Requester" as ACT_Requester
+rectangle "Incident service" {
+  usecase "Register incident" as CU_07
+}
+ACT_Requester -- CU_07
+@enduml

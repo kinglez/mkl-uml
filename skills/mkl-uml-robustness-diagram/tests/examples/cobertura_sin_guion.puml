@@ -1,0 +1,23 @@
+@startuml
+/' English-edition adaptation: Copyright 2026 kingle.zhuang. See NOTICE for upstream attribution. '/
+left to right direction
+skinparam linetype ortho
+skinparam shadowing false
+actor "Administrator" as ACT_Admin
+boundary "Author Form" as B_Form
+control "Validate data" as C_Validar
+control "Show blank fields message" as C_MsgVacios #LightCoral
+control "Show duplicate author message" as C_MsgDup #LightCoral
+entity "Author" as E_Author
+ACT_Admin -- B_Form
+B_Form -- C_Validar
+C_Validar -- E_Author
+C_Validar -- C_MsgVacios : FA1 blank fields
+C_Validar -- C_MsgDup : FA2 duplicate author
+note as T
+ALTERNATIVE FLOWS:
+FA1 Incomplete data.
+FA2 Author already registered.
+FA3 Storage error.
+end note
+@enduml

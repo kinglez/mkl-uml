@@ -1,0 +1,19 @@
+@startuml
+/' English-edition adaptation: Copyright 2026 kingle.zhuang. See NOTICE for upstream attribution. '/
+left to right direction
+skinparam linetype ortho
+skinparam shadowing false
+
+actor "Customer" as ACT_Customer
+boundary "Reservation Page" as B_PaginaReservation
+control "Check session" as C_VerificarSesion
+control "Record reservation" as C_RegistrarReservation
+entity "Customer Session" as E_SesionCustomer
+entity "Reservation" as E_Reservation
+
+ACT_Customer -- B_PaginaReservation
+B_PaginaReservation -- C_VerificarSesion : confirm
+C_VerificarSesion -- E_SesionCustomer
+C_VerificarSesion -- C_RegistrarReservation
+C_RegistrarReservation -- E_Reservation
+@enduml

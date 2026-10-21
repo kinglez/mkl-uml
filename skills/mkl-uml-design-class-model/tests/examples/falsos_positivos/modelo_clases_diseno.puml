@@ -1,0 +1,36 @@
+@startuml
+/' English-edition adaptation: Copyright 2026 kingle.zhuang. See NOTICE for upstream attribution. '/
+' Extended after the audit: Fowler syntax (default/multiplicity/static)
+' and reversed/directional inheritance arrows must produce no findings.
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+skinparam shadowing false
+
+class Patient {
+  -name : String
+  -identityDocument : String [1]
+  +checkActiveStatus() : Boolean
+}
+
+class Therapy {
+  -designation : String
+  -duration : Integer = 30
+  +{static} standardDuration() : Integer
+}
+
+class Session {
+  {static} -date : Date
+  +schedule(p : Patient, t : Therapy, date : Date) : Session
+}
+
+class GroupSession {
+}
+
+class GroupTherapy {
+}
+
+Patient "1" -- "0..*" Session
+Session "0..*" -- "1" Therapy
+GroupSession --|> Session
+GroupTherapy -up-|> Therapy
+@enduml

@@ -1,0 +1,45 @@
+@startuml
+/' English-edition adaptation: Copyright 2026 kingle.zhuang. See NOTICE for upstream attribution. '/
+title UML use case diagram - IoT Monitoring System
+
+left to right direction
+skinparam linetype ortho
+skinparam packageStyle rectangle
+skinparam shadowing false
+
+actor Operator
+actor "Sensor device" as Sensor
+actor "Notification service" as ServicioNotificacion
+
+rectangle "IoT Monitoring System" {
+  package "Data acquisition" {
+    usecase "Synchronize device" as CU_SincronizarDispositivo
+    usecase "Receive measurements" as CU_RecibirMediciones
+  }
+
+  package "Monitoring" {
+    usecase "Monitor condition" as CU_MonitorearCondicion
+    usecase "View history" as CU_ConsultarHistorial
+    usecase "Evaluate thresholds" as CU_EvaluarUmbrales
+  }
+
+  package "Alerts" {
+    usecase "Configure thresholdes" as CU_ConfigurarUmbrales
+    usecase "Issue alert" as CU_EmitirAlerta
+  }
+}
+
+Operator --> CU_MonitorearCondicion
+Operator --> CU_ConfigurarUmbrales
+Operator --> CU_ConsultarHistorial
+
+Sensor --> CU_SincronizarDispositivo
+Sensor --> CU_RecibirMediciones
+
+CU_MonitorearCondicion ..> CU_RecibirMediciones : <<include>>
+CU_MonitorearCondicion ..> CU_EvaluarUmbrales : <<include>>
+CU_EmitirAlerta ..> CU_MonitorearCondicion : <<extend>>
+
+ServicioNotificacion --> CU_EmitirAlerta
+
+@enduml

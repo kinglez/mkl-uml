@@ -1,0 +1,9 @@
+@startuml
+/' English-edition adaptation: Copyright 2026 kingle.zhuang. See NOTICE for upstream attribution. '/
+class Customer
+class Reservation
+class Room
+class Payment
+Customer -- Reservation : places
+Reservation -- Room : includes
+@enduml

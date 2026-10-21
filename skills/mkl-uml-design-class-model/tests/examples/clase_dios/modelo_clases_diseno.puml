@@ -1,0 +1,73 @@
+@startuml
+/' English-edition adaptation: Copyright 2026 kingle.zhuang. See NOTICE for upstream attribution. '/
+' MC-04 - Design class model for CU-04 Manage loan
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+skinparam shadowing false
+
+class Member {
+  -name : String
+  -identityDocument : String
+  +checkActivePenalty() : Boolean
+}
+
+class Work {
+  -title : String
+  -author : String
+  +basePeriod() : Integer
+}
+
+class Copy {
+  -callNumber : String
+  -status : String
+  +checkAvailability() : Boolean
+  +markLoaned() : void
+  +basePeriod() : Integer
+}
+
+abstract class Loan {
+  -startDate : Date
+  -dueDate : Date
+  +register(member : Member, copy : Copy, dueDate : Date) : Loan
+  +generateReceipt() : String
+  +action1() : void
+  +action2() : void
+  +action3() : void
+  +action4() : void
+  +action5() : void
+  +action6() : void
+  +action7() : void
+  +action8() : void
+  +action9() : void
+  +action10() : void
+  +action11() : void
+  +action12() : void
+  +action13() : void
+}
+
+class BookLoan {
+  +generateReceipt() : String
+}
+
+class AudiovisualLoan {
+  +generateReceipt() : String
+}
+
+class Penalty {
+  -reason : String
+  -endDate : Date
+  +checkActiveStatus() : Boolean
+}
+
+class LoanPolicy <<solution>> {
+  +calculateDueDate(copy : Copy) : Date
+}
+
+Member "1" -- "0..*" Loan
+Loan "1" -- "1" Copy
+Copy "0..*" -- "1" Work
+Member "1" -- "0..*" Penalty
+Loan <|-- BookLoan
+Loan <|-- AudiovisualLoan
+LoanPolicy ..> Copy
+@enduml

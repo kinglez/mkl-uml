@@ -1,0 +1,26 @@
+@startuml
+/' English-edition adaptation: Copyright 2026 kingle.zhuang. See NOTICE for upstream attribution. '/
+left to right direction
+skinparam linetype ortho
+skinparam shadowing false
+
+actor "Customer" as ACT_Customer
+boundary "Main Screen" as B_Principal
+control "Orchestrate everything" as C_Dios
+control "Step A" as C_A
+control "Step B" as C_B
+control "Step C" as C_C
+entity "Order" as E_Order
+entity "Customer" as E_Customer
+entity "Payment" as E_Payment
+
+ACT_Customer -- B_Principal
+B_Principal --> C_Dios
+C_Dios --> C_A
+C_Dios --> C_B
+C_Dios --> C_C
+C_Dios -- E_Order
+C_Dios -- E_Customer
+C_Dios -- E_Payment
+C_A -- E_Order
+@enduml

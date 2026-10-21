@@ -1,0 +1,13 @@
+# English-edition adaptation: Copyright 2026 kingle.zhuang. See NOTICE for upstream attribution.
+interface:
+  display_name: "MKL UML Robustness Diagram"
+  short_description: "Create and audit MKL boundary/control/entity diagrams"
+  icon_small: "assets/icon.svg"
+  icon_large: "assets/icon.svg"
+policy:
+  products:
+    - "chatgpt"
+    - "codex"
+    - "api"
+    - "atlas"
+  allow_implicit_invocation: true

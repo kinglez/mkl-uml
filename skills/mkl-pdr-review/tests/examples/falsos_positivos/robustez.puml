@@ -1,0 +1,40 @@
+@startuml
+/' English-edition adaptation: Copyright 2026 kingle.zhuang. See NOTICE for upstream attribution. '/
+' False positive resistance fixture. EVERYTHING here is correct and the
+' validator should remain silent. Each element reproduces a pattern that already
+' produced a false positive in some validator of this package:
+'   - "Main Menu": contains "menu", but is a legitimate screen
+'   - "Reservation Page": contains "page", but has its own specific name
+'   - "Show consent form": begins with a verb, is correct
+'   - "Register request": does not contain any design pattern terms
+' And the diagram labels the flow as FA-01 while the text calls it FA1:
+' The normalization of flow identifiers must make them coincide.
+left to right direction
+skinparam linetype ortho
+skinparam shadowing false
+
+actor "Requester" as ACT_Solicitante
+
+boundary "Main Menu" as B_Menu
+boundary "Reservation Page" as B_PaginaReserva
+boundary "Request Certificate" as B_Comprobante
+
+control "Show consent form" as C_MostrarFormulario
+control "Verify available capacity" as C_VerificarCupo
+control "Register request" as C_RegistrarSolicitud
+control "Show message 'No capacity'" as C_MsgSinCupo #LightCoral
+
+entity "Request" as E_Solicitud
+entity "Capacity" as E_Cupo
+
+ACT_Solicitante -- B_Menu
+B_Menu -- C_MostrarFormulario : open the reservation page
+C_MostrarFormulario -- B_PaginaReserva
+B_PaginaReserva -- C_VerificarCupo : send request and verify capacity
+C_VerificarCupo -- E_Cupo
+C_VerificarCupo -- C_RegistrarSolicitud
+C_RegistrarSolicitud -- E_Solicitud
+C_RegistrarSolicitud -- B_Comprobante
+C_VerificarCupo -- C_MsgSinCupo : FA-01 no capacity is available
+C_MsgSinCupo -- B_PaginaReserva : FA-01 returns to the Reservation Page
+@enduml

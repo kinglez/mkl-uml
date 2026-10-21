@@ -1,0 +1,29 @@
+@startuml
+/' English-edition adaptation: Copyright 2026 kingle.zhuang. See NOTICE for upstream attribution. '/
+' DS-01 - Sequence for CU-01 Register vehicle entry
+skinparam style strictuml
+skinparam shadowing false
+skinparam responseMessageBelowArrow true
+
+actor "Operator" as ACT_Operator
+boundary "Entry Console" as B_Console
+boundary "Entry Receipt" as B_Receipt
+entity "Vehicle" as E_Vehicle
+entity "ParkingSpace" as E_ParkingSpace
+entity "Ticket" as E_Ticket
+
+ACT_Operator -> B_Console : register vehicle entry
+B_Console -> B_Console : read vehicle license plate
+B_Console -> B_Console : find available parking space
+B_Console -> B_Console : check whether any space is available
+B_Console -> B_Console : occupy selected parking space
+B_Console -> B_Console : calculate ticket number
+B_Console -> E_Vehicle : read data
+B_Console -> E_ParkingSpace : read status
+B_Console -> E_Ticket : save
+B_Console -> B_Receipt : present receipt
+
+alt FA-01 no parking space available
+  B_Console -> B_Console : display message 'Parking lot full'
+end
+@enduml

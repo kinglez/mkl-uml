@@ -1,0 +1,29 @@
+@startuml
+/' English-edition adaptation: Copyright 2026 kingle.zhuang. See NOTICE for upstream attribution. '/
+' DR-07 - Robustness diagram for CU-07 Register incident
+skinparam style strictuml
+skinparam shadowing false
+
+actor "Requester" as ACT_Sol
+boundary "Incident Form" as B_Form
+control "Verify Authorization" as C_Autorizacion
+control "Resolve Agreement" as C_Acuerdo
+control "Calculate Due Date" as C_Vencimiento
+control "Register Incident" as C_Registro
+entity "Requester" as E_Sol
+entity "Category" as E_Cat
+entity "ServiceAgreement" as E_Acu
+entity "Incident" as E_Inc
+
+ACT_Sol -- B_Form
+B_Form -- C_Autorizacion
+C_Autorizacion -- E_Sol
+C_Autorizacion -- E_Cat
+B_Form -- C_Acuerdo
+C_Acuerdo -- E_Cat
+C_Acuerdo -- E_Acu
+B_Form -- C_Vencimiento
+C_Vencimiento -- E_Acu
+B_Form -- C_Registro
+C_Registro -- E_Inc
+@enduml

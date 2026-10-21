@@ -1,0 +1,42 @@
+{
+  "name": "mkl-uml",
+  "owner": {
+    "name": "mkl",
+    "email": "kinglezhuang@vip.qq.com"
+  },
+  "metadata": {
+    "description": "MKL UML skill suite by kingle.zhuang, organization mkl, copyright 2026.",
+    "version": "1.0.0"
+  },
+  "plugins": [
+    {
+      "name": "mkl-uml",
+      "description": "The complete eight-skill MKL design pipeline in professional English.",
+      "source": "./",
+      "strict": false,
+      "version": "1.0.0",
+      "author": {
+        "name": "kingle.zhuang",
+        "email": "kinglezhuang@vip.qq.com"
+      },
+      "license": "Apache-2.0",
+      "keywords": [
+        "mkl",
+        "uml",
+        "plantuml",
+        "software-design",
+        "requirements-engineering"
+      ],
+      "skills": [
+        "./skills/mkl-uml-domain-modeler",
+        "./skills/mkl-uml-use-case-diagram",
+        "./skills/mkl-use-case-specifier",
+        "./skills/mkl-uml-robustness-diagram",
+        "./skills/mkl-pdr-review",
+        "./skills/mkl-uml-sequence-diagram",
+        "./skills/mkl-uml-design-class-model",
+        "./skills/mkl-cdr-review"
+      ]
+    }
+  ]
+}

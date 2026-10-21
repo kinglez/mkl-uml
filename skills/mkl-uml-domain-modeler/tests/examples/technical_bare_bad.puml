@@ -1,0 +1,17 @@
+@startuml
+/' English-edition adaptation: Copyright 2026 kingle.zhuang. See NOTICE for upstream attribution. '/
+skinparam linetype ortho
+skinparam classAttributeIconSize 0
+hide methods
+hide empty members
+
+class System
+class Screen
+
+class Borrower {
+  name
+}
+
+Borrower -- System : depends on
+System -- Screen : is presented in
+@enduml
