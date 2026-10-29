@@ -2,7 +2,7 @@
 
 The package contains eight independent skills and a local Claude Code marketplace. Select the method supported by the host. UI metadata does not supply a runtime integration or tool authorization.
 
-The local remediation candidate is **1.0.1**. GitHub installation commands read the published repository, which receives these corrections only after the candidate is committed and published. To verify this candidate now, install from this checkout or its `mkl-uml-1.0.1.tgz` tarball into an explicit temporary destination. See [release notes](RELEASE_NOTES.md).
+Version **1.0.1** is available from the published Git tag [`v1.0.1`](https://github.com/kinglez/mkl-uml/tree/v1.0.1). The standard Skills CLI commands use the current repository; the bundled GitHub commands below pin that tagged source. Local checkout and tarball installation are also available. See [release notes](RELEASE_NOTES.md).
 
 The commands below are executable instructions, not a record of installation into your account. Run the Skills CLI from your target project; repository tools require a local checkout. `path/to/...` arguments are placeholders. The validation record identifies checks performed in temporary directories.
 
@@ -32,11 +32,11 @@ Requires Node.js 20+ with npm/npx and Python 3.9+. Git is also required for the 
 
 ### From GitHub
 
-Run from any directory. These commands pin the source to the existing release tag `v1.0.0`, which predates the 1.0.1 corrections. Use this checkout for candidate verification; update the pinned tag only after the new release has actually been published:
+Run from any directory. These commands pin the source to `v1.0.1`:
 
 ```bash
-npx --yes --allow-git=all --package "git+https://github.com/kinglez/mkl-uml.git#v1.0.0" mkl-uml install --agent codex
-npx --yes --allow-git=all --package "git+https://github.com/kinglez/mkl-uml.git#v1.0.0" mkl-uml install --agent claude-code
+npx --yes --allow-git=all --package "git+https://github.com/kinglez/mkl-uml.git#v1.0.1" mkl-uml install --agent codex
+npx --yes --allow-git=all --package "git+https://github.com/kinglez/mkl-uml.git#v1.0.1" mkl-uml install --agent claude-code
 ```
 
 The command-scoped `--allow-git=all` option permits this Git dependency with npm 12, which otherwise reports `EALLOWGIT`. npm 11 and earlier can omit that option. It does not change global npm configuration. See [npm package specifications](https://docs.npmjs.com/cli/using-npm/package-spec/) and [npm configuration](https://docs.npmjs.com/cli/using-npm/config/).

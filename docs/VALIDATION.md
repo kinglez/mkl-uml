@@ -1,7 +1,7 @@
 <!-- Copyright 2026 kingle.zhuang. Organization: mkl. -->
 # Validation record
 
-Validation date: **2026-10-29**. Candidate: **1.0.1**, based on source commit `f6f21221ef950371700e0db5860f3e94e077bc07` plus the reviewed local remediation changes. This record does not claim a published tag or successful remote CI for those uncommitted changes.
+Validation date: **2026-10-29**. Version **1.0.1** was verified locally before publication, then committed as [`83e1f6b`](https://github.com/kinglez/mkl-uml/commit/83e1f6b29161de8882d1b9176c8f4d0c4a6cef1b) and tagged [`v1.0.1`](https://github.com/kinglez/mkl-uml/tree/v1.0.1). The remediation baseline was `f6f21221ef950371700e0db5860f3e94e077bc07`.
 
 Local environment: macOS, Python 3.14.7 and 3.9.6, Node.js 26.1.0, npm 12.0.2, PlantUML 1.2026.7 / Graphviz 15.1.1, Claude Code 2.1.270. Author: kingle.zhuang, organization mkl.
 
@@ -21,7 +21,7 @@ Local environment: macOS, Python 3.14.7 and 3.9.6, Node.js 26.1.0, npm 12.0.2, P
 | npm installation | The full suite packs a real tarball and installs it with offline npm exec into a temporary destination; existing targets and unsafe names remain protected |
 | Independent review | Separate runtime and reference/distribution reviews accepted the corrections within their declared scopes; review findings were corrected and reverified |
 
-CI configuration runs assertions and smoke checks on Linux/Windows. No fresh hosted run was triggered for this local candidate; local results do not establish current remote-platform results.
+The tagged repair commit also passed the actual [GitHub Actions run](https://github.com/kinglez/mkl-uml/actions/runs/40868349510): assertion suites and all eight validator smoke jobs on Linux/Windows, plus the structure check. This hosted result applies to that commit; later documentation changes have their own run.
 
 ## Corrected contracts
 

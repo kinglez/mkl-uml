@@ -1,10 +1,10 @@
 # Release notes
 
-## 1.0.1 — local remediation candidate, 2026-10-29
+## 1.0.1 — 2026-10-29
 
-This candidate addresses the commercial-readiness audit of 2026-10-29. The npm package and Claude marketplace metadata identify the same version. A local build or a passing test does not publish a GitHub tag, update an existing installation or complete marketplace review.
+Tagged source: [`v1.0.1`](https://github.com/kinglez/mkl-uml/tree/v1.0.1), commit [`83e1f6b`](https://github.com/kinglez/mkl-uml/commit/83e1f6b29161de8882d1b9176c8f4d0c4a6cef1b). This version addresses the commercial-readiness audit of 2026-10-29. The npm package and Claude marketplace metadata identify the same version. Publishing the source tag does not publish to the npm registry, update an existing installation or complete marketplace review.
 
-The intended scope is evidence-aware PDR/CDR checks, annotation filtering, use-case-scoped flow coverage, complete sequence-fragment parsing, accurate accessor and parameter checks, input/output protection and faithful supported header conversion. Supporting guidance and positive examples are corrected alongside the executable regressions. See [the operating contract](OPERATING_CONTRACT.md) and [third-party source dispositions](THIRD_PARTY_SOURCES.md).
+The changes cover evidence-aware PDR/CDR checks, annotation filtering, use-case-scoped flow coverage, complete sequence-fragment parsing, accurate accessor and parameter checks, input/output protection and faithful supported header conversion. Supporting guidance and positive examples are corrected alongside the executable regressions. See [the operating contract](OPERATING_CONTRACT.md) and [third-party source dispositions](THIRD_PARTY_SOURCES.md).
 
 Validate the final candidate from a temporary installation before publication. Retain the source commit, working-tree patch or file hashes, test logs and archive hashes with the release. Create a tag only from the reviewed final commit, and build/upload artifacts from that commit. Published installations pinned to `v1.0.0` continue to refer to that older content.
 

@@ -17,7 +17,7 @@ Requirements:
 - RF-02: The due date is calculated from that Category's current ServiceAgreement.
 - RF-03: A requester not authorized for the category must be rejected.
 - RNF-01: Deadline policy can change independently of the Incident.
-An Incident has a description, registration date and due date.
+An Incident has a description, registration date, due date and business reference.
 Save these requirements to uml/requirements.md and the model to uml/domain.puml.
 Explain assumptions and unresolved multiplicities. Keep implementation classes
 out of this conceptual view.
@@ -46,7 +46,7 @@ Read uml/requirements.md, uml/domain.puml and uml/use-cases.puml.
 Specify CU-07 Register incident in uml/register-incident.md.
 The requester is already authenticated. The system checks the category,
 checks authorization, obtains the current agreement, calculates the due date,
-registers the incident and returns its identifier.
+registers the incident and returns its identifier and due date.
 Include a basic flow, FA-01 unauthorized requester, FA-02 unknown category,
 preconditions, postconditions and acceptance criteria. Both rejection paths
 terminate without creating an incident. Preserve CU-07 and map RF-01 to RF-03.
