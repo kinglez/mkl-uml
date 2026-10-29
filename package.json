@@ -1,6 +1,6 @@
 {
   "name": "mkl-uml",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Install eight MKL UML skills for Codex or Claude Code.",
   "type": "module",
   "bin": {

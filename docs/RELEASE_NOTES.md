@@ -1,5 +1,11 @@
 # Release notes
 
+## 1.0.2 — 2026-10-29
+
+Tagged source: [`v1.0.2`](https://github.com/kinglez/mkl-uml/tree/v1.0.2). This documentation release includes the GitHub homepage workflow diagram, problem statements, usage steps, stage artifact tree and linked CU-07 examples. Installation commands and package/plugin metadata identify the same version.
+
+The modeling instructions and runtime validators retain the v1.0.1 implementation. Publishing this source tag does not publish an npm registry package or imply marketplace approval.
+
 ## 1.0.1 — 2026-10-29
 
 Tagged source: [`v1.0.1`](https://github.com/kinglez/mkl-uml/tree/v1.0.1), commit [`83e1f6b`](https://github.com/kinglez/mkl-uml/commit/83e1f6b29161de8882d1b9176c8f4d0c4a6cef1b). This version addresses the commercial-readiness audit of 2026-10-29. The npm package and Claude marketplace metadata identify the same version. Publishing the source tag does not publish to the npm registry, update an existing installation or complete marketplace review.
