@@ -26,15 +26,16 @@ class ServiceAgreement {
 }
 
 class Incident {
+  -referenceNumber : String
   -description : String
   -registrationDate : Date
   -dueDate : Date
-  +register(requester : Requester, category : Category, dueDate : Date) : Incident
+  +register(description : String, requester : Requester, category : Category, registrationDate : Date, dueDate : Date) : Incident
   +identifier() : String
 }
 
 class DeadlinePolicy <<solution>> {
-  +calculateDueDate(agreement : ServiceAgreement) : Date
+  +calculateDueDate(agreement : ServiceAgreement, registrationDate : Date) : Date
 }
 
 Requester "1" -- "0..*" Incident

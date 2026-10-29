@@ -92,6 +92,7 @@ class NpxInstallation(unittest.TestCase):
         else:
             npm_command = [str(npm)]
         result = subprocess.run([*npm_command, 'pack', '--ignore-scripts', '--json',
+                                 '--cache', str(self.directory/'npm-cache'),
                                  '--pack-destination', str(self.directory)], cwd=ROOT,
                                 capture_output=True, text=True, timeout=45)
         self.assertEqual(result.returncode, 0, result.stdout+result.stderr)

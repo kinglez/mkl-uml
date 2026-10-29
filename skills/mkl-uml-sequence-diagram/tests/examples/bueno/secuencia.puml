@@ -16,17 +16,28 @@ entity "Ticket" as E_Ticket
 
 ACT_Operator -> B_Console : register vehicle entry
 B_Console -> E_Vehicle : identify by license plate
-E_Vehicle -> E_ParkingSpace : request available parking space
+E_Vehicle -> E_Vehicle : check no open entry ticket
 
-== Allocation ==
+alt FA-02 vehicle already has an open entry ticket
+  E_Vehicle --> B_Console : existing open ticket
+  B_Console -> ACT_Operator : display existing entry ticket; entry rejected
+else vehicle may enter
+  E_Vehicle -> E_ParkingSpace : request available parking space
 
-alt FA-01 no parking space available
-  E_ParkingSpace --> B_Console : unavailable
-  B_Console -> B_Console : display message 'Parking lot full'
-else basic course
-  E_ParkingSpace -> E_ParkingSpace : occupy with vehicle
-  E_ParkingSpace -> E_Ticket : issue entry ticket
-  E_Ticket --> B_Console : ticket issued
-  B_Console -> B_Receipt : present receipt
+  == Allocation ==
+
+  alt FA-01 no parking space available
+    E_ParkingSpace --> E_Vehicle : unavailable
+    E_Vehicle --> B_Console : unavailable
+    B_Console -> ACT_Operator : display message 'Parking lot full'; return to entry console
+  else basic course
+    E_ParkingSpace -> E_ParkingSpace : occupy with vehicle
+    E_ParkingSpace -> E_Ticket : issue entry ticket
+    E_Ticket --> E_ParkingSpace : ticket issued
+    E_ParkingSpace --> E_Vehicle : assigned parking space and ticket
+    E_Vehicle --> B_Console : vehicle entry ticket
+    B_Console -> B_Receipt : present receipt
+    B_Receipt -> ACT_Operator : display entry receipt with ticket and parking space
+  end
 end
 @enduml

@@ -143,6 +143,32 @@ class DistributionTests(unittest.TestCase):
             self.assertEqual(second["package-docs/docs/OPERATING_CONTRACT.md"], b"# Contract version 2\n")
             self.assertIn(b"package-docs/docs/OPERATING_CONTRACT.md", second["README.md"])
 
+    def test_source_inventory_and_release_notes_travel_with_offline_installs(self):
+        # An offline reader must receive the source disposition linked by a skill.
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            skill = root / "skills" / "safe-name"
+            skill.mkdir(parents=True)
+            (skill / "SKILL.md").write_bytes(b"# safe-name\n")
+            (skill / "README.md").write_bytes(
+                b"[sources](../../docs/THIRD_PARTY_SOURCES.md)\n"
+                b"[release](../../docs/RELEASE_NOTES.md)\n")
+            for name in ("LICENSE", "NOTICE"):
+                (root / name).write_bytes(b"notice\n")
+            (root / "docs").mkdir()
+            for name, content in (("THIRD_PARTY_SOURCES.md", b"# Source dispositions\n"),
+                                  ("RELEASE_NOTES.md", b"# Local release candidate\n")):
+                (root / "docs" / name).write_bytes(content)
+            payload = skill_payload.build_payload("safe-name", root=root)
+            self.assertIn("package-docs/docs/THIRD_PARTY_SOURCES.md", payload)
+            self.assertIn("package-docs/docs/RELEASE_NOTES.md", payload)
+            self.assertEqual(payload["package-docs/docs/THIRD_PARTY_SOURCES.md"],
+                             b"# Source dispositions\n")
+            self.assertEqual(payload["package-docs/docs/RELEASE_NOTES.md"],
+                             b"# Local release candidate\n")
+            self.assertIn(b"package-docs/docs/THIRD_PARTY_SOURCES.md", payload["README.md"])
+            self.assertIn(b"package-docs/docs/RELEASE_NOTES.md", payload["README.md"])
+
     def test_cli_requires_destination_and_rejects_existing_target(self):
         script = ROOT / "tools" / "install_skills.py"
         result = subprocess.run([sys.executable, str(script), SKILL], capture_output=True, text=True)

@@ -1262,7 +1262,7 @@
       ],
       "exit_code": 1,
       "contains": [
-        "the flow FA-02 is specified but does not appear in no sequence diagram"
+        "CU-07 flow FA-02 is specified but does not appear in an executable branch of its sequence diagrams"
       ]
     },
     {

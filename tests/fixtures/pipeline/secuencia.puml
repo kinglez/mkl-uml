@@ -14,20 +14,29 @@ entity "Incident" as E_Incident
 participant "DeadlinePolicy" as S_Policy
 
 ACT_Requester -> B_Form : describe the problem
+note right of B_Form
+  Design decision supporting RNF-01 / CP-05:
+  capture registrationDate once from the server clock.
+  Use that same value for due-date calculation and incident registration.
+  CU-07 / CA-01 / CP-06: identifier() exposes the Incident's business referenceNumber.
+end note
 B_Form -> E_Category : exists()
 alt FA-02 category does not exist
   E_Category --> B_Form : unknown category
+  B_Form --> ACT_Requester : report unknown category; no incident registered
 else valid category
   B_Form -> E_Requester : isAuthorizedFor(category)
   alt FA-01 requester is not authorized
     E_Requester --> B_Form : reason for rejection
+    B_Form --> ACT_Requester : report authorization rejection; no incident registered
   else authorized requester
     B_Form -> E_Category : currentAgreement()
     E_Category -> E_Agreement : isCurrent()
-    B_Form -> S_Policy : calculateDueDate(agreement)
+    B_Form -> S_Policy : calculateDueDate(agreement, registrationDate)
     S_Policy -> E_Agreement : deadlineHours()
-    B_Form -> E_Incident : register(requester, category, dueDate)
+    B_Form -> E_Incident : register(description, requester, category, registrationDate, dueDate)
     B_Form -> E_Incident : identifier()
+    B_Form --> ACT_Requester : show incident identifier and dueDate
   end
 end
 @enduml

@@ -6,7 +6,7 @@
   },
   "metadata": {
     "description": "MKL UML skill suite by kingle.zhuang, organization mkl, copyright 2026.",
-    "version": "1.0.0"
+    "version": "1.0.1"
   },
   "plugins": [
     {
@@ -14,7 +14,7 @@
       "description": "The complete eight-skill MKL design pipeline in professional English.",
       "source": "./",
       "strict": false,
-      "version": "1.0.0",
+      "version": "1.0.1",
       "author": {
         "name": "kingle.zhuang",
         "email": "kinglezhuang@vip.qq.com"

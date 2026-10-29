@@ -25,7 +25,7 @@ The Requester chooses to register an incident.
 3. The system obtains the current ServiceAgreement for that Category.
 4. The system calculates the due date by applying the deadline in the agreement.
 5. The system registers the Incident with its description and its due date.
-6. The system shows the Requester the Incident identifier.
+6. The system shows the Requester the Incident identifier and due date.
 
 ## Alternative flows
 

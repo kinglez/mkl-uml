@@ -11,6 +11,8 @@ boundary "Entry Console" as B_Console
 boundary "Entry Receipt" as B_Receipt
 
 control "Identify vehicle by license plate" as C_Identify
+control "Check no open entry ticket" as C_CheckTicket
+control "Reject duplicate vehicle entry" as C_RejectTicket #LightCoral
 control "Check parking space availability" as C_Check
 control "Occupy parking space" as C_Occupy
 control "Issue ticket" as C_Issue
@@ -23,7 +25,11 @@ entity "Ticket" as E_Ticket
 ACT_Operator -- B_Console
 B_Console -- C_Identify : registers vehicle entry
 C_Identify -- E_Vehicle
-C_Identify -- C_Check
+C_Identify -- C_CheckTicket
+C_CheckTicket -- E_Vehicle
+C_CheckTicket -- C_Check
+C_CheckTicket -- C_RejectTicket : FA-02 existing open ticket
+C_RejectTicket -- B_Console : FA-02 report rejection
 C_Check -- E_ParkingSpace
 C_Check -- C_Occupy
 C_Occupy -- E_ParkingSpace

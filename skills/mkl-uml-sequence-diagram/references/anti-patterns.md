@@ -13,7 +13,7 @@ Three entries are **named by the source** (solved exercises 8-1, 8-2, 8-3); the 
 
 **Symptom.** Decisions, loops, and algorithm steps dominate, but most messages begin and end on the same participant. Little collaboration; the actor often disappears after the first message.
 
-**Why it matters.** *"the sequence diagram is being used as a flowchart, instead of for its primary purpose in life"*. Flowcharts do not allocate behavior to classes, the purpose of this artifact. Fowler: *"Treat sequence diagrams as a visualization of how objects interact rather than as a way of modeling control logic."*
+**Why it matters.** Algorithm detail can obscure the collaboration and responsibility decisions this artifact is meant to explain (Rosenberg & Stephens, chapter 8; Fowler, chapter 4).
 
 **Correction.** Ask **which class should be responsible** for each step and redraw collaboration. If nearly everything belongs to one class, consider #3.
 
@@ -31,9 +31,9 @@ Three entries are **named by the source** (solved exercises 8-1, 8-2, 8-3); the 
 
 ### 3. Missing *Plumbing*
 
-**Symptom.** Unexplained results and missing persistence, external-service, or session participants create *"leaps of logic"*.
+**Symptom.** Significant results have no modeled collaboration or declared contract explaining how they occur.
 
-**Why it matters.** *"it's probable that a part of the design has been missed"*. Undesigned, unestimated work emerges during implementation.
+**Why it matters.** An unexplained integration or persistence effect leaves implementation work and assumptions unresolved.
 
 **Correction.** Add missing infrastructure. Detailed design **does** allow architecture/storage objects; omission conceals rather than simplifies.
 
@@ -49,7 +49,7 @@ Three entries are **named by the source** (solved exercises 8-1, 8-2, 8-3); the 
 
 **Symptom.** One lifeline sends nearly all messages while others only return data.
 
-**Why it matters.** Fowler favors distributed processing: *"One of the main goals of good design is to localize the effects of change"*; *"by distributing control, you create more opportunities for using polymorphism rather than using conditional logic"*.
+**Why it matters.** Excessive central processing can make one participant depend on many collaborators' internal state. Inspect whether delegation would localize change and preserve invariants (Fowler, chapter 4).
 
 **Correction.** For each dominant-participant message, ask whether the target can own that work; move what can move.
 
@@ -63,7 +63,7 @@ Three entries are **named by the source** (solved exercises 8-1, 8-2, 8-3); the 
 
 **Why it matters.** Accumulated #4/#2 defects separate data from behavior and turn object-oriented design into functional decomposition.
 
-**Early source warning:** a framework *"might tempt you to litter your design with dozens of tiny 'controller classes'"*. An `XController` and `XService` per entity follows that path.
+**Review prompt:** repeated controller/service pairs for each Entity may reflect framework scaffolding rather than a deliberate distribution of domain responsibility. Confirm the actual contract before treating that pattern as defective.
 
 **Correction.** Return state-dependent operations to each Entity: self-validation, derived-value calculation, invariant decisions.
 
@@ -83,7 +83,7 @@ Three entries are **named by the source** (solved exercises 8-1, 8-2, 8-3); the 
 
 **Symptom.** A participant requests an object, asks it for another, then operates on that third object.
 
-**Why it matters.** The sender depends on others' internal object structure, violating “talk only to immediate neighbors.”
+**Why it matters.** The sender depends on others' internal object structure, which may expose unnecessary structural coupling. This needs semantic review, not a graph-only conclusion.
 
 **Correction.** Request a service rather than an object; let the neighbor perform or delegate it.
 
@@ -175,9 +175,9 @@ Three entries are **named by the source** (solved exercises 8-1, 8-2, 8-3); the 
 
 **Symptom.** Every synchronous call has a dashed return even when its value is unused.
 
-**Why it matters.** All sources omit unnecessary returns. Rosenberg notes values can pass as arguments; Fowler: *"otherwise, they simply clutter things"*. Twice the arrows does not mean twice the information.
+**Why it matters.** Repeated uninformative replies obscure the outputs and decisions that matter to the selected interaction.
 
-**Correction.** Keep returns for later-used values, asynchronous results, and error branches.
+**Correction.** Keep meaningful synchronous replies addressed to their original caller. Model asynchronous completion as a separate callback call or Signal with its own semantics. Follow [notation-rules.md](notation-rules.md) for message-sort classification.
 
 **Recipient:** this skill.
 
@@ -185,7 +185,7 @@ Three entries are **named by the source** (solved exercises 8-1, 8-2, 8-3); the 
 
 **Symptom.** Unrequested `activate`/`deactivate` commands.
 
-**Why it matters.** Course material requires omission; Rosenberg prefers it. **Presence is not an error**, merely *"a matter of personal taste"*. Warn only when unrequested.
+**Why it matters.** This profile omits unrequested activation detail for readability. Presence alone is a style choice; structural balance remains independently checkable.
 
 **Correction.** Remove or explicitly declare the choice.
 
@@ -207,7 +207,7 @@ Three entries are **named by the source** (solved exercises 8-1, 8-2, 8-3); the 
 
 **Symptom.** Three or more levels, such as `alt` inside `opt` inside `loop`.
 
-**Why it matters.** Fowler calls frames *"very heavy, obscuring the main point of the diagram"*. Nesting multiplies execution paths and prevents readable, manual verification.
+**Why it matters.** Nested branches multiply review paths and can make the selected collaboration difficult to inspect. Depth is a local warning heuristic, not proof that the behavior is wrong.
 
 **Correction.** Usually **split the use case**, rather than shrink the diagram.
 
@@ -217,7 +217,7 @@ Three entries are **named by the source** (solved exercises 8-1, 8-2, 8-3); the 
 
 **Symptom.** Dozens of participants/messages, unreadable in one view.
 
-**Why it matters.** Sequence diagrams *"are densely packed with information, which can make them as difficult to read as to draw"*. Beyond a certain size they cease to help.
+**Why it matters.** When participants and messages cannot be read together, reviewers lose the relationships needed to assess responsibility and outcomes.
 
 **Correction.** Split the use case; never shrink the font.
 

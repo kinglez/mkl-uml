@@ -25,7 +25,7 @@ The chapter itself states that its description of the inspection is based on Fag
 
 ### Rosenberg, Stephens & Collins-Cope — *Agile Development [abbreviated title]*
 
-It provides two concrete things: the **four milestones** of the process (1657-1663), which place the PDR as Milestone 2; and the BCE→MVC mapping (1761): *"Entity objects are delivered by the Model, Boundary objects form the View, and Control objects form the Controller"*, which is what makes the optional architecture layer usable.
+It provides two concrete things: the **four milestones** of the process (1657-1663), which place the PDR as Milestone 2; and the BCE→MVC mapping (1761), relating domain state, interaction interfaces and coordinating behavior to architectural roles. This informs the optional architecture layer.
 
 **Caveat stated:** the book contains a client review meeting section in its case study, but it is **not labeled PDR** in the text. It is used as an example of a review in an iterative context, not as a description of the PDR.
 
@@ -67,7 +67,7 @@ Primary text read. §5.2.5 and §5.2.6 (characteristics of individual requiremen
 
 ## What could NOT be verified — explicit flags
 
-These four warnings are as much a part of the rationale as the quotes. Omitting them would make the rest less reliable, not more.
+These four warnings are as much a part of the rationale as the source attributions. Omitting them would make the rest less reliable, not more.
 
 **1. ISO/IEC/IEEE 12207:2017 §6.4.5 "Design Definition" — VERIFIED (correction).** A previous version of this file marked it as secondary because it could not be confirmed. **It was an error**: the primary text is in the corpus itself, in `libros_y_normas_markdown/ISO_IEC_12207_2017_en.md`, line 2863. §6.4.5.2 h) and §6.4.5.3 (traceability between design elements, requirements and architecture), §6.4.9 (Verification) and §6.3.6, which literally states the seven criteria of the information item, are also verified. The failure came from trying to confirm them on the web—where they are behind a paywall—and generalizing that failure without looking at the repository. It is left in writing because **excessive caution can also misrepresent the evidence**: marking a solid quote as dubious is as misleading as inventing it.
 
@@ -99,9 +99,9 @@ That is to say: the frontier that the PDR monitors—use cases versus object mod
 
 **Inspection effectiveness.** Fagan's original data (82% of errors found by design and code inspections in a product) is verified through an SEI technical report that reproduces it — **second-hand quote, stated**. The original 1976 article is behind a paywall and was not read.
 
-**Faster inspection rates reduce detection.** Russell, *"Experience with Inspection in Ultralarge-Scale Developments"*, IEEE Software, January 1991, pp. 25-31: defects found per thousand lines fell from 50 to 15 by tripling the inspection rate (from 150 to 450 lines/hour). **SECONDARY EVIDENCE** — read reproduced in the SEI technical report itself, not in the original article. This is the figure supporting the session budget notice in `review-protocol.md`; It is cited with author and venue precisely because a figure without origin should not be in an artifact that promises traceability. Wiegers points in the same direction from the corpus, without giving the figure: *"the optimum rate for maximum defect-detection effectiveness is about half that rate"*, citing Gilb and Graham.
+**Faster inspection rates reduce detection.** Russell, *"Experience with Inspection in Ultralarge-Scale Developments"*, IEEE Software, January 1991, pp. 25-31: defects found per thousand lines fell from 50 to 15 by tripling the inspection rate (from 150 to 450 lines/hour). **SECONDARY EVIDENCE** — read reproduced in the SEI technical report itself, not in the original article. This is the figure supporting the session budget notice in `review-protocol.md`; It is cited with author and venue precisely because a figure without origin should not be in an artifact that promises traceability. Wiegers also discusses slower preparation as a way to improve detection in its requirements-review context, citing Gilb and Graham. That observation does not establish an optimum rate for this tool.
 
-**Caveat on Wiegers' page/hour figure.** His "two to four pages per hour" is stated for inspection of **requirements documents**, not design documents, and his book does not segment by document type as IEEE 1028 does. The match to IEEE 1028's 3-4 for preliminary design is of the same order but **is not matched by artifact type**; The number that governs this skill is IEEE 1028.
+**Planning-rate limits.** Wiegers' inherited rate concerns requirements documents rather than preliminary design. Similar numerical ranges do not establish equivalent artifacts or a universal capacity. The inherited IEEE 1028 rate is planning context; the operating contract's evidence and confirmed findings govern disposition.
 
 **The meeting controversy.** There is a line of work that questions whether the inspection meeting provides value over individual preparation. It is mentioned here so as not to conclude something that is not settled: this skill automates the preparation—where the evidence is solid—and leaves the form of the meeting up to the user's decision.
 
@@ -110,9 +110,9 @@ That is to say: the frontier that the PDR monitors—use cases versus object mod
 ## How to combine
 
 - **Rosenberg** provides the specific PDR checklist: the ten guidelines and the six steps. It's the **what**.
-- **IEEE 1028** provides the procedure, entry and exit criteria, review rates, and three-state verdict model. It's the **how**.
-- **Wiegers** provides the roles, stages and efficiency numbers that justify automating preparation. It's **why it works**.
-- **IEEE 1016 and 29148** provide the regulatory bridge and quality vocabulary.
-- **Empirical research** justifies the form of the tool—checklist, verification between artifacts—and honestly locates what is known and what is not.
+- **IEEE 1028** informs the adapted procedure, entry/exit criteria and disposition vocabulary. Historical review rates support planning, not automatic acceptance.
+- **Wiegers** informs review roles, preparation and fatigue considerations; those observations do not prove this tool's effectiveness.
+- **IEEE 1016 and 29148** provide design/requirements standards context and quality vocabulary.
+- **Empirical research** motivates checklist and cross-artifact checks within the cited study limits; it does not establish a universal performance guarantee.
 - **Agile Development (2005)** provides the BCE→layers mapping that makes the optional architecture review usable.
 - **Fowler** does not contribute anything here, as explicitly recorded.

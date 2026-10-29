@@ -2,6 +2,8 @@
 
 The package contains eight independent skills and a local Claude Code marketplace. Select the method supported by the host. UI metadata does not supply a runtime integration or tool authorization.
 
+The local remediation candidate is **1.0.1**. GitHub installation commands read the published repository, which receives these corrections only after the candidate is committed and published. To verify this candidate now, install from this checkout or its `mkl-uml-1.0.1.tgz` tarball into an explicit temporary destination. See [release notes](RELEASE_NOTES.md).
+
 The commands below are executable instructions, not a record of installation into your account. Run the Skills CLI from your target project; repository tools require a local checkout. `path/to/...` arguments are placeholders. The validation record identifies checks performed in temporary directories.
 
 ## Recommended: Skills CLI
@@ -30,7 +32,7 @@ Requires Node.js 20+ with npm/npx and Python 3.9+. Git is also required for the 
 
 ### From GitHub
 
-Run from any directory. These commands pin the source to release tag `v1.0.0`:
+Run from any directory. These commands pin the source to the existing release tag `v1.0.0`, which predates the 1.0.1 corrections. Use this checkout for candidate verification; update the pinned tag only after the new release has actually been published:
 
 ```bash
 npx --yes --allow-git=all --package "git+https://github.com/kinglez/mkl-uml.git#v1.0.0" mkl-uml install --agent codex
@@ -70,7 +72,7 @@ On macOS/Linux, these executable commands create a tarball and install from it:
 ```bash
 mkdir -p dist
 npm pack --ignore-scripts --pack-destination dist
-npx --yes --package ./dist/mkl-uml-1.0.0.tgz mkl-uml install --agent codex
+npx --yes --package ./dist/mkl-uml-1.0.1.tgz mkl-uml install --agent codex
 ```
 
 The tarball includes the CLI, Python helpers, eight skills, supporting documentation, LICENSE and NOTICE. It can be moved to another machine; run npx with its actual local path. This is separate from the per-skill `.skill` archives. npm registry installation becomes available only after a separate registry publication.

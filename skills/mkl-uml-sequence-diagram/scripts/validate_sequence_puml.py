@@ -208,8 +208,8 @@ def leer(path: str) -> str:
     try:
         with open(path, "r", encoding="utf-8") as fh:
             return fh.read()
-    except FileNotFoundError:
-        print(f"File not found: {path}", file=sys.stderr)
+    except (OSError, UnicodeError) as exc:
+        print(f"Cannot read input {path}: {exc}", file=sys.stderr)
         raise SystemExit(2)
 
 
@@ -321,10 +321,16 @@ def parse_secuencia(path: str, text: str) -> Secuencia:
                 if mauto.group("estado").lower() == "on":
                     s.autoactivate = True
                     s.usa_activaciones = True
+                items.append(("auto", mauto.group("estado").lower(), n))
                 i += 1
                 continue
             if FRAG_CIERRA.match(ln) or FRAG_ELSE.match(ln):
-                return items, i
+                if prof:
+                    return items, i
+                # Invalid top-level separators are diagnosed independently; do
+                # not let them truncate parsing of the remaining executable input.
+                i += 1
+                continue
             ma = FRAG_ABRE.match(ln)
             if ma:
                 kind = ma.group("kind").lower()
@@ -396,7 +402,9 @@ def parse_secuencia(path: str, text: str) -> Secuencia:
             i += 1
         return items, i
 
-    s.arbol, _ = parsear(0, 0)
+    s.arbol, consumidas = parsear(0, 0)
+    if consumidas != len(lineas):
+        raise ValueError("internal parser failed to consume the sequence")
     return s
 
 
@@ -482,7 +490,7 @@ def check_estructura(s: Secuencia, errores: list, avisos: list) -> None:
         errores.append(f"{tag} the sequence diagram has no declared participants")
     if not s.mensajes:
         errores.append(f"{tag} the sequence diagram has no usable messages")
-    abiertos = 0
+    abiertos = []
     en_nota = False
     for ln_i, crudo in enumerate(lineas, 1):
         ln = crudo.strip()
@@ -497,15 +505,19 @@ def check_estructura(s: Secuencia, errores: list, avisos: list) -> None:
         if NOTA_ABRE.match(ln):
             en_nota = True
             continue
-        if FRAG_ABRE.match(ln):
-            abiertos += 1
+        ma = FRAG_ABRE.match(ln)
+        if ma:
+            abiertos.append(ma.group("kind").lower())
+        elif FRAG_ELSE.match(ln):
+            if not abiertos or abiertos[-1] not in ("alt", "par"):
+                errores.append(f"{tag} L{ln_i}: 'else' requires an open alt or par fragment")
         elif FRAG_CIERRA.match(ln):
-            abiertos -= 1
-            if abiertos < 0:
+            if abiertos:
+                abiertos.pop()
+            else:
                 errores.append(f"{tag} L{ln_i}: 'end' without an open fragment")
-                abiertos = 0
-    if abiertos > 0:
-        errores.append(f"{tag} {abiertos} fragment(s) remain unclosed by 'end'")
+    if abiertos:
+        errores.append(f"{tag} {len(abiertos)} fragment(s) remain unclosed by 'end'")
 
     for kind, guarda, n, prof in s.fragmentos:
         if kind == "else":
@@ -576,21 +588,20 @@ def check_activaciones(s: Secuencia, errores: list, avisos: list, pidio_activaci
             f"is a matter of taste rather than an error."
         )
     if s.autoactivate:
-        # PlantUML manages autoactivate on; there are no manual pairs to balance.
-        # Declare that per-path balance does not apply rather than pretending
-        # it was checked.
         avisos.append(
-            f"{tag} the diagram uses 'autoactivate on': PlantUML manages activations, "
-            f"so per-path balance is NOT checked (there are no manual "
-            f"pairs to become unbalanced)."
+            f"{tag} the diagram uses 'autoactivate on': PlantUML manages automatic "
+            f"regions; per-path balance is checked for explicit manual activations "
+            f"while autoactivation is off."
         )
-        return
     caminos = enumerar_caminos(s.arbol)
     problemas = set()
     for camino in caminos:
-        pila = {}
+        pila, modo_auto = {}, False
         for it in camino:
-            if it[0] != "act":
+            if it[0] == "auto":
+                modo_auto = it[1] == "on"
+                continue
+            if it[0] != "act" or modo_auto:
                 continue
             _, op, quien, n = it
             if op == "activate":
@@ -623,7 +634,8 @@ def check_retornos(s: Secuencia, avisos: list) -> None:
         avisos.append(
             f"{tag} {len(ret)} of {len(s.mensajes)} messages are returns ({prop:.0%}). "
             f"Sources agree on omission unless useful: a consumed value, "
-            f"asynchronous return, or error branch."
+            f"a meaningful synchronous reply, or an error branch. Model an asynchronous "
+            f"callback as its own call or Signal."
         )
 
 

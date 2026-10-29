@@ -4,11 +4,8 @@
 # Modification notice: preserve typed create declarations and separate Signal receptions.
 """Critical Design Review Validator (CDR, MKL, step 8).
 
-Automates the PREPARATION of the technical review, which is where the evidence
-shows most defects are found: Wiegers documents that up to 75% of
-defects are found there. It does not replace the review or issue the verdict:
-The verdict is determined by the decision maker (IEEE 1028 §5.2.1), who is the
-user.
+Automates preparation checks for a technical review. The user determines the
+review disposition; automated coverage does not replace human inspection.
 
 Usage:
     python validate_cdr.py --clases model_design_classes.puml \\
@@ -47,21 +44,19 @@ from dataclasses import dataclass, field
 # --------------------------------------------------------------------------
 # NUMBERS: each one with its origin. See references/metrics-and-triage.md.
 #
-# REGULATIONS - IEEE 1028 §6.5.2, inspection review rate table:
+# Historical planning assumptions inherited from upstream's IEEE 1028 citation.
+# These are not current normative requirements or acceptance thresholds.
 PPH_DISENO_DETALLADO = (3, 4)      # pages/hour
 PPH_PLAN_PRUEBAS = (5, 7)
 PPH_CODIGO = 100                   # pages/hour (or 200 lines/hour)
 
-# MEASURES - GQM, RITME case (van Solingen & Berghout):
-TASA_BASE_HALLAZGOS = 0.4          # expected findings/page in design
-PAGINAS_RECOMENDADO = 20           # above, performance drops
-PAGINAS_INSERVIBLE = 50            # above, the review stops working
+# Historical session-size assumptions; calibrate to the actual review team.
+PAGINAS_RECOMENDADO = 20
+PAGINAS_INSERVIBLE = 50
 
 # CONVENTION OF THIS SKILL, declared as such:
 LINEAS_POR_PAGINA = 40             # equivalence .puml -> page. None
                                    # source defines it; one is needed.
-MIN_PAGINAS_AUTOCHEQUEO = 10       # below, zero findings is normal
-FRACCION_SOSPECHA = 0.25           # < 1/4 of the base rate -> dubious review
 MAX_OPERACIONES = 12               # God class candidate. Warning only.
 MAX_ATRIBUTOS = 12
 # THERE IS NO cyclomatic complexity threshold in the corpus, and ISO 25023
@@ -116,10 +111,13 @@ CLASE_RE = re.compile(
 _MOD = r'(?:\{[^}]*\}\s*)?'
 _TIPO = r'[\w<>\[\]\., ]+?'
 _COLA = r'(?:\s*\[[^\]]*\])?(?:\s*=\s*[^{}\n]+?)?(?:\s*\{[^}]*\})?'
+_COLA_ATRIB = (r'(?:\s*\[(?P<multiplicidad>[^\]]+)\])?'
+               r'(?:\s*=\s*[^{}\n]+?)?(?:\s*\{[^}]*\})?')
 ATRIB_RE = re.compile(
     rf'^\s*{_MOD}(?P<vis>[+\-#~])?\s*{_MOD}'
+    rf'(?P<derivado>/)?\s*'
     rf'(?P<nombre>[A-Za-zÁÉÍÓÚÑáéíóúñ_][\wÁÉÍÓÚÑáéíóúñ]*)'
-    rf'\s*(?::\s*(?P<tipo>{_TIPO}))?{_COLA}\s*$'
+    rf'\s*(?::\s*(?P<tipo>{_TIPO}))?{_COLA_ATRIB}\s*$'
 )
 OPER_RE = re.compile(
     rf'^\s*{_MOD}(?P<vis>[+\-#~])?\s*{_MOD}'
@@ -154,7 +152,7 @@ DECL_SEC_RE = re.compile(
     re.IGNORECASE | re.MULTILINE,
 )
 FRAGMENTO_RE = re.compile(
-    r'^\s*(?P<kw>alt|opt|loop|par|break|critical|group)\b(?P<etiqueta>.*)$',
+    r'^\s*(?P<kw>alt|else|opt|loop|par|break|critical|group)\b(?P<etiqueta>.*)$',
     re.IGNORECASE | re.MULTILINE,
 )
 NOTA_ABRE = re.compile(
@@ -247,6 +245,33 @@ def pruebas_de(texto: str) -> set:
     return {f"CP-{int(m.group(1)):02d}" for m in CP_RE.finditer(texto or "")}
 
 
+def texto_documento(texto: str) -> str:
+    """Exclude closed/unclosed Markdown HTML comments from supporting evidence."""
+    return re.sub(r"<!--.*?(?:-->|$)",
+                  lambda m: "\n" * m.group(0).count("\n"), texto or "", flags=re.S)
+
+
+def identidad_cu(texto: str) -> set:
+    """Read artifact identity from its heading/title/metadata, not body references."""
+    limpio = codigo_modelo(texto, conservar_comentarios=True)
+    cabeceras, comentarios = [], []
+    for linea in limpio.splitlines():
+        ln = linea.strip()
+        if re.match(r"^(?:#{1,6}\s|title\b|@startuml\b|\*\*(?:ID|Use case|Caso de uso)\b)", ln, re.I):
+            cabeceras.append(ln)
+        elif ln.startswith("'"):
+            comentarios.append(ln)
+    return casos_de("\n".join(cabeceras)) or casos_de("\n".join(comentarios))
+
+
+def especificacion_util(texto: str) -> bool:
+    """A CU identity and at least one actual prose/table step are indispensable."""
+    limpio = texto_documento(texto)
+    return bool(identidad_cu(limpio) and re.search(
+        r"^\s*(?:\d+[.)]\s+\S|\|\s*(?:\d+|F[AE][-–—]?\d+[.]\d+)\s*\|\s*[^|]+\|\s*\S)",
+        limpio, re.M | re.I))
+
+
 # --------------------------------------------------------------------------
 # Data model
 # --------------------------------------------------------------------------
@@ -263,6 +288,8 @@ class Miembro:
     # an abstract one within an abstract class, nor mark the static ones.
     estatico: bool = False
     abstracto: bool = False
+    derivado: bool = False
+    multiplicidad: str = ""
 
 
 @dataclass
@@ -370,6 +397,95 @@ def leer(path: str) -> str:
     except FileNotFoundError:
         print(f"File does not exist: {path}", file=sys.stderr)
         raise SystemExit(2)
+    except (OSError, UnicodeError) as exc:
+        print(f"Cannot read input file: {path}: {exc}", file=sys.stderr)
+        raise SystemExit(2)
+
+
+def codigo_modelo(text: str, conservar_comentarios: bool = False) -> str:
+    """Mask annotation content while preserving source line locations.
+
+    CU metadata in a line comment may identify an artifact, but declarations,
+    operations and branch evidence must come from executable notation.
+    """
+    limpio = sin_comentarios(text)
+    # An unclosed block comments out the rest of the file in PlantUML.
+    abierto = APERTURA_BLOQUE_RE.search(limpio)
+    if abierto:
+        limpio = limpio[:abierto.start()] + "\n" * limpio[abierto.start():].count("\n")
+    lineas, anotacion = [], ""
+    for cruda in limpio.splitlines(keepends=True):
+        ln = cruda.strip()
+        ocultar = bool(anotacion)
+        if anotacion:
+            cierre = r"^end\s*legend\b" if anotacion == "legend" else r"^end\s*(?:h|r)?note\b"
+            if re.match(cierre, ln, re.I):
+                anotacion = ""
+        elif re.match(r"^legend\b", ln, re.I):
+            ocultar, anotacion = True, "legend"
+        elif re.match(r"^(?:h|r)?note\b", ln, re.I):
+            ocultar = True
+            # Inline notes and quoted standalone notes occupy a single line.
+            multilinea = not (":" in ENTRECOMILLADO_RE.sub("", ln)
+                              or re.match(r'^(?:h|r)?note\s+"', ln, re.I)
+                              or re.search(r"\bend\s*(?:h|r)?note\b", ln, re.I))
+            anotacion = "note" if multilinea else ""
+        elif ln.startswith("'") and not conservar_comentarios:
+            ocultar = True
+        lineas.append("\n" if ocultar and cruda.endswith("\n") else "" if ocultar else cruda)
+    return "".join(lineas)
+
+
+def separar_nivel(texto: str, separador: str) -> list:
+    """Split signature separators only outside nested types/quoted defaults."""
+    partes, inicio, pila, comilla, escape = [], 0, [], "", False
+    cierres = {"<": ">", "[": "]", "(": ")", "{": "}"}
+    for i, char in enumerate(texto):
+        if comilla:
+            if escape:
+                escape = False
+            elif char == "\\":
+                escape = True
+            elif char == comilla:
+                comilla = ""
+        elif char in ('"', "'"):
+            comilla = char
+        elif char in cierres:
+            pila.append(cierres[char])
+        elif pila and char == pila[-1]:
+            pila.pop()
+        elif char == separador and not pila:
+            partes.append(texto[inicio:i].strip())
+            inicio = i + 1
+    partes.append(texto[inicio:].strip())
+    return partes
+
+
+def parametros_de(texto: str) -> list:
+    """Return (name, type, default) for each UML parameter, without guessing."""
+    out = []
+    for parametro in separar_nivel(texto or "", ","):
+        if not parametro:
+            continue
+        por_defecto = separar_nivel(parametro, "=")
+        firma = separar_nivel(por_defecto[0], ":")
+        out.append((firma[0], ":".join(firma[1:]).strip(),
+                    "=".join(por_defecto[1:]).strip()))
+    return out
+
+
+def limites_multiplicidad(texto: str):
+    """Return integer lower/upper bounds (None = unbounded), or unsupported."""
+    if texto == "*":
+        return 0, None
+    m = re.fullmatch(r"(\d+)(?:\s*\.\.\s*(\d+|\*))?", texto)
+    if not m:
+        return None
+    minimo = int(m.group(1))
+    maximo = m.group(2) or m.group(1)
+    if maximo == "*":
+        return minimo, None
+    return (minimo, int(maximo)) if int(maximo) >= minimo else None
 
 
 def cuerpo_de_clase(text: str, desde: int):
@@ -391,6 +507,8 @@ def cuerpo_de_clase(text: str, desde: int):
 
 def parse_clases(path: str, text: str) -> Modelo:
     m = Modelo(path=path, text=text)
+    text = codigo_modelo(text)
+    alias = {}
     for mc in CLASE_RE.finditer(text):
         nombre = mc.group("q") or mc.group("n") or ""
         linea = text[: mc.start()].count("\n") + 1
@@ -428,12 +546,15 @@ def parse_clases(path: str, text: str) -> Modelo:
                 c.atributos.append(Miembro(
                     nombre=ma.group("nombre"), visibilidad=ma.group("vis") or "",
                     linea=n_linea, tipo=(ma.group("tipo") or "").strip(),
-                    estatico=est, abstracto=abst))
+                    estatico=est, abstracto=abst, derivado=bool(ma.group("derivado")),
+                    multiplicidad=(ma.group("multiplicidad") or "").strip()))
                 continue
             # What could not be interpreted is RECORDED: a limb lost in
             # Silence falsifies all the counts that depend on it.
             c.no_parseadas.append((n_linea, ln))
         m.clases[clave(nombre)] = c
+        if mc.group("alias"):
+            alias[mc.group("alias")] = nombre
 
     texto_rel = DIRECCION_RE.sub("-", text)
     for mr in REL_RE.finditer(texto_rel):
@@ -442,11 +563,15 @@ def parse_clases(path: str, text: str) -> Modelo:
             continue
         izq = mr.group("izq").strip('"')
         der = mr.group("der").strip('"')
+        izq, der = alias.get(izq, izq), alias.get(der, der)
         if izq.lower() in ("startuml", "enduml") or der.lower() in ("startuml", "enduml"):
             continue
-        mult = bool((mr.group("mizq") or "").strip() or (mr.group("mder") or "").strip())
+        mizq = (mr.group("mizq") or "").strip().strip('"')
+        mder = (mr.group("mder") or "").strip().strip('"')
         m.relaciones.append({
-            "izq": izq, "der": der, "conn": conn, "multiplicidad": mult,
+            "izq": izq, "der": der, "conn": conn,
+            "multiplicidad": bool(mizq and mder),
+            "multiplicidad_izq": mizq, "multiplicidad_der": mder,
             # The label distinguishes two associations to the same type
             # (`: facturacion` vs. `: envio`). Without saving it, the
             # generator deduplicated them into one and lost a field.
@@ -501,7 +626,7 @@ def etiqueta_de_llamada(mm, creaciones: set) -> tuple[str, bool]:
 
 def parse_secuencia(path: str, text: str) -> Secuencia:
     s = Secuencia(path=path, text=text)
-    text = sin_comentarios(text)
+    text = codigo_modelo(text)
     alias = {}
     for md in DECL_SEC_RE.finditer(text):
         etiqueta = md.group("label") or md.group("bare") or ""
@@ -562,6 +687,7 @@ def parse_secuencia(path: str, text: str) -> Secuencia:
 
 def parse_dominio(text: str) -> dict:
     out = {}
+    text = codigo_modelo(text)
     for mc in CLASE_RE.finditer(text):
         nombre = mc.group("q") or mc.group("n") or ""
         cuerpo, _ = cuerpo_de_clase(text, mc.end())
@@ -649,7 +775,7 @@ def parse_controladores(text: str) -> list:
     """Controllers of a robustness diagram: the verification unit
     that rule #1 establishes ('test cases for the controllers')."""
     out = []
-    for md in DECL_SEC_RE.finditer(text):
+    for md in DECL_SEC_RE.finditer(codigo_modelo(text)):
         if (md.group("kind") or "").lower() != "control":
             continue
         out.append(md.group("label") or md.group("bare") or "")
@@ -683,20 +809,19 @@ def check_criterio_entrada(mod, secuencias, specs, errores, avisos) -> bool:
     if vacias:
         errores.append(
             f"ENTRY CRITERIA: {len(vacias)} sequence diagram(s) without "
-            f"no message ({', '.join(vacias)}). The source requires having them "
-            f"complete before convening the CDR: \"Having to update the "
-            f"diagrams during the review would be too much of a distraction\". "
-            f"Reviewing without them produces a record that looks like a review and not "
-            f"lo es.")
+            f"messages ({', '.join(vacias)}). Complete their interactions "
+            f"before reviewing message coverage and operation allocation.")
         falla = True
 
     # Each CU mentioned in the specifications should have sequence.
     cus_spec = set()
     for t in specs:
-        cus_spec |= casos_de(t)
+        # Release-scope declarations may name additional CUs in prose even
+        # though local FA/FE IDs belong only to the artifact's own heading CU.
+        cus_spec |= casos_de(texto_documento(t))
     cus_seq = set()
     for s in secuencias:
-        cus_seq |= casos_de(s.text)
+        cus_seq |= identidad_cu(s.text)
     if cus_spec and cus_seq:
         sin_secuencia = sorted(cus_spec - cus_seq)
         if sin_secuencia:
@@ -714,24 +839,42 @@ def check_criterio_entrada(mod, secuencias, specs, errores, avisos) -> bool:
 
 
 def check_r9_flujos(secuencias, specs, errores) -> int:
-    """Rule #9: Every FA-XX/FE-XX has a fragment in the sequence."""
-    declarados = set()
-    for t in specs:
-        declarados |= flujos_de(t)
-    if not declarados:
-        return 0
-    cubiertos = set()
+    """Compare (CU, local flow) identities using executable branch labels only."""
+    por_cu = {}
     for s in secuencias:
-        cubiertos |= flujos_de(s.text)
+        cus = identidad_cu(s.text)
+        if len(cus) != 1:
+            errores.append(
+                f"RULE #9: [{s.path}] has no unambiguous CU identity; "
+                f"cannot pair its local flow evidence with a specification.")
+            continue
+        cubiertos = por_cu.setdefault(next(iter(cus)), set())
         for _kw, etiqueta, _n in s.fragmentos:
             cubiertos |= flujos_de(etiqueta)
-    faltan = sorted(declarados - cubiertos)
-    for f in faltan:
+    faltan, declarados_cu = set(), set()
+    for i, texto in enumerate(specs, start=1):
+        cus = identidad_cu(texto)
+        if len(cus) != 1:
+            errores.append(
+                f"RULE #9: specification {i} has no unambiguous CU identity; "
+                f"cannot scope its local flow identifiers.")
+            continue
+        cu = next(iter(cus))
+        if cu in declarados_cu:
+            errores.append(
+                f"RULE #9: {cu} has multiple supplied specifications; pairing "
+                f"is ambiguous. Supply one authoritative specification per CU.")
+        declarados_cu.add(cu)
+        for flujo in flujos_de(texto) - por_cu.get(cu, set()):
+            faltan.add((cu, flujo))
+    for cu, flujo in sorted(faltan):
         errores.append(
-            f"RULE #9: the flow {f} is specified but does not appear in "
-            f"no sequence diagram. The source warns: \"Don't make "
-            f"the mistake of saying YAGNI about those pesky rainy-day "
-            f"scenarios.\"")
+            f"RULE #9: {cu} flow {flujo} is specified but does not appear in "
+            f"an executable branch of its sequence diagrams.")
+    for cu in sorted(set(por_cu) - declarados_cu):
+        errores.append(
+            f"RULE #9: {cu} sequence has no matching supplied specification; "
+            f"its flow coverage has not been checked.")
     return len(faltan)
 
 
@@ -791,9 +934,8 @@ def check_r8_asignacion(mod, secuencias, errores, avisos) -> int:
                     f"RULE #8 [{mod.path}] L{o.linea}: "
                     f"'{c.nombre}.{o.nombre}()' appears in the diagrams "
                     f"sequence but NOT as a message addressed to '{c.nombre}'. "
-                    f"You may be in the wrong class — it's the defect of the "
-                    f"class that only knows how to add and never take away. Check the "
-                    f"direction of the arrow in the sequence.")
+                    f"You may be in the wrong class. Check responsibility "
+                    f"allocation and the receiving end of the sequence message.")
                 continue
             huerfanas += 1
             errores.append(
@@ -813,10 +955,9 @@ def check_r7_responsabilidades(mod, dominio, hay_dominio, avisos) -> None:
         if c.atributos and not c.operaciones:
             avisos.append(
                 f"RULE #7 {tag} L{c.linea}: '{c.nombre}' has "
-                f"{len(c.atributos)} attribute(s) and NO operation. It is the "
-                f"symptom that the source describes as \"rather impoverished, "
-                f"with no responsibilities\": check if any behavior "
-                f"that corresponds to it ends up in a controller or service.")
+                f"{len(c.atributos)} attribute(s) and NO operation. Check whether "
+                f"behavior belonging to this class has been placed in a controller "
+                f"or service, or whether a data-only role is intentional.")
         if not c.atributos and not c.es_solucion and not c.operaciones:
             avisos.append(
                 f"RULE #7 {tag} L{c.linea}: '{c.nombre}' does not declare attributes "
@@ -845,8 +986,7 @@ def check_envoltorio(mod, avisos) -> None:
     """Wrapper class: X adds to Y, attributes of X are subset of
     those of Y, and the operations of X are all accessors.
 
-    The three criteria come from the figure of the book itself, where the note says
-    that the methods are "wrapper methods around the CustomerReview properties".
+    This is a review heuristic; framework integration may justify the wrapper.
     """
     # The address matters and a previous version ignored it: it built the
     # aggregation as a symmetric relationship, so an object of value
@@ -877,10 +1017,9 @@ def check_envoltorio(mod, avisos) -> None:
                     f"RULE #7 [{mod.path}] L{c.linea}: '{c.nombre}' looks like a "
                     f"WRAPPER CLASS of '{otra.nombre}': its attributes are a "
                     f"subset of those of that one ({', '.join(sorted(comunes))}) "
-                    f"and all its operations are accessories. The source asks "
-                    f"the same in an identical case: \"Is the Command class "
-                    f"really needed?\" It may be justified by the framework; "
-                    f"If it is, declare it <<solution>>.")
+                    f"and all its operations are accessors. Check whether this "
+                    f"wrapper has a separate responsibility. If framework integration "
+                    f"requires it, declare and justify it as <<solution>>.")
 
 
 def check_r3_firmas(mod, avisos) -> None:
@@ -909,7 +1048,7 @@ def check_r3_firmas(mod, avisos) -> None:
                 avisos.append(
                     f"RULE #3 {tag} L{o.linea}: '{c.nombre}.{o.nombre}()' "
                     f"returns vague type '{o.tipo.strip()}'.")
-            if o.params and ":" not in o.params:
+            if any(not tipo for _nombre, tipo, _defecto in parametros_de(o.params)):
                 avisos.append(
                     f"RULE #3 {tag} L{o.linea}: the parameters of "
                     f"'{c.nombre}.{o.nombre}()' is not typed.")
@@ -936,10 +1075,9 @@ def check_abstraccion_inestable(mod, avisos) -> None:
         if hit:
             avisos.append(
                 f"[{mod.path}] L{c.linea}: '{c.nombre}' names a technology "
-                f"('{hit}') and <<solution>> is not marked. They are abstractions "
-                f"unstable: the source recommends basing key abstractions "
-                f"in the problem domain \"because the problem domain winds "
-                f"up being the most stable\". Mark it and justify it.")
+                f"('{hit}') and <<solution>> is not marked. Separate domain "
+                f"responsibilities from implementation choices; mark and justify "
+                f"a technology-specific solution class.")
 
 
 def check_multiplicidades(mod, avisos) -> None:
@@ -951,10 +1089,17 @@ def check_multiplicidades(mod, avisos) -> None:
         avisos.append(
             f"[{mod.path}] {len(sin)} relationship(s) without multiplicity, for "
             f"example '{ejemplo['izq']}' - '{ejemplo['der']}' in L{ejemplo['linea']}. "
-            f"The source places it right at this stage: \"At this stage of the "
-            f"design process, we really should have identified the multiplicity "
-            f"for all these kinds of relationships\". Without it it is not known if a "
-            f"field is a reference or a collection.")
+            f"Declare both association-end bounds so the reviewer can distinguish "
+            f"a single reference, optional reference and collection.")
+    for relacion in mod.relaciones:
+        if any(x in relacion["conn"] for x in ("<|", "|>", "..")):
+            continue
+        for extremo in ("izq", "der"):
+            valor = relacion["multiplicidad_" + extremo]
+            if valor and limites_multiplicidad(valor) is None:
+                avisos.append(
+                    f"[{mod.path}] L{relacion['linea']}: unsupported multiplicity "
+                    f"'{valor}' at '{relacion[extremo]}'; its bounds cannot be verified.")
 
 
 def check_lineas_vida_huerfanas(secuencias, avisos) -> None:
@@ -971,10 +1116,8 @@ def check_lineas_vida_huerfanas(secuencias, avisos) -> None:
             if k not in s.con_mensaje:
                 avisos.append(
                     f"[{s.path}] lifeline '{etiqueta}' does not receive any "
-                    f"message. The source interprets it like this: \"it's likely that "
-                    f"you've discovered a part of the design that hasn't been "
-                    f"thought through in sufficient detail\". Or participate and "
-                    f"Your messages are missing, or too much.")
+                    f"message. Add the missing collaboration or explain why "
+                    f"this participant belongs in the interaction.")
 
 
 def check_r5_trazabilidad(mod, req_texto, specs, avisos) -> dict:
@@ -1046,8 +1189,8 @@ def check_r1_pruebas(controladores, pruebas_texto, secuencias, specs, avisos) ->
         if not (palabras(ctrl) & voc_pruebas):
             avisos.append(
                 f"RULE #1: Controller '{ctrl}' does not appear in the plan "
-                f"evidence. The source sets the unit: cases are generated \"for "
-                f"the controllers on your robustness diagrams\".")
+                f"evidence. Link it to test cases that exercise its "
+                f"responsibility and relevant failure paths.")
     declarados = set()
     for t in specs:
         declarados |= flujos_de(t)
@@ -1081,8 +1224,7 @@ def check_r6_patrones(mod, secuencias, avisos) -> None:
         avisos.append(
             f"RULE #6 [{mod.path}] L{c.linea}: the solution class "
             f"'{c.nombre}' does not appear in any sequence diagram. "
-            f"\"Magic is not permissible on sequence diagrams\": if it is part "
-            f"of the actual design, it has to be seen.")
+            f"Show the collaboration that uses it or remove it from this review scope.")
 
 
 def check_comentario_sin_cerrar(paths_y_textos, avisos) -> None:
@@ -1122,7 +1264,7 @@ def check_no_parseadas(mod, avisos) -> None:
 
 
 # --------------------------------------------------------------------------
-# Budget and self-check
+# Session planning
 # --------------------------------------------------------------------------
 
 def lineas_efectivas(text: str) -> int:
@@ -1154,39 +1296,15 @@ def check_presupuesto(pres, avisos) -> None:
     p = pres["paginas_diseno"]
     if p > PAGINAS_INSERVIBLE:
         avisos.append(
-            f"BUDGET: the design material is equivalent to {p:.1f} pages, for "
-            f"above the {PAGINAS_INSERVIBLE} that the evidence marks as "
-            f"limit — \"Documents with more than 50 pages are unsuitable for "
-            f"reviews\". Part the package by use case: the standard authorizes "
-            f"several sessions.")
+            f"BUDGET: the design material is equivalent to {p:.1f} pages, "
+            f"above the historical {PAGINAS_INSERVIBLE}-page planning assumption. "
+            f"Consider splitting the package into reviewable use-case scopes; "
+            f"calibrate session size with the actual team.")
     elif p > PAGINAS_RECOMENDADO:
         avisos.append(
             f"BUDGET: {p:.1f} equivalent pages, above the "
-            f"{PAGINAS_RECOMENDADO} recommended. Review performance "
-            f"falls with length because reviewers skim. Suggested: "
-            f"{pres['sesiones']} sessions.")
-
-
-def check_autocomprobacion(pres, n_hallazgos, avisos) -> None:
-    """The review judges itself against the measured base rate.
-
-    A happy path without findings carries no sign: a broken tool and a
-    that works produce the same output on correct material.
-    """
-    p = pres["paginas_diseno"]
-    if p < MIN_PAGINAS_AUTOCHEQUEO:
-        return
-    tasa = n_hallazgos / p if p else 0
-    if tasa < TASA_BASE_HALLAZGOS * FRACCION_SOSPECHA:
-        avisos.append(
-            f"REVIEW SELF-TEST: {n_hallazgos} finding(s) about "
-            f"{p:.1f} equivalent pages = {tasa:.2f} per page, very much "
-            f"below the measured base rate of {TASA_BASE_HALLAZGOS} in "
-            f"design documents. Most likely, the design is not "
-            f"impeccable, but this review was superficial. Review the "
-            f"rules that came out clean before signing the minutes. "
-            f"(The cuts in this notice are a convention of this skill; the rate "
-            f"base, no.)")
+            f"{PAGINAS_RECOMENDADO}-page historical session-size assumption. "
+            f"Suggested: {pres['sesiones']} sessions; calibrate with the review team.")
 
 
 # --------------------------------------------------------------------------
@@ -1197,12 +1315,33 @@ def validar(mod, secuencias, specs, robustez, dominio, req_texto,
             pruebas_texto, hay):
     errores, avisos, infos = [], [], []
     capas, degradadas = {}, []
+    specs = [texto_documento(t) for t in specs]
+    req_texto = texto_documento(req_texto)
+    pruebas_texto = texto_documento(pruebas_texto)
+
+    # Paths only prove that an input was supplied. Every artifact must expose
+    # the evidence used by its dependent checks before those checks are complete.
+    suministrados, hay = hay, dict(hay)
+    specs_utiles = [t for t in specs if especificacion_util(t)]
+    robustez_util = [t for t in robustez if parse_controladores(t)]
+    hay.update({
+        "spec": bool(specs_utiles) and len(specs_utiles) == len(specs),
+        "robustez": bool(robustez_util) and len(robustez_util) == len(robustez),
+        "dominio": bool(dominio),
+        "requisitos": bool(requisitos_de(req_texto)),
+        "pruebas": bool(pruebas_de(pruebas_texto)),
+    })
+    for entrada in ("spec", "robustez", "dominio", "requisitos", "pruebas"):
+        if suministrados[entrada] and not hay[entrada]:
+            avisos.append(
+                f"EVIDENCE: --{entrada} contains an empty or unrecognized artifact; "
+                f"dependent checks are not fully verified.")
 
     if check_modelo_vacio(mod, errores):
         capas["empty model"] = "executed"
         return errores, avisos, infos, capas, [], None, {}
 
-    detener = check_criterio_entrada(mod, secuencias, specs, errores, avisos)
+    detener = check_criterio_entrada(mod, secuencias, specs_utiles, errores, avisos)
     capas["entry criteria"] = "executed"
     if detener:
         return errores, avisos, infos, capas, [], None, {"detenido": True}
@@ -1226,20 +1365,24 @@ def validar(mod, secuencias, specs, robustez, dominio, req_texto,
     capas["rule 8 (assignment)"] = "executed"
     capas["rule 6 (real design)"] = "executed"
 
+    faltan9 = check_r9_flujos(secuencias, specs_utiles, errores) if specs_utiles else 0
     if hay["spec"]:
-        faltan9 = check_r9_flujos(secuencias, specs, errores)
         capas["rule 9 (alternative courses)"] = "executed"
         capas["rule 10 (sequence vs text)"] = "executed (partial: the "\
             "faithful pairing is judged by one person)"
     else:
-        faltan9 = 0
         for c in ("rule 9 (alternative courses)", "rule 10 (sequence vs text)"):
-            capas[c] = "NOT EXECUTED - use case specification missing"
+            capas[c] = ("PARTIAL - some supplied specifications have no usable CU behavior"
+                        if specs_utiles else "NOT EXECUTED - use case specification missing or unusable")
             degradadas.append(c)
 
     if hay["requisitos"]:
-        traza = check_r5_trazabilidad(mod, req_texto, specs, avisos)
-        capas["rule 5 (traceability)"] = "executed"
+        traza = check_r5_trazabilidad(mod, req_texto, specs_utiles, avisos)
+        if hay["spec"]:
+            capas["rule 5 (traceability)"] = "executed"
+        else:
+            capas["rule 5 (traceability)"] = "PARTIAL - use case specification missing or unusable"
+            degradadas.append("rule 5 (traceability)")
     else:
         traza = {}
         capas["rule 5 (traceability)"] = "NOT EXECUTED - requirements are missing"
@@ -1247,10 +1390,15 @@ def validar(mod, secuencias, specs, robustez, dominio, req_texto,
 
     if hay["pruebas"]:
         controladores = []
-        for t in robustez:
+        for t in robustez_util:
             controladores += parse_controladores(t)
-        check_r1_pruebas(controladores, pruebas_texto, secuencias, specs, avisos)
-        capas["rule 1 (test plan)"] = "executed"
+        check_r1_pruebas(controladores, pruebas_texto, secuencias, specs_utiles, avisos)
+        if hay["robustez"] and hay["spec"]:
+            capas["rule 1 (test plan)"] = "executed"
+        else:
+            capas["rule 1 (test plan)"] = (
+                "PARTIAL - robustness diagrams or specifications missing or unusable")
+            degradadas.append("rule 1 (test plan)")
     else:
         capas["rule 1 (test plan)"] = "NOT EXECUTED - test plan missing"
         degradadas.append("rule 1 (test plan)")
@@ -1269,7 +1417,6 @@ def validar(mod, secuencias, specs, robustez, dominio, req_texto,
 
     pres = presupuesto(mod, secuencias, pruebas_texto)
     check_presupuesto(pres, avisos)
-    check_autocomprobacion(pres, len(errores) + len(avisos), avisos)
 
     metricas = {"operaciones_sin_mensaje": huerfanas, "flujos_sin_disenar": faltan9,
                 "trazabilidad": traza}
@@ -1339,7 +1486,7 @@ def main(argv=None) -> int:
     # inflated the session budget without contributing anything.
     rutas_sec = list(dict.fromkeys(args.secuencia))
     secuencias = [parse_secuencia(s, leer(s)) for s in rutas_sec]
-    specs = [leer(s) for s in args.spec]
+    specs = [leer(s) for s in dict.fromkeys(args.spec)]
     robustez = [leer(r) for r in args.robustez]
     dom_text = leer(args.dominio) if args.dominio else ""
     dominio = parse_dominio(dom_text) if args.dominio else {}
@@ -1371,9 +1518,9 @@ def main(argv=None) -> int:
               f"pages (convention: {LINEAS_POR_PAGINA} lines/page)")
         if pres["paginas_pruebas"]:
             print(f"  test plan ............ {pres['paginas_pruebas']:.1f} pages")
-        print(f"  applied rate ............. {PPH_DISENO_DETALLADO[0]}-"
-              f"{PPH_DISENO_DETALLADO[1]} page/hour (IEEE 1028 §6.5.2, "
-              f"'Detailed design' row)")
+        print(f"  planning assumption ...... {PPH_DISENO_DETALLADO[0]}-"
+              f"{PPH_DISENO_DETALLADO[1]} page/hour (historical upstream rate; "
+              f"calibrate locally)")
         print(f"  estimate ................. {pres['horas'][0]:.1f} to "
               f"{pres['horas'][1]:.1f} hours")
         print(f"  suggested sessions ......... {pres['sesiones']}")

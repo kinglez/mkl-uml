@@ -26,12 +26,11 @@ The Customer selects "New request" in the Support Portal.
 ## Alternate flows
 | ID | Name | Condition | Outcome |
 |---|---|---|---|
-| FA-01 | Category no longer available | The Category is no longer available | The System requests another Category and returns to step 2. |
+| FA-01 | Category no longer available | At basic-flow step 3, the selected Category is no longer available. | The System requests another Category, returns to step 2 and then rechecks the selection at step 3 before continuing. |
 
 ## Exception flows
-| ID | Error | Outcome |
-|---|---|---|
-| FE-01 | Attachment too large | The System rejects the Attachment and continues without it. |
+
+No exception behavior is specified for this bounded example. Attachments are outside its scope; an attachment exception would require a supported submission/validation step and an explicit continuation or termination.
 
 ## Postconditions
 The Support Request exists with an assigned reference number.

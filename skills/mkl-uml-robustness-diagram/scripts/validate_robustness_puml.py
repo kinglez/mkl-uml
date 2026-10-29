@@ -162,7 +162,30 @@ class Element:
         return self.label or self.alias
 
 
+def model_code(text: str, keep_notes: bool = False) -> str:
+    """Keep note flow labels when requested, but exclude commented models."""
+    text = re.sub(r"^[ \t]*/'[\s\S]*?(?:'/|\Z)",
+                  lambda m: "\n" * m.group().count("\n"), text, flags=re.M)
+    if keep_notes:
+        return text
+    lines, annotation = [], False
+    for raw in text.split("\n"):
+        line = raw.strip()
+        if annotation:
+            lines.append("")
+            if re.match(r"^end\s*(?:[hr]?note|legend)\b", line, re.I):
+                annotation = False
+        elif re.match(r"^(?:[hr]?note|legend)\b", line, re.I):
+            lines.append("")
+            header = re.sub(r'"(?:\\.|[^"\\])*"', "", line)
+            annotation = not (":" in header or re.match(r'^[hr]?note\s+"', line, re.I))
+        else:
+            lines.append("" if line.startswith("'") else raw)
+    return "\n".join(lines)
+
+
 def parse_diagram(text: str):
+    text = model_code(text, keep_notes=True)
     elements: dict[str, Element] = {}
     relations: list[tuple[str, str, str, int, str]] = []  # left, right, label, line, connector
     unparsed: list[tuple[int, str]] = []
@@ -176,7 +199,7 @@ def parse_diagram(text: str):
         # Skip note/legend blocks when parsing relationships, but retain their text
         # for declared-flow coverage checks.
         if in_block:
-            if re.match(r"^end\s*(note|legend)\b", line, re.IGNORECASE):
+            if re.match(r"^end\s*([hr]?note|legend)\b", line, re.IGNORECASE):
                 in_block = False
             else:
                 note_lines.append(line)
@@ -185,10 +208,10 @@ def parse_diagram(text: str):
         if not line or line.startswith("'") or line.startswith("@"):
             continue
 
-        if re.match(r"^(note|legend)\b", line, re.IGNORECASE):
+        if re.match(r"^([hr]?note|legend)\b", line, re.IGNORECASE):
             # One-line note forms have inline text or a quoted alias declaration.
-            single_line = re.search(r":\s*\S", line) or re.search(
-                r'^\s*note\s+"[^"]*"\s+as\s+\w+', line, re.IGNORECASE
+            single_line = re.search(r":\s*\S", re.sub(r'"(?:\\.|[^"\\])*"', "", line)) or re.search(
+                r'^\s*[hr]?note\s+"[^"]*"\s+as\s+\w+', line, re.IGNORECASE
             )
             if single_line:
                 note_lines.append(line)
@@ -229,6 +252,7 @@ def parse_diagram(text: str):
 
 def parse_domain_classes(text: str) -> dict[str, str]:
     """Return domain classes as {normalized_key: original_name}."""
+    text = model_code(text)
     names: dict[str, str] = {}
     for line in text.splitlines():
         m = CLASS_RE.match(line.strip())
@@ -523,7 +547,11 @@ def main(argv: list[str]) -> int:
     if not path.exists():
         print(f"ERROR: file not found: {path}")
         return 2
-    text = path.read_text(encoding="utf-8")
+    try:
+        text = path.read_text(encoding="utf-8")
+    except (OSError, UnicodeError) as exc:
+        print(f"ERROR: cannot read UTF-8 input {path}: {exc}")
+        return 2
 
     domain_text = None
     if args.domain:
@@ -531,7 +559,11 @@ def main(argv: list[str]) -> int:
         if not dpath.exists():
             print(f"ERROR: domain model not found: {dpath}")
             return 2
-        domain_text = dpath.read_text(encoding="utf-8")
+        try:
+            domain_text = dpath.read_text(encoding="utf-8")
+        except (OSError, UnicodeError) as exc:
+            print(f"ERROR: cannot read UTF-8 domain input {dpath}: {exc}")
+            return 2
 
     errors, warnings, stats = validate(text, domain_text)
 

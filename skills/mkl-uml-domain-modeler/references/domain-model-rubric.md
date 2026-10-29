@@ -87,7 +87,7 @@ When the domain model will feed use cases:
 Rosenberg & Stephens (2007) present domain modeling by walking through the mistakes people make and correcting them. Check every model for these:
 
 1. **Multiplicity too early.** Cardinalities on a first-pass conceptual model. Correction: remove them; defer multiplicity to later modeling.
-2. **Mapping database tables to domain classes.** Classes copied from a relational schema, full of IDs/foreign keys, or with attributes placed on the wrong class (e.g., customer fields sitting on `Order`). Correction: model business concepts; "don't mistake your domain model for a data model."
+2. **Mapping database tables to domain classes.** Classes copied from a relational schema, full of IDs/foreign keys, or with attributes placed on the wrong class (e.g., customer fields sitting on `Order`). Correction: establish each class from business meaning rather than copying database structure.
 3. **Operations / abstract classes too early.** Assigning behavior or introducing abstract machinery is a design activity. Correction: keep the model structural and conceptual.
 4. **Premature patternization.** Design-pattern machinery (e.g., a `SessionFactory`) appearing as domain classes. Correction: remove it — it is solution space, not problem space.
 

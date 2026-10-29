@@ -1,78 +1,38 @@
 <!-- English-edition adaptation: Copyright 2026 kingle.zhuang. See NOTICE for upstream attribution. -->
 # Deriving `CP-XX` test cases
 
-Produce sequence and tests in the **same pass**. The source extends its four steps (4069): *"we extend these steps to show how to systematically build a suite of test cases at the same time as your sequence diagrams"*.
+Derive test design while allocating sequence behavior. This original method guidance is informed by Rosenberg & Stephens (2007), chapters 8, 9 and 12, and Rosenberg, Stephens & Collins-Cope (2005), model-driven testing discussions. Historical source status is recorded in [sources-and-methods.md](sources-and-methods.md).
 
-`CP-XX` was **reserved but unowned** in the original `mkl-use-case-specifier` template. This skill uses it. Source status is inherited from upstream research.
+## Behavior and flow coverage
 
----
+Where supplied, use each robustness Controller as an index of behavior needing at least one test. A Controller can span multiple operations; avoid generating one business test for every implementation message. For standalone work, derive equivalent behavior cases from the supplied scenario and state the unavailable robustness link.
 
-## Derivation unit: Controller
+Check flow coverage separately: the basic flow and every specified local `(CU-ID, FA/FE-ID)` need a test with an observable outcome. A Controller coverage match does not establish that every outcome or branch was tested.
 
-The method states this three times:
+## Combined fragments
 
-> *"the nouns (Entity and Boundary objects) from the robustness diagram become object instances on the sequence diagram, and the verbs (controllers) get test cases created for them"* (1011)
-
-> *"Boundary and entity classes on a robustness diagram will generally become object instances on a sequence diagram, while controllers will become messages. It's also advisable to create test cases for the controllers."* (2698)
-
-> *"we systematically wrote the tests following the controllers on the sequence diagrams"* (companion book, 7276)
-
-**Rule:** each `DR-XX` Controller yields **at least one** `CP-XX`. The behavior-allocation worklist also drives verification.
-
-**Why not derive per message?** One Controller can span multiple operations. Test **behavior**, not the implementation structure; message-derived cases couple tests to that structure.
-
-## Coverage check: paths
-
-Controller coverage does **not** guarantee execution-path coverage. Check independently:
-
-> **The basic course and every alternate/exception flow must be covered by a `CP-XX`.**
-
-The source (5951) calls Controller-derived cases *"a bulletproof way"* to ensure alternate courses are considered.
-
-**Uncovered path:** either a test case is missing or **its governing Controller is missing**. Route the latter to `/mkl-uml-robustness-diagram`.
-
-## Fragment coverage criterion
-
-UML semantics define the paths:
-
-| Operator | Paths |
+| Fragment | Practical test selection |
 |---|---|
-| `alt` | One per operand; without explicit `else`, an implicit path where no guard holds |
-| `opt` | Two: executed and skipped |
-| `break` | Two: taken—**replaces the remainder** of its enclosing fragment—and not taken |
-| `loop(min,max)` | At least boundary values: `min` and `max` iterations |
-| `par` | Relevant interleavings preserving each operand's internal order |
+| `alt` | Cover each feasible operand, including a no-guard-match path when applicable. |
+| `opt` | Cover taking and skipping the optional behavior. |
+| `break` | Cover taking the break and continuing without it. |
+| `loop` | Cover relevant lower/upper boundaries, including zero iterations when permitted. |
+| `par` | Select relevant interleavings that preserve each operand's internal ordering. |
 
-Linter-relevant facts: **an omitted operand guard means `true`**; `alt` chooses **at most one** operand.
+UML permits an omitted guard to mean true, and an `alt` selects at most one operand. Distinguish operator semantics from the chosen coverage criterion. Feasibility, dependencies and unbounded loops can prevent exhaustive path coverage. State the bounded criterion actually used rather than promise all possible paths. Research on UML test generation is supporting context, with the inherited secondary-confidence limitations in the source record.
 
-**Evidence-backed scale warning.** A systematic UML-test-generation review (62 primary studies of 443, 1999-2019) reports intermediate trees/graphs and **path coverage** variants as common approaches. **Combined fragments are the hardest problem**; unrestricted all-path coverage with loops causes **test explosion**. *(Secondary confidence: indexed text, not digital-library version.)*
-
-**Practical consequence:** cover operands, not unrestricted paths: every `alt` branch, both outcomes of `opt`/`break`, and `loop` boundaries. Declare this criterion. A modest explicit criterion is better than an unusable exhaustive one.
-
-## `CP-XX` format
+## Case record
 
 | Field | Content |
 |---|---|
-| `CP-XX` | Identifier |
-| Originating Controller | Source `DR-XX` Controller |
-| Covered path | Basic course or corresponding `FA-XX`/`FE-XX` |
-| Precondition | Required execution state |
-| Stimulus | Triggering message or actor action |
-| Expected result | Observable behavior, not implementation |
-| Traceability | `CU-XX` → `DR-XX` → `DS-XX` → `CP-XX` |
+| Identifier | Stable `CP-XX`. |
+| Origin | Required behavior, Controller or contract. |
+| Scenario/flow | `CU-XX` and local basic/`FA-XX`/`FE-XX` path. |
+| Preconditions | Relevant starting state. |
+| Stimulus | Actor action, incoming call or event. |
+| Expected result | Observable output and state change, including rejection/termination. |
+| Trace links | Available requirements, robustness and sequence IDs. |
 
-**Use observable expectations.** “The system registers entry and issues a ticket with the assigned space” is verifiable. “`save()` is called” couples the case to design and breaks on refactoring.
+Prefer an expectation such as receiving an assigned space and ticket over a bare assertion that an internal `save()` method was called. Trace tests back to behavior and requirements in both directions. Missing behavior may require a requirements/robustness correction rather than an invented test.
 
-## Toward unit tests
-
-The source describes the later step: collect cases in a plan and generate unit-test class/method skeletons (4638). The companion book goes further: transform robustness into sequence **and** test-case skeletons, exporting JUnit/NUnit (7299). **Design-Driven Testing** starts test preparation during analysis, well before coding.
-
-**This skill delivers `CP-XX`, not test code.** Executable generation belongs downstream; mixing it here advances implementation decisions into a design artifact.
-
-## Traceability note
-
-The emitted cases complete the chain:
-
-`RF-XX` → `CU-XX` → `FA-XX`/`FE-XX` → `DR-XX` + `B-`/`C-`/`E-` → `PDR-XX` → `DS-XX` → **`CP-XX`**
-
-Traverse both directions: test → Controller → textual step → requirement. This fulfills design traceability under ISO/IEC/IEEE 12207 §6.4.5.2 h) and §6.4.5.3, explaining why identifiers matter.
+This skill delivers test-design records, not executable unit tests. Generating language-specific test skeletons belongs to separately authorized implementation work. ISO/IEC/IEEE 12207:2017 §6.4.5 provides traceability context; the precise local ID chain is an MKL convention.

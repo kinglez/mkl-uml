@@ -20,11 +20,11 @@ E_Vehicle -> E_ParkingSpace : request available parking space
 == Allocation ==
 
 alt FA-01 no parking space available
-  E_ParkingSpace --> B_Console : unavailable
+  E_ParkingSpace --> E_Vehicle : unavailable
   B_Console -> B_Console : display message 'Parking lot full'
 else basic course
   E_ParkingSpace -> E_ParkingSpace : occupy with vehicle
-  E_ParkingSpace --> B_Console : parking space occupied
+  E_ParkingSpace --> E_Vehicle : parking space occupied
   B_Console -> B_Receipt : present receipt
 end
 @enduml

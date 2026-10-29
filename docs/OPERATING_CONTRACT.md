@@ -34,6 +34,8 @@ The CLI minimum may differ from a full review minimum. Sequence CLI requires `--
 
 Use **checked** when the named check ran against sufficient evidence, **partial** when some applicable checks or paths remain unverified, and **blocked** when the target or indispensable evidence for that operation is missing. List executed tools and omitted checks with their reasons.
 
+A supplied path is not sufficient evidence by itself. Empty files, comments, notes and unrecognized supporting structures do not establish coverage. Parse the usable artifact before marking its dependent checks as executed; an absent usable review target blocks its review. Pair every supplied use case with its applicable artifacts and evaluate local flow IDs within that use case. References to a flow in explanatory prose do not establish that the flow is implemented in an interaction fragment.
+
 These coverage states are separate from formal gate dispositions: **Accepted**, **Accepted with rework verification**, and **Reinspection required**. Missing applicable evidence withholds acceptance (**Not fully verified**); an absent review target means **Not reviewed — entry criteria not met**. A machine result is a provisional input to a gate decision, never proof of semantic correctness or evidence of human participation. Document justified non-applicability rather than hiding missing checks.
 
 Run a scoped review and recheck affected areas after correction. Fixed two-clean-pass/five-pass cycles and certificate bundles are not default requirements. Historical research/audit records in references are context, not instructions to repeat them. Reuse existing authorization for remediation or header generation. Review-only requests remain review-only.

@@ -1,9 +1,9 @@
 <!-- English-edition adaptation: Copyright 2026 kingle.zhuang. See NOTICE for upstream attribution. -->
 # The five PDR metrics
 
-> **Operational scope.** Default work uses lightweight checks of the requested artifact and affected links. This reference retains the fuller **opt-in formal MKL review** recipe and its historical source material. Apply its meeting roles, minutes, package metrics, disposition thresholds, and full checklist only when a formal review is requested. Missing material outside the selected scope is a disclosed check limitation, not an automatic blocker. Check available evidence and report concrete findings; do not require the entire pipeline, repeated self-audits, or two clean passes for an ordinary create/update/check task. Source quotations remain source claims; adaptations and numeric thresholds are MKL conventions, not certification requirements.
+> **Operational scope.** Default work uses lightweight checks of the requested artifact and affected links. This reference retains the fuller **opt-in formal MKL review** recipe and its historical source material. Apply its meeting roles, minutes, package metrics, disposition thresholds, and full checklist only when a formal review is requested. Missing material outside the selected scope is a disclosed check limitation, not an automatic blocker. Check available evidence and report concrete findings; do not require the entire pipeline, repeated self-audits, or two clean passes for an ordinary create/update/check task. Source records identify historical influences; adapted procedures and numeric thresholds are MKL conventions, not certification requirements.
 
-For an explicitly requested formal PDR, calculate the applicable metrics and publish their method and scope in the minutes. Ordinary checks report only relevant measurements and do not require the full five-metric gate. A metric without a published method is not verifiable, and in a gate that is unacceptable: the verdict is derived from these numbers.
+For an explicitly requested formal PDR, calculate applicable metrics and publish their method and scope in the minutes. Ordinary checks report relevant measurements without requiring the full five-metric gate. A measure without a published method is unverified; disposition depends on sufficient evidence and confirmed findings, with metrics directing investigation.
 
 **Overall goal of the method:** A successful PDR ends with **zero non-domain entities** and **zero non-behavioral alternate courses**. It is a criterion of acceptance, not aspiration.
 
@@ -43,7 +43,7 @@ For an explicitly requested formal PDR, calculate the applicable metrics and pub
 
 ## 3. Number of alternate courses without behavior
 
-**What it measures.** How many `FA-XX` or `FE-XX` are declared in the specification but **do not** have their behavior specified, or do not appear as a branch in the diagram. It is guideline #7 expressed numerically, and the source supports it: the alternate courses represent more than half of the complexity of the software.
+**What it measures.** How many `FA-XX` or `FE-XX` are declared in the specification but **do not** have their behavior specified, or do not appear as a branch in the diagram. It quantifies guideline #7: alternate and exception handling needs explicit coverage within its parent use case.
 
 **How to calculate it.** Two different checks that add up:
 
@@ -70,43 +70,33 @@ For an explicitly requested formal PDR, calculate the applicable metrics and pub
 
 **What it measures.** How many times the same use case has been reviewed again. It is the only metric that is **not** calculated from the artifacts: it is carried from session to session.
 
-**Goal: ≤ 3.** The limit comes from Wiegers: it is not advisable to ask anyone to review the same material more than three times, because reviewer fatigue degrades detection.
+**Planning interpretation.** Wiegers motivates limiting repeated examination of the same material to manage reviewer fatigue. The inherited suggestion of three reviews is a planning aid, not a required minimum, automatic rejection threshold or mandatory split.
 
-**How to interpret it.** A use case that makes it to the third revision without passing does not have a revision problem: it has an artifact or scope problem. The usual reading is that **the use case should be split**, which is consistent with the method's own recommendation when a diagram grows too large.
-
-When the limit is reached, the minutes say so explicitly and propose splitting the use case, instead of calling a fourth round.
+Repeated unresolved findings justify investigating artifact clarity, scope and reviewer capacity. Split a use case only when its behavior and goals support that change. Record a proportionate next action; rerun affected checks after a correction without requiring unchanged material to pass a fixed cycle count.
 
 ---
 
-## From number to verdict
+## Evidence eligibility before disposition
 
-The thresholds are applied in this order. It stops at the first condition that is met:
+Keep evidence coverage and demonstrated defects separate. Applicable evidence includes human/semantic checks: being non-automatable does not mean already performed. A clean script preparation result can coexist with **Not fully verified** formal coverage.
 
-| Order | Condition | Verdict |
-|---|---|---|
-| 1 | Any **critical** or **major** open findings · or entities without domain > 0 · or alternates without behavior > 0 · or syntax violations > 0 · or coverage **below the floor** | **Reinspection required** |
-| 2 | Only moderate or minor findings, **all** with agreed correction, responsible party and date · or layers not executed · or coverage **above the floor but incomplete** | **Accepted with rework verification** |
-| 3 | Zero critical and major findings, all three hard metrics at zero, **complete** coverage | **Accepted** |
+| Condition | Formal treatment |
+|---|---|
+| An applicable layer lacks readable substantive input or actual reviewer evidence | **Not fully verified**. Identify the gap and continue independent checks; report known blocking defects as well. |
+| Verified critical/major findings, non-domain Entities, undesigned alternatives or profile violations remain | **Reinspection required** for the affected design. No favorable aggregate metric cancels a demonstrated defect. |
+| Applicable checks have evidence and only bounded agreed rework remains | **Accepted with rework verification**, with owner, due date, explicit correction and verification criteria. |
+| Applicable checks have evidence, required semantic coverage is confirmed and blocking findings are closed | **Accepted**, subject to any separately identified organizational sign-off. |
 
-**Two partial layer classes, and only one degrades the verdict.** The distinction matters, and the validator implements it with an explicit list of degraded layers, not guessing from the state text:
+Optional evidence outside a standalone check's selected scope is a disclosed limit, not an automatic failure. In a full formal package review, missing domain/actor evidence or absent stakeholder interpretation cannot be treated as minor rework or excused merely because it is not automatable.
 
-| Class | Example | Does it degrade? |
-|---|---|---|
-| **Partial due to absent input** | Without a use case diagram, actor-diagram consistency is not checked; without a domain model guideline #9 does not run | For a requested full-package formal review, qualify that package disposition. For an independent scoped check, report the limitation without treating out-of-scope optional material as a failure |
-| **Partial by nature** | Guideline #4 is not automatable; half of #8 needs a wireframe that the script doesn't even accept as an argument | **No.** Treating it as a degradation would make `Accepted` unattainable even if you contribute everything |
+Lexical coverage floors are local investigation heuristics, not semantic acceptance thresholds. Confirm uncovered steps and their consequence before classifying a finding. For example, missing required behavior is substantive rework, while an unrecognized synonym can be a dismissed candidate with evidence. Record which interpretation was verified.
 
-A real bug from a previous version illustrates this: the layers were declared as not executed, they were printed in the report, and the verdict came out `Accepted` anyway **because the function that calculated it did not receive the layers**. Declaring the truth and then ignoring it is the same lie by omission that this gate claims to combat, achieved through another means. It was uncovered by an audit that actually invoked the skill on a package that was missing two inputs.
-
-**Two coverage thresholds, not one.** It is advisable not to confuse them: there is a **floor** below which the verdict is forced to be re-inspected, and a **complete coverage requirement** to be able to accept. Between the two remains the band of the intermediate state: the package is usable but there is text without a counterpart in the diagram, and that is rework with the person responsible and the date, not a clean pass. The validator checks the two conditions **separately and directly**; If it were based on the fact that the warnings already push the intermediate state, the criterion would be broken as soon as the treatment of the warnings changed.
-
-**The order is deliberate.** The rejection condition is evaluated first so that no unfavorable result is upgraded by accumulation of favorable cases.
-
-**No metric relaxes due to exhaustion.** Neither time, number of internal cycle passes, nor session pressure change a threshold. If the package fails, the verdict is `Reinspection required`, and that is a valid and useful result — not a failure of the skill.
+Zero findings is valid. Repeat or broaden examination only for changed artifacts, actual gaps or new evidence; elapsed time and a fixed cycle count do not alter criteria.
 
 ## Session budget
 
-It is not one of the five, but it is published alongside them because it conditions the validity of all of them.
+Publish a session estimate when it helps plan the requested formal review. It does not determine design validity or evidence coverage.
 
-**How to calculate.** Package volume—equivalent pages of specification plus diagrams—versus the rate of **3-4 pages/hour** that IEEE 1028 §6.5.2 sets for preliminary design.
+**How to calculate.** State the page-equivalence convention and selected project review rate. Upstream notes attribute **3–4 pages/hour** for preliminary design to IEEE 1028 §6.5.2; this is inherited planning context, not a newly verified mandatory pace or a universal capacity limit.
 
-**What is it for?** If the package does not fit in a reasonable session, the minutes say so and propose splitting it. Reviewing above the sustainable pace does not speed up the review: it makes the examination superficial while still producing a verdict. A record that cannot justify that there was time to look at the material is stating less than it appears.
+**What is it for?** Compare scope, preparation and reviewer availability; propose smaller sessions where useful. Actual skipped checks or insufficient evidence limit coverage. Elapsed time or departure from a historical rate alone cannot establish superficial review, require a finding quota or decide acceptance.

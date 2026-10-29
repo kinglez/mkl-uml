@@ -1,14 +1,14 @@
 <!-- English-edition adaptation: Copyright 2026 kingle.zhuang. See NOTICE for upstream attribution. -->
 # Consolidated bibliography
 
-This deduplicated index collects sources cited across the eight skills. Each skill's `references/sources-and-methods.md` or equivalent records the detailed contribution of each source, unsuccessful searches, and clauses checked against primary text. This index does not replace those records.
+This deduplicated index collects sources cited across the eight skills. Each skill's `references/sources-and-methods.md` or equivalent records the detailed contribution of each source, unsuccessful searches, and clauses checked against primary text. This index does not replace those records. [THIRD_PARTY_SOURCES.md](THIRD_PARTY_SOURCES.md) inventories content treatment and remaining rights/provenance uncertainty; source citation is not redistribution permission.
 
 All citations in code and `SKILL.md` follow the same discipline: **concise attribution identifying the author, work, and chapter or clause; no extensive reproduction**.
 
 ## Books
 
 - Rosenberg, D., & Stephens, M. (2007). *Use Case Driven Object Modeling with UML: Theory and Practice*. Apress. [Publisher/DOI](https://doi.org/10.1007/978-1-4302-0369-8). Primary method source for this MKL adaptation supporting robustness analysis, use case specifications, PDR, sequence diagrams, design class models, and CDR.
-- Rosenberg, D., Stephens, M., & Collins-Cope, M. (2005). *Agile Development [abbreviated title]*. Apress. [Publisher/DOI](https://doi.org/10.1007/978-1-4302-0009-3), ISBN 978-1-59059-464-3. Process context, milestones, agile and low-ceremony variants, and the Boundary-Control-Entity ↔ Model-View-Controller mapping.
+- Rosenberg, D., Stephens, M., & Collins-Cope, M. (2005). *Agile Development with ICONIX Process: People, Process, and Pragmatism*. Apress. [Publisher/DOI](https://doi.org/10.1007/978-1-4302-0009-3), ISBN 978-1-59059-464-3. Process context, milestones, agile and low-ceremony variants, and the Boundary-Control-Entity ↔ Model-View-Controller mapping.
 - Fowler, M. (2004). *UML Distilled* (3rd ed.). Addison-Wesley. UML notation and diagram quality, particularly sequence diagrams and design class models. The skill source records explicitly identify no contribution to robustness analysis or PDR.
 - Wiegers, K., & Beatty, J. (2013). *Software Requirements* (3rd ed.). Microsoft Press. Review roles, stages, entry and exit criteria, use case specifications, and requirements quality terminology.
 - Cockburn, A. *Writing Effective Use Cases*. Addison-Wesley. Goal levels—user goal (sea), subfunction (fish), and summary (kite)—as a guide to use case granularity.
@@ -53,8 +53,8 @@ These are the editions cited by the source package, not a claim that each is the
 
 Each skill's source record explicitly distinguishes citations checked against primary text from secondary citations reproduced through another source. It also records corrections to earlier verification errors. This distinction is deliberate and follows the repository's evidence discipline. Consult the individual skill's source record for the detailed verification status; this translation does not assert that those checks were repeated.
 
-## Editorial naming convention
+## Editorial and content policy
 
-MKL is the branding of this adapted skill suite and workflow. Source titles may be explicitly abbreviated. A bracketed `[MKL]` in a source excerpt marks an editorial brand substitution, not wording claimed to appear in the original publication. Authors, years, publishers, source locations, and verification qualifications remain attributed to their original sources.
+MKL names the adapted skill suite; it does not rename the original publications. Cite published titles for identification. The 2026-10-29 remediation replaces unnecessary book, standard and course transcriptions with independently worded operational guidance. Short technical terms and original local examples remain. This does not relicense external publications or establish permissions for old releases.
 
-The publisher DOI links identify the two principal books without relying on a private corpus filename or abbreviated title. Historical private-corpus line numbers remain provenance notes; they are not independently resolvable public citations. Publisher metadata was checked on 2026-10-21; this does not re-verify every inherited quotation.
+The publisher DOI links identify the two principal books. The 2005 book title/authors were checked against the [publisher record](https://link.springer.com/book/10.1007/978-1-4302-0009-3) on 2026-10-29. Historical private-corpus line numbers remain provenance notes, not independently resolvable public citations. The design source record separately identifies the limited 2026-10-29 primary UML check; no full re-verification of every inherited source claim is implied.

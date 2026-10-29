@@ -65,7 +65,7 @@ TERMINOS_PATRON = (
 )
 
 # Getters/setters: the source discourages drawing them.
-ACCESOR_RE = re.compile(r"^(get|set|is|has)[A-Z_]", re.IGNORECASE)
+ACCESOR_RE = re.compile(r"^(?:get|set|is|has|Get|Set|Is|Has)[A-Z_]")
 
 STOPWORDS = {
     "el", "la", "los", "las", "un", "una", "de", "del", "al", "y", "o", "en",
@@ -289,11 +289,39 @@ def cuerpo_de_clase(text: str, desde: int) -> tuple[str, int]:
     return text[inicio + 1:], len(text)
 
 
+def codigo_modelo(text: str) -> tuple[str, str]:
+    """Blank annotations in executable notation, preserving source locations.
+
+    PDR may use note text for flow labels, but a note cannot declare objects or
+    links. Single-line/quoted notes must not consume the next declaration.
+    """
+    text = re.sub(r"^[ \t]*/'[\s\S]*?(?:'/|\Z)",
+                  lambda m: "\n" * m.group().count("\n"), text, flags=re.MULTILINE)
+    codigo, notas, en_nota = [], [], False
+    for crudo in text.split("\n"):
+        ln = crudo.strip()
+        if en_nota:
+            notas.append(crudo)
+            codigo.append("")
+            if re.match(r"^end\s*(?:[hr]?note|legend)\b", ln, re.IGNORECASE):
+                en_nota = False
+        elif re.match(r"^(?:[hr]?note|legend)\b", ln, re.IGNORECASE):
+            notas.append(crudo)
+            codigo.append("")
+            header = re.sub(r'"(?:\\.|[^"\\])*"', "", ln)
+            en_nota = (":" not in header and not re.match(r'^(?:[hr]?note)\s+"', ln, re.IGNORECASE)
+                       and not re.search(r"\bend\s*(?:[hr]?note|legend)\b", ln, re.IGNORECASE))
+        else:
+            codigo.append("" if ln.startswith("'") else crudo)
+    return "\n".join(codigo), "\n".join(notas)
+
+
 def parse_clases(path: str, text: str) -> Modelo:
+    text, _notas = codigo_modelo(text)
     m = Modelo(path=path, text=text)
     for mc in CLASE_RE.finditer(text):
         nombre = mc.group("q") or mc.group("n") or ""
-        linea = text[: mc.start()].count("\n") + 1
+        linea = text[: mc.start("tipo")].count("\n") + 1
         estereotipos = set(re.findall(r"<<([^>]+)>>", mc.group("estereotipos") or ""))
         c = Clase(
             nombre=nombre, linea=linea,
@@ -302,8 +330,9 @@ def parse_clases(path: str, text: str) -> Modelo:
             estereotipos=estereotipos,
         )
         cuerpo, _fin = cuerpo_de_clase(text, mc.end())
-        base = text[: mc.end()].count("\n") + 1
-        for off, cruda in enumerate(cuerpo.split("\n"), start=1):
+        inicio_cuerpo = text.index("{", mc.end()) + 1 if cuerpo else mc.end()
+        base = text[: inicio_cuerpo].count("\n") + 1
+        for off, cruda in enumerate(cuerpo.split("\n")):
             ln = cruda.strip()
             if not ln or ln.startswith("'") or ln.startswith(".."):
                 continue
@@ -354,12 +383,13 @@ def parse_clases(path: str, text: str) -> Modelo:
         if izq.lower() in ("startuml", "enduml") or der.lower() in ("startuml", "enduml"):
             continue
         m.relaciones.append((izq, der, conn,
-                             texto_rel[: mr.start()].count("\n") + 1))
+                             texto_rel[: mr.start("izq")].count("\n") + 1))
     return m
 
 
 def parse_dominio(text: str) -> dict:
     """Return {key: (original_name, {attributes})} from the domain model."""
+    text, _notas = codigo_modelo(text)
     out = {}
     for mc in CLASE_RE.finditer(text):
         nombre = mc.group("q") or mc.group("n") or ""
@@ -407,6 +437,7 @@ def traza_al_dominio(k: str, dominio: dict, padres: dict, vistos=None) -> bool:
 
 
 def parse_relaciones_dominio(text: str) -> set:
+    text, _notas = codigo_modelo(text)
     pares = set()
     for mr in REL_RE.finditer(text):
         izq = clave(mr.group("izq").strip('"'))
@@ -467,22 +498,8 @@ def etiqueta_de_llamada(mm, creaciones: set) -> tuple[str, bool]:
 
 
 def codigo_mensajes(text: str) -> str:
-    """Blank block comments and notes without changing message line numbers."""
-    text = re.sub(r"^[ \t]*/'[\s\S]*?(?:'/|\Z)",
-                  lambda m: "\n" * m.group().count("\n"), text, flags=re.MULTILINE)
-    lineas, en_nota = [], False
-    for crudo in text.split("\n"):
-        ln = crudo.strip()
-        if en_nota:
-            if re.match(r"^end\s*note\b", ln, re.IGNORECASE):
-                en_nota = False
-            lineas.append("")
-        elif re.match(r"^(?:h|r)?note\b", ln, re.IGNORECASE):
-            en_nota = ":" not in ln and not re.search(r"\bend\s*note\b", ln, re.IGNORECASE)
-            lineas.append("")
-        else:
-            lineas.append("" if ln.startswith("'") else crudo)
-    return "\n".join(lineas)
+    """Keep the same executable-notation rules for every model scan."""
+    return codigo_modelo(text)[0]
 
 
 def parse_mensajes(text: str, avisos=None) -> tuple:
@@ -818,6 +835,33 @@ def check_granularidad(mod: Modelo, avisos: list) -> None:
             )
 
 
+def separar_parametros(text: str) -> list[str]:
+    """Split top-level parameters while retaining generic/quoted type syntax."""
+    partes, inicio, pila, comilla, escape = [], 0, [], "", False
+    cierres = {">": "<", "]": "[", ")": "(", "}": "{"}
+    for i, ch in enumerate(text):
+        if comilla:
+            if escape:
+                escape = False
+            elif ch == "\\":
+                escape = True
+            elif ch == comilla:
+                comilla = ""
+        elif ch in "\"'":
+            comilla = ch
+        elif ch in "<([{":
+            pila.append(ch)
+        elif ch in cierres:
+            if pila and pila[-1] == cierres[ch]:
+                pila.pop()
+        elif ch == "," and not pila:
+            partes.append(text[inicio:i].strip())
+            inicio = i + 1
+    if text.strip():
+        partes.append(text[inicio:].strip())
+    return partes
+
+
 def check_firmas(mod: Modelo, avisos: list) -> None:
     """CDR guideline #3: complete types, returns, and parameters."""
     tag = f"[{mod.path}]"
@@ -837,10 +881,16 @@ def check_firmas(mod: Modelo, avisos: list) -> None:
                     f"declare a return type. CDR requires complete parameter lists and "
                     f"return types."
                 )
-            if o.params and not re.search(r":", o.params):
+            sin_tipo = []
+            for parametro in separar_parametros(o.params):
+                firma = parametro.split("=", 1)[0].strip()
+                nombre, separador, tipo = firma.partition(":")
+                if not separador or not nombre.strip() or not tipo.strip():
+                    sin_tipo.append(nombre.strip() or parametro)
+            if sin_tipo:
                 avisos.append(
                     f"{tag} L{o.linea}: parameters of '{c.nombre}.{o.nombre}()' are not "
-                    f"typed."
+                    f"typed. Untyped parameters: {', '.join(sin_tipo)}."
                 )
 
 
@@ -897,8 +947,8 @@ def leer(path: str) -> str:
     try:
         with open(path, "r", encoding="utf-8") as fh:
             return fh.read()
-    except FileNotFoundError:
-        print(f"File not found: {path}", file=sys.stderr)
+    except (OSError, UnicodeError) as exc:
+        print(f"Cannot read input {path}: {exc}", file=sys.stderr)
         raise SystemExit(2)
 
 

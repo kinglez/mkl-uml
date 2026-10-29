@@ -19,7 +19,7 @@ E_Vehicle -> E_ParkingSpace : request available parking space
 E_ParkingSpace --> E_Vehicle : parking space found
 
 alt FA-01 no parking space available
-  E_ParkingSpace --> B_Console : unavailable
+  E_ParkingSpace --> E_Vehicle : unavailable
   B_Console -> B_Console : display message 'Parking lot full'
   B_Console --> ACT_Operator : message displayed
 else basic course
@@ -27,7 +27,7 @@ else basic course
   E_ParkingSpace --> E_ParkingSpace : parking space occupied
   E_ParkingSpace -> E_Ticket : issue entry ticket
   E_Ticket --> E_ParkingSpace : ticket created
-  E_Ticket --> B_Console : ticket issued
+  E_Ticket --> E_ParkingSpace : ticket issued
   B_Console -> B_Receipt : present receipt
   B_Receipt --> B_Console : receipt presented
   B_Console --> ACT_Operator : entry registered

@@ -63,6 +63,26 @@ def extract_system_body(text: str) -> str:
     return ""
 
 
+def model_code(text: str) -> str:
+    """Mask annotations before discovering actors, subjects and goals."""
+    text = re.sub(r"^[ \t]*/'[\s\S]*?(?:'/|\Z)",
+                  lambda m: "\n" * m.group().count("\n"), text, flags=re.M)
+    lines, annotation = [], False
+    for raw in text.split("\n"):
+        line = raw.strip()
+        if annotation:
+            lines.append("")
+            if re.match(r"^end\s*(?:[hr]?note|legend)\b", line, re.I):
+                annotation = False
+        elif re.match(r"^(?:[hr]?note|legend)\b", line, re.I):
+            lines.append("")
+            header = re.sub(r'"(?:\\.|[^"\\])*"', "", line)
+            annotation = not (":" in header or re.match(r'^[hr]?note\s+"', line, re.I))
+        else:
+            lines.append("" if line.startswith("'") else raw)
+    return "\n".join(lines)
+
+
 def main(path: str, dominant_hint: str | None = None) -> int:
     # Actor and use case names are domain vocabulary, so they carry accents in
     # most languages. Without this, a Windows console using cp1252 turns
@@ -79,7 +99,12 @@ def main(path: str, dominant_hint: str | None = None) -> int:
         print(f"ERROR: file not found: {p}")
         return 2
 
-    text = p.read_text(encoding="utf-8")
+    try:
+        text = p.read_text(encoding="utf-8")
+    except (OSError, UnicodeError) as exc:
+        print(f"ERROR: cannot read UTF-8 input {p}: {exc}")
+        return 2
+    text = model_code(text)
     stripped = text.strip()
 
     if not stripped.startswith("@startuml"):

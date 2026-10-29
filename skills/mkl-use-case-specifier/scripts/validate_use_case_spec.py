@@ -137,6 +137,7 @@ def contar_pasos(bloque: str) -> int:
 
 
 def validate(text: str):
+    text = re.sub(r"<!--[\s\S]*?(?:-->|\Z)", "", text)
     errores: list[str] = []
     avisos: list[str] = []
     plano = norm(text)
@@ -281,7 +282,12 @@ def main(argv: list[str]) -> int:
         print(f"ERROR: file not found: {path}")
         return 2
 
-    errores, avisos, stats = validate(path.read_text(encoding="utf-8"))
+    try:
+        text = path.read_text(encoding="utf-8")
+    except (OSError, UnicodeError) as exc:
+        print(f"ERROR: cannot read UTF-8 input {path}: {exc}")
+        return 2
+    errores, avisos, stats = validate(text)
 
     print("Use case specification validation")
     print("=================================")

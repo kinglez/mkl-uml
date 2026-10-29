@@ -17,7 +17,7 @@ This source supplies most method guidance: **ten guidelines** (3879–3889), **f
 
 Chapter 4, lines 1506–1651, supplies **centralized versus distributed control** (1526–1556), message kinds and arrowheads (1634–1640), activation bars (1532), returns (1536), creation/destruction (1560–1562), combined fragments (1570–1630), and situations where sequence diagrams are unsuitable (1642–1648).
 
-**Source-quality qualification:** the corpus file contains **OCR corruption**. Three used quotations have the pronoun *I* scanned as **1** at lines 1536, 1630, and 1640, in statements about returns, interaction frames, and arrowheads. This skill normalizes them to the intended printed wording and discloses the change to explain discrepancies with extracted text. The upstream record says other used Fowler quotations were clean. An earlier statement that all were clean was corrected after an adversarial audit.
+**Source-quality qualification:** the upstream extraction contained OCR damage, including confused pronouns in return, fragment and arrowhead discussions. This revision uses independent operational wording instead of normalized source quotations. No complete comparison of the historical extraction to the printed book is claimed.
 
 Fowler contributed no robustness/PDR-specific guidance in those skill source reviews. Its substantial relevance here illustrates why applicability must be checked separately for each artifact.
 
@@ -33,9 +33,9 @@ The upstream search found “sequence diagram” exactly once, at line 3318, wit
 
 ### Course material outside the corpus: the source resolving a default
 
-Chapter 7 of Gloria L. Giraldo's *Análisis, Diseño y Construcción de Productos de Software* [Analysis, Design, and Construction of Software Products] supplies four passages used by the skill. **Guideline 6 determines the default activation-bar convention**; another passage permits architecture and storage objects during detailed design.
+Chapter 7 of Gloria L. Giraldo's *Análisis, Diseño y Construcción de Productos de Software* [Analysis, Design, and Construction of Software Products] informs the historical style choices. **Guideline 6 determines the default activation-bar convention**; another passage permits architecture and storage objects during detailed design.
 
-This material was **not present in `libros_y_normas_markdown/` or elsewhere in the original repository**. It was available through a user-provided PDF. Consequently, its quotations cannot be checked from the packaged corpus. Verification requires that PDF.
+This material was **not present in `libros_y_normas_markdown/` or elsewhere in the original repository**. It was available through a user-provided PDF. The original PDF is unavailable in this package and its exact text cannot be checked here. The current instructions are independently worded; no excerpt redistribution permission is claimed.
 
 Its provenance matters because it resolves a design choice. The robustness skill also cites this course material in eleven places. An adversarial audit identified its omission from an earlier source record; this qualification preserves the correction.
 

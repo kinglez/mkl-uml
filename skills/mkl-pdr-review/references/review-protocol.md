@@ -1,157 +1,42 @@
 <!-- English-edition adaptation: Copyright 2026 kingle.zhuang. See NOTICE for upstream attribution. -->
-# Review protocol: how a PDR is conducted
+# Conducting a preliminary-design review
 
-> **Operational scope.** Default work uses lightweight checks of the requested artifact and affected links. This reference retains the fuller **opt-in formal MKL review** recipe and its historical source material. Apply its meeting roles, minutes, package metrics, disposition thresholds, and full checklist only when a formal review is requested. Missing material outside the selected scope is a disclosed check limitation, not an automatic blocker. Check available evidence and report concrete findings; do not require the entire pipeline, repeated self-audits, or two clean passes for an ordinary create/update/check task. Source quotations remain source claims; adaptations and numeric thresholds are MKL conventions, not certification requirements.
+Use the full procedure for a requested formal package review. For an ordinary scoped check, use the available relevant artifacts, report findings and scope limits, and continue independent checks. This is original operational wording informed by IEEE Std 1028-2008 clauses 5–6 and Wiegers & Beatty, *Software Requirements* (3rd ed.), chapter 17. The selected procedure is an MKL adaptation, not a claim that every PDR is a standards-conforming inspection.
 
-Rosenberg tells **what** to review (the ten guidelines). It doesn't tell **how** to conduct a review. That is provided by IEEE 1028-2008 and chapter 17 of Wiegers, and everything in this file comes from there.
+## Prepare
 
-Checkmark: IEEE clauses 1028 and 1016 cited here were read over the primary text. What could not be verified is declared as such in `sources-and-methods.md`.
+Record objectives, scope, artifact versions, applicable criteria, prior findings and current evidence. Run applicable validators and examine their findings before a team meeting. Confirm required inputs contain usable evidence. An unavailable target blocks that target; missing applicable support leaves the affected layer unverified. Prior approval by every upstream skill is not a prerequisite for a standalone check.
 
----
+Use [pdr-guidelines.md](pdr-guidelines.md) to examine the material and [pdr-metrics.md](pdr-metrics.md) for formal measurements. A metric's lexical result does not replace the semantic highlighter review.
 
-## What type of review is a PDR
+## Assign real roles
 
-IEEE 1028-2008 defines five systematic types: management review (clause 4), technical review (5), **inspection (6)**, walk-through (7), and audit (8). “Systematic” requires three things: team involvement, documented results, and documented procedures.
-
-A PDR fits either as **inspection** or **technical review**, depending on its formality. The practical difference: the inspection requires a checklist of anomalies and mandatory classification of those found; the technical review no. Since the PDR **has** a checklist—the ten guidelines—and **must** classify findings, this skill treats it as an inspection and applies clause 6.
-
-Annex A of the standard confirms this indirectly: in its comparison of types, inspection is the only one that marks "yes" in the use of the anomaly checklist; the others have it as optional.
-
-**Note on honesty.** The method's reference material allows the PDR to be formal (structured meeting with minutes) or informal (whiteboard review), and what matters is covering all ten guidelines. Applying clause 6 in full to an informal review would be overreaching. The skill adapts: **the rigor of the review procedure is proportional to the declared formality**, for independent scoped work select the applicable checks and disclose the limits. The full ten-guideline/five-metric record belongs to a requested formal package review.
-
----
-
-## Review Anatomy (IEEE 1028 §1.5)
-
-Every review type in the standard follows the same seven-part structure. It is the skeleton of the record:
-
-1. Introduction
-2. Responsibilities
-3. **Input** — what material is reviewed
-4. **Entry criteria** — authorization and event that initiates it
-5. **Procedures** — planning, presentation, preparation, examination and recording, rework and follow-up
-6. **Exit Criteria**
-7. **Output** — the review record
-
-The entry criteria for an inspection (§6.4.3) include two that are directly applicable here: that automatic error detection has already been executed, and that previous milestones are satisfied. For the opt-in formal package recipe, run applicable available validators before the session and record prerequisites. For an independent check, use supplied artifacts and continue available checks; do not require every upstream skill to have approved the inputs.
-
----
-
-## Roles
-
-IEEE 1028 §6.2 defines for inspection: inspection leader, secretary, reader, author, and inspectors. Wiegers describes the same four roles in more operational detail:
-
-| Role | What does it do | Source |
-|---|---|---|
-| **Author** | Present the material. *"The author should not assume any of the other assigned roles—moderator, reader, or recorder."* | Wiegers |
-| **Moderator / leader** | *"plans the inspection with the author, coordinates the activities, and facilitates the inspection meeting."* | Wiegers |
-| **Reader** | *"the reader paraphrases the requirements and model elements being examined one at a time."* | Wiegers |
-| **Secretary** | *"uses standard forms to document the issues raised and the defects found during the meeting."* | Wiegers |
-| **Inspectors** | They examine; represent the affected perspectives | IEEE 1028 §6.2 |
-
-That the reader **paraphrases** instead of reading literally is not a detail of style: it is what forces interpretation and brings out ambiguities. It is the spoken version of the highlighter test.
-
-**The client.** The method requires your presence (guideline #4) because the PDR is your last entry point. If there is no customer available, a product representative can take over the role; What cannot be missing is **someone who validates that the language is understood without being technical**.
-
-**The author's boss.** Wiegers: *"The author's manager normally should not attend an inspection meeting."* A review where the person is evaluated no longer finds defects.
-
----
-
-## Team size
-
-| Source | Figure |
+| Role | Practical responsibility |
 |---|---|
-| IEEE 1028 §6.1 | 2 to 6 participants, including the author |
-| IEEE 1028 Annex A (inspection) | 3 to 6 |
-| Wiegers | *"Try to limit the team to seven or fewer inspectors."* |
+| Author | Explains the design and supplies context. |
+| Leader/moderator | Defines scope, organizes examination and follows unresolved issues. |
+| Reader | Restates behavior and model meaning so ambiguity can be discussed. |
+| Recorder | Preserves evidence, findings, decisions and action status. |
+| Reviewers | Assess technical and relevant business/product concerns. |
 
-The three converge in a very similar range, although not identical: the upper limits are 6, 6 and 7. And Wiegers adds a counterintuitive nuance with empirical support: *"Research has shown that multiple inspection teams find more requirements defects than does a single large group"* — if there are many people available, it is better to **two small teams than one large**.
+Identify actual people or agents and any combined roles. A formal requirement for independent rework verification needs a distinct verifier; switching skill names does not satisfy it. Record absent product/customer interpretation or other applicable human checks as missing evidence.
 
----
+Keep participation suited to the decision. Protect a technical review's purpose from personnel evaluation. Team size and meeting duration are project planning decisions; no fixed headcount creates sufficient coverage.
 
-## Revision rate — the most important number for this file
+## Examine and decide
 
-**IEEE 1028 §6.5.2** sets the pace by document type. For our artifact:
+Prepare individually, consolidate findings, resolve supported factual questions and record unresolved decisions. Classify demonstrated errors separately from design-risk candidates. Follow the user's authorized scope: report proposed corrections for review-only work, or apply and verify supported corrections when review-and-fix is authorized.
 
-| Document type | Rate |
-|---|---|
-| Architecture | 2-3 pages/hour |
-| Requirements | 2-3 pages/hour |
-| **Preliminary design** | **3-4 pages/hour** |
-| Detailed design | 3-4 pages/hour |
-| Source code | 100-200 lines/hour |
+For formal disposition, assess evidence coverage before findings and metrics. Missing applicable evidence, including unperformed human checks, yields **Not fully verified**. Verified blocking defects require reinspection. Conditional acceptance with rework is available only after applicable checks have evidence and the remaining rework is bounded, agreed and assigned. Full acceptance requires completed applicable checks and closed blocking findings.
 
-**A PDR reviews preliminary design.** The standard covers exactly our class of artifact: **3-4 pages per hour**. Wiegers offers a figure of the same order from another source: *"Two to four pages per hour is a practical guideline"* — with the scope qualification that follows.
+## Record and follow up
 
-**Scope notice about Wiegers' figure.** His "two to four pages per hour" appears in a chapter titled *"Reviewing requirements"*, within the planning of an inspection **of requirements documents**; the book never states it for design documents nor does it segment by type of document as IEEE 1028 does. The numerical match is real but **approximate and not matched by type of artifact**: the governing number here is that of IEEE 1028 for preliminary design. Wiegers further adds that *"the optimum rate for maximum defect-detection effectiveness is about half that rate"*, citing Gilb and Graham.
+The record identifies the objective, exact material, actual reviewers, performed/missing checks, findings with locations and consequences, recommended actions, actual decisions and rationale. Add action ownership, due/completion dates and verification evidence. Separate the technical recommendation from organizational acceptance where applicable.
 
-**Why pace decides effectiveness.** This is not a convenience recommendation: detection ability **plumbs** when reviewed faster. The most cited data is from Russell (*"Experience with Inspection in Ultralarge-Scale Developments"*, IEEE Software, January 1991): the defects found per thousand lines fell from 50 to 15 when the inspection rate tripled. **Second-hand quote** — it was read reproduced in an SEI technical report, not in the original article; see `sources-and-methods.md`. Reviewing above the sustainable rate does not produce a quick review: it produces a review that finds nothing, with the aggravating circumstance that it **issues a verdict anyway**.
+Use observed volume and a stated project rate for scheduling. The upstream IEEE 1028 §6.5.2 notes cite **3–4 pages/hour** for preliminary design; this is inherited planning guidance rather than a mandatory pace or a newly verified source transcription. The inherited source-code row has a page/line unit inconsistency and is not a usable header estimate. Wiegers' requirements-review discussion informs preparation and fatigue considerations, not a measured design-review guarantee.
 
-**Operational consequence for this skill:** calculate the volume of the package, compare it with 3-4 pages/hour, and if it doesn't fit in a reasonable session, **say so and propose splitting the package**. Don't let the verdict be rendered on material that no one was able to actually look at.
+A clean review is valid. Evaluate examination coverage and effective negative regressions, rather than expecting a finding quota or repeating unchanged reviews. If a repeated review stalls, identify the concrete missing information, defect or scope problem.
 
-**Duration of the meeting.** Wiegers: *"The inspection meeting shouldn't last more than about two hours; tired people aren't effective inspectors."*
+## Source boundaries
 
----
-
-## The stages, and where this skill fits
-
-Wiegers describes five: planning → preparation → meeting → rework → follow-up.
-
-**The data that justifies the existence of this skill** is in the second: *"Up to 75 percent of the defects found by an inspection are discovered during preparation"*. The meeting is not where the defects are found; It's where they remember.
-
-The validator and automatic checks for this skill **are** the preparation phase. Coming to the session with the non-domain entities already listed and the non-behavior alternates already noted is exactly what the evidence says produces performance.
-
-**Documented return** (Wiegers, citing Grady and Van Slack 1994): *"Several companies have avoided as many as 10 hours of labor for every hour they invested in inspecting requirements documents…"* — the original continues *"and other software deliverables"*, so the figure is not stated only for requirements documents.
-
----
-
-## Exit and decision criteria
-
-**IEEE 1028 §6.5.6.5** defines the exit decision of an inspection in three states. It is the verdict model of this skill:
-
-| Standard Status | Skill Verdict |
-|---|---|
-| Accept | **Accepted** |
-| Accept with rework verification | **Accepted with rework verification** |
-| Reinspect | **Reinspection required** |
-
-That there are **three and not two** matters: the intermediate state exists for the case in which the defects are real but limited, and it is enough to verify that the rework was done. Collapsing it to "approved/rejected" forces it to lie in one of two directions.
-
-Wiegers adds the closing criterion: *"All issues raised during the inspection have been addressed."* And a brake: *"Don't ask anyone to review the same material more than three times"* — hence the metric *# revisions necessary* with goal ≤ 3. If it doesn't pass the third time, the problem is not in the review.
-
----
-
-## Anomaly classification
-
-**IEEE 1028 §6.8** makes the collection of data and the classification and ranking of anomalies **mandatory** for inspection. The standard uses: Catastrophic · Critical · Marginal · Negligible.
-
-This skill maintains the severity taxonomy of the skill pack, for consistency with its four sisters, and declares the mapping:
-
-| Skill Severity | IEEE 1028 §6.8 | Criterion |
-|---|---|---|
-| **Critical** | Catastrophic | Violates a hard rule or invalidates the package for detailed design |
-| **Major** | Critical | Break correspondence between artifacts or leave behavior unspecified |
-| **Moderate** | Marginal | Anti-pattern, excess detail, vocabulary drift |
-| **Minor** | Negligible | Names, readability, presentation |
-
-**The record of the review.** The mandatory content of the output of an inspection is in **IEEE 1028 §6.7**, and is what structures the `PDR-XX` record. That clause is used, and not ISO/IEC/IEEE 15289, for the reason explained in `sources-and-methods.md`.
-
----
-
-## Checklists
-
-**IEEE 1028 Annex A**: inspection is the only type of review that requires a checklist of anomalies; In the others it is optional. The ten PDR guidelines **are** that checklist.
-
-Wiegers advises keeping them short—on the order of six or eight items—because long lists get skipped. The ten guidelines are at the limit of that recommendation, and that is why the minutes present them as a status table instead of as prose: so they can be checked systematically.
-
-**A nuance of empirical evidence that is worth knowing.** In the code and requirements inspection literature, perspective-based reading usually outperforms checklist-based reading. But in the only controlled experiment we found **on UML design documents**, the result is reversed: reading by checklist detected more defects. That's one of the reasons why this skill is built as a checklist engine and not as an insights panel. The reference and its confidence level are in `sources-and-methods.md`.
-
----
-
-## Regulatory bridge
-
-**IEEE 1016-2009 §3.2.3** comes full circle: verification of a design description *"will usually be performed via review, inspection, or analysis (see IEEE Std 1028-2008)"*. That is, the design description standard explicitly refers to the reviews standard to say how a design is verified.
-
-The same standard (§4.4) gives usable definitions of the two most lightly used adjectives: a design description is **complete** when each design concern is covered by at least one view, and **consistent** when there are no known conflicts between the elements of its views. The second is literally what the PDR checks between artifacts.
-
-**ISO/IEC/IEEE 29148:2018 §6.3.3.7, NOTE 1** also refers to IEEE 1028 for the conduct of reviews. Your §5.2.5 and §5.2.6—individual and aggregate requirement characteristics—are used as quality vocabulary when judging use case text.
+IEEE 1028 supplies review-process concepts; IEEE Std 1016-2009 §3.2.3 and §4.4 supply design-description verification, completeness and consistency context. ISO/IEC/IEEE 29148:2018 supplies requirements-quality context. Historical primary/secondary status is retained in [sources-and-methods.md](sources-and-methods.md). These references do not reproduce the standards or establish independent certification.

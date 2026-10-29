@@ -11,22 +11,17 @@ To check that the skill **generalizes** instead of reproducing its test set. The
 
 A previous audit found that the "good" set of two sister skills was the **same skeleton with different vocabulary**. A validator whose happy path is pinned by a set **approves anything with that form**.
 
-**And there is something worse, which this skill does solve.** A good set that comes out clean **does not distinguish** a working tool from a disabled one: both produce the same output on correct material. What signals are the sets that **must** fire, each their own and theirs alone — and, in the case of the CDR, the **self-check of the review**, which is the only defense against a review that passes over without seeing anything.
+A clean positive fixture alone cannot distinguish an active check from a disabled check. Use targeted negative cases and actual coverage evidence. Zero findings on reviewed mature material remains valid; neither a happy path nor a defect-density heuristic establishes review effectiveness.
 
 ---
 
-## Technical Support — "Manage issue" *(test set domain)*
+## Technical support — shipped fixture scope
 
-Chosen because a CDR needs things that flat domains do not have: **multiple use cases in the same release** (the CDR is limited to a release, not a case), **rich alternative flows**, **traceable requirements** including non-functional ones, and **robustness controllers** that serve as an index of the journey.
+The normal `tests/examples/bueno` package covers **CU-07 Register incident**. Its problem classes are `Incident`, `Requester`, `Category` and `ServiceAgreement`; `DeadlinePolicy` is a technical solution class. The alternative flows are **FA-01 unauthorized requester** and **FA-02 unknown category**. The requirements include policy/calendar independence; the test plan covers this use case and its two alternatives.
 
-- **Problem classes:** `Incident`, `Requester`, `Technician`, `Category`, `ServiceAgreement`.
-- **Release use cases:** register incident · escalate incident · close incident. **Three**, so that the coarse traversal has more than one element.
-- **Expected alternative flows:** unauthorized applicant · non-existent category · expired service agreement · technician without availability. Each one must have fragment in the sequence (rule #9) and test case (rule #1).
-- **Non-functional requirement to plot:** the response time required by the service agreement. It's the hard case of rule #5 — it doesn't fall into a class, it falls into a design decision.
-- **Domain Trap:** `Technician` is both an actor and an entity. As an actor, the escalation begins; As an entity it has availability and load. Confusing them produces either an actor with attributes or an entity that triggers use cases.
-- **Second trap:** `ServiceAgreement` invites to be an attribute of `Incident` (a deadline). If the text talks about levels, calculations or history, it is class; If it only says "due on...", it can be an attribute. It is decided by the specification.
-- **Anemia to watch for:** If the entire expiration and priority calculation ended in a `IncidentManager` and `Incident` only has attributes, it is anti-pattern #6.
-- **Package to watch:** a `IncidentCommand` that only carries a `Incident` is anti-pattern #10, with the exact shape of the book case.
+The `criterio_entrada` negative set mentions missing CU-08 to exercise an entry gap. It does not supply a complete escalate/close release portfolio. The shipped normal fixtures do **not** demonstrate Technician participation, unavailable-technician/expired-agreement alternatives or a response-time SLA requirement. Multi-CU parser regressions elsewhere must be cited separately when claiming that coverage.
+
+Check actual requirements and design-decision origins rather than importing expectations from the book's domain or from a hypothetical larger support system. Source examples are not copied wholesale into this corpus.
 
 ---
 
@@ -69,7 +64,7 @@ Chosen because a CDR needs things that flat domains do not have: **multiple use 
 6. Does each significant operation within scope trace to an Operation-call addressed to that class, or to a declared contract/design delta? *(#8)*
 7. Are there classes without operations, entities without attributes, or multiple personalities? *(#7)*
 8. Is the important behavior drawn, without magic? *(#6)*
-9. Does each requirement arrive at a class, and each class is explained by a requirement — **in both directions**? *(#5)*
+9. Does each requirement reach a realizing behavior/design decision, and does each significant element have requirement, contract or justified technical provenance — in both directions? *(#5)*
 10. Did anyone who was going to build it participate, or was the rule declared not executed? *(#4)*
 11. Complete and accurate types, returns and parameters? *(#3)*
 12. Were requested/authorized headers generated and inspected, with a new question only for a genuine unresolved scope decision? *(#2)*
@@ -92,6 +87,6 @@ Any of these means that you are playing an example instead of reviewing:
 - Findings appear about elements **that are not in the input artifacts**.
 - A finding cites a line or an element that does not exist. **It is the most serious and the easiest to verify**: each finding must point to a verifiable location.
 - The findings look suspiciously similar to those from the technical support domain in a banking package.
-- **The check comes out clean on a large packet.** It contradicts the base rate of 0.4 failures/page, and the skill should say so itself — if it doesn't, the self-check is broken.
+- A clean result has no examination/coverage record, or seeded negative cases fail to detect their intended defects. **Zero findings alone is not an overfitting signal**, whatever the package size.
 - The verdict comes out `Accepted` with layers declared as not executed. It is the exact failure that `mkl-pdr-review` had and is explicitly tested here.
 - A cyclomatic complexity threshold is proposed. **Does not exist in the corpus**; To propose it is to invent.

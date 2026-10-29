@@ -2,9 +2,8 @@
 # English-edition adaptation: Copyright 2026 kingle.zhuang. See NOTICE for upstream attribution.
 """Generate code headers from the class model (CDR rule #2).
 
-    "Generate the code headers for your classes, and inspect them closely."
-    "See, we told you that you were about to generate code. Once you've done
-     so, inspect the code headers carefully."
+Translate modeled members into review skeletons and report conversion gaps.
+Compare the output with the source model before making implementation decisions.
 
 Why it works: A diagram tolerates ambiguity and a signature does not.
 `process(data)` looks plausible in a diagram box but exposes unanswered questions in
@@ -27,12 +26,16 @@ Exit codes:
 from __future__ import annotations
 
 import argparse
+import os
+from pathlib import Path
 import re
 import sys
+import tempfile
 
 sys.path.insert(0, __import__("os").path.dirname(__import__("os").path.abspath(__file__)))
 from validate_cdr import (  # Noqa: E402
-    parse_clases, parse_generalizaciones, leer, clave, norm, TIPOS_IMPRECISOS,
+    parse_clases, parse_generalizaciones, leer, clave, norm, parametros_de,
+    limites_multiplicidad, TIPOS_IMPRECISOS,
 )
 
 HUECO = "???"
@@ -55,15 +58,9 @@ def params_de(crudo: str) -> str:
     if not crudo:
         return ""
     partes = []
-    for p in crudo.split(","):
-        p = p.strip()
-        if not p:
-            continue
-        if ":" in p:
-            nombre, tipo = p.split(":", 1)
-            partes.append(f"{tipo_o_hueco(tipo)} {nombre.strip()}")
-        else:
-            partes.append(f"{HUECO} {p}")
+    for nombre, tipo, defecto in parametros_de(crudo):
+        valor = f" = {defecto}" if defecto else ""
+        partes.append(f"{tipo_o_hueco(tipo)} {nombre}{valor}")
     return ", ".join(partes)
 
 
@@ -104,17 +101,18 @@ def campos_de_relaciones(mod):
             continue          # inheritance, realization and dependency are not fields
         pares = []
         if "o-" in conn or "*-" in conn:          # the rhombus is on the left
-            pares = [(r["izq"], r["der"])]
+            pares = [(r["izq"], r["der"], r["multiplicidad_der"], r["multiplicidad_izq"])]
         elif "-o" in conn or "-*" in conn:        # the rhombus is on the right
-            pares = [(r["der"], r["izq"])]
+            pares = [(r["der"], r["izq"], r["multiplicidad_izq"], r["multiplicidad_der"])]
         elif ">" in conn and "<" not in conn:     # A --> B, navigable A->B
-            pares = [(r["izq"], r["der"])]
+            pares = [(r["izq"], r["der"], r["multiplicidad_der"], r["multiplicidad_izq"])]
         elif "<" in conn and ">" not in conn:     # A <-- B, navigable B->A
-            pares = [(r["der"], r["izq"])]
+            pares = [(r["der"], r["izq"], r["multiplicidad_izq"], r["multiplicidad_der"])]
         else:                                     # directionless association
-            pares = [(r["izq"], r["der"]), (r["der"], r["izq"])]
+            pares = [(r["izq"], r["der"], r["multiplicidad_der"], r["multiplicidad_izq"]),
+                     (r["der"], r["izq"], r["multiplicidad_izq"], r["multiplicidad_der"])]
         etiqueta = re.sub(r"[^\w]+", "", (r.get("etiqueta") or "").strip())
-        for origen, destino in pares:
+        for origen, destino, multiplicidad, mult_origen in pares:
             k = clave(origen)
             c = mod.clases.get(k)
             if not c or c.kind == "enum":
@@ -124,9 +122,9 @@ def campos_de_relaciones(mod):
             anterior = previo.get(ident)
             # The one that provides multiplicity remains: it is the only one that resolves
             # whether the field is a reference or a collection.
-            if anterior is None or (r["multiplicidad"] and not anterior[0]):
-                previo[ident] = (r["multiplicidad"], r["linea"])
-    return {k: [(d, et, m, ln) for (d, et), (m, ln) in sorted(v.items())]
+            if anterior is None or (multiplicidad and not anterior[0]):
+                previo[ident] = (multiplicidad, mult_origen, r["linea"])
+    return {k: [(d, et, m, mo, ln) for (d, et), (m, mo, ln) in sorted(v.items())]
             for k, v in out.items()}
 
 
@@ -153,6 +151,19 @@ def nombre_campo(destino: str, etiqueta: str, ocupados=()) -> str:
     return nombre
 
 
+def tipo_relacion(destino: str, multiplicidad: str) -> str:
+    """Preserve the relevant association end, including its optionality."""
+    limites = limites_multiplicidad(multiplicidad)
+    if limites is None:
+        return destino + HUECO
+    minimo, maximo = limites
+    if maximo == 0:
+        return destino + HUECO
+    if maximo is None or maximo > 1:
+        return f"List<{destino}>"
+    return f"Optional<{destino}>" if minimo == 0 else destino
+
+
 def generar(mod, identificador: str) -> tuple:
     padres = parse_generalizaciones(mod)
     campos = campos_de_relaciones(mod)
@@ -161,9 +172,9 @@ def generar(mod, identificador: str) -> tuple:
     L.append(f"/* HEADERS GENERATED FOR INSPECTION - {identificador}")
     L.append(" * Review instrument, NOT production code.")
     L.append(f" * Generated from: {mod.path}")
-    L.append(" * Do not edit: if something is wrong, it is wrong in the model.")
-    L.append(f" * Gaps are marked with {HUECO}; they are findings, not")
-    L.append(" * generator oversights. */")
+    L.append(" * Review the model and conversion diagnostics before correcting the source.")
+    L.append(f" * Gaps are marked with {HUECO}; review all unresolved or unsupported syntax.")
+    L.append(" * List/Optional preserve multiplicity; exact bounds remain in comments. */")
     L.append("")
 
     for k, c in mod.clases.items():
@@ -185,6 +196,18 @@ def generar(mod, identificador: str) -> tuple:
             extiende += " implements " + ", ".join(implementa_l)
         marca = "  // <<solucion>>" if c.es_solucion else ""
         L.append(f"public {abst}{decl} {c.nombre}{extiende} {{{marca}")
+        for ln, texto in c.no_parseadas:
+            huecos.append(
+                f"{c.nombre}: unsupported modeled member '{texto}' (L{ln}); "
+                f"it could not be translated faithfully")
+        for recepcion in c.recepciones:
+            # A UML reception is a separate behavioral declaration. Do not
+            # invent an ordinary operation or silently omit its contract.
+            L.append(f"    // Signal reception (not an Operation): "
+                     f"{recepcion.visibilidad}<<signal>> {recepcion.nombre}({recepcion.params})")
+            huecos.append(
+                f"{c.nombre}.{recepcion.nombre}: Signal reception requires a "
+                f"language-specific mapping (L{recepcion.linea}); review the preserved signature")
 
         if c.kind == "enum":
             # The constants of an enum have no type or visibility: they are not
@@ -202,12 +225,22 @@ def generar(mod, identificador: str) -> tuple:
                 huecos.append(f"{c.nombre}.{a.nombre}: untyped attribute (L{a.linea})")
             elif norm(t) in TIPOS_IMPRECISOS:
                 huecos.append(f"{c.nombre}.{a.nombre}: imprecise type '{t}' (L{a.linea})")
+            marcas = [f"derived property /{a.nombre}"] if a.derivado else []
+            if a.multiplicidad:
+                limites = limites_multiplicidad(a.multiplicidad)
+                t = tipo_relacion(t, a.multiplicidad)
+                marcas.append(f"multiplicity {a.multiplicidad}")
+                if limites is None or limites[1] == 0:
+                    huecos.append(
+                        f"{c.nombre}.{a.nombre}: unsupported property multiplicity "
+                        f"'{a.multiplicidad}' (L{a.linea}); cannot select a faithful field type")
             v = visibilidad(a.visibilidad)
             est = "static " if a.estatico else ""
-            L.append(f"    {v + ' ' if v else ''}{est}{t} {a.nombre};")
+            anotacion = "  // " + "; ".join(marcas) if marcas else ""
+            L.append(f"    {v + ' ' if v else ''}{est}{t} {a.nombre};{anotacion}")
 
         ocupados = {a.nombre for a in c.atributos}
-        for destino, etiqueta, tiene_mult, ln in campos.get(k, []):
+        for destino, etiqueta, multiplicidad, mult_origen, ln in campos.get(k, []):
             campo = nombre_campo(destino, etiqueta, ocupados)
             if campo != nombre_campo(destino, etiqueta):
                 huecos.append(
@@ -223,13 +256,25 @@ def generar(mod, identificador: str) -> tuple:
                     f"{c.nombre} -> {destino}: the relationship points to a class "
                     f"that the model does NOT declare (L{ln}). Either the class is missing, or "
                     f"over the relationship.")
-            if not tiene_mult:
+            tipo = tipo_relacion(destino, multiplicidad)
+            if not multiplicidad:
                 huecos.append(
                     f"{c.nombre} -> {destino}: relationship without multiplicity, not known "
                     f"Do you know if it is a reference or a collection (L{ln})")
-                L.append(f"    private {destino}{HUECO} {campo};")
-            else:
-                L.append(f"    private {destino} {campo};")
+            elif HUECO in tipo:
+                huecos.append(
+                    f"{c.nombre} -> {destino}: unsupported multiplicity "
+                    f"'{multiplicidad}' (L{ln}); cannot select a faithful field type")
+            if not mult_origen:
+                huecos.append(
+                    f"{c.nombre} -> {destino}: source multiplicity missing (L{ln})")
+            elif limites_multiplicidad(mult_origen) is None:
+                huecos.append(
+                    f"{c.nombre} -> {destino}: unsupported source multiplicity "
+                    f"'{mult_origen}' (L{ln}); its bounds cannot be verified")
+            marca_mult = (f"  // multiplicity {multiplicidad or HUECO}; "
+                          f"source multiplicity {mult_origen or HUECO}")
+            L.append(f"    private {tipo} {campo};{marca_mult}")
 
         if c.atributos or campos.get(k):
             L.append("")
@@ -271,6 +316,20 @@ def main(argv=None) -> int:
     p.add_argument("--salida", help="destination file; default stdout")
     args = p.parse_args(argv)
 
+    if args.salida:
+        origen, destino = Path(args.clases), Path(args.salida)
+        try:
+            mismo = origen.resolve() == destino.resolve()
+            if origen.exists() and destino.exists():
+                mismo = mismo or os.path.samefile(origen, destino)
+            if mismo:
+                print("Input and output must be different files; the source model was not changed.",
+                      file=sys.stderr)
+                return 2
+        except OSError as exc:
+            print(f"Cannot inspect output destination: {args.salida}: {exc}", file=sys.stderr)
+            return 2
+
     mod = parse_clases(args.clases, leer(args.clases))
     if not mod.clases:
         print("The model declares no class: nothing to generate.",
@@ -280,8 +339,19 @@ def main(argv=None) -> int:
     texto, huecos = generar(mod, args.id)
 
     if args.salida:
-        with open(args.salida, "w", encoding="utf-8") as fh:
-            fh.write(texto + "\n")
+        temporal = None
+        try:
+            with tempfile.NamedTemporaryFile(mode="w", encoding="utf-8", delete=False,
+                                             dir=str(Path(args.salida).parent)) as fh:
+                temporal = fh.name
+                fh.write(texto + "\n")
+            os.replace(temporal, args.salida)
+        except OSError as exc:
+            print(f"Cannot write headers: {args.salida}: {exc}", file=sys.stderr)
+            return 2
+        finally:
+            if temporal and os.path.exists(temporal):
+                os.unlink(temporal)
         print(f"Headers written to {args.salida}")
     else:
         print(texto)
@@ -289,7 +359,7 @@ def main(argv=None) -> int:
     print()
     print("WHAT THE TRANSLATION TO CODE REVEALS")
     if huecos:
-        print(f"  {len(huecos)} gap(s) that the diagram concealed:")
+        print(f"  {len(huecos)} gap(s) requiring model or conversion review:")
         for h in huecos:
             print(f"  - {h}")
     else:
@@ -297,9 +367,8 @@ def main(argv=None) -> int:
         print("  duplicate operations, unnecessary dependencies,")
         print("  and redundant parameters.")
     print()
-    print(f"Applicable inspection rate: {100} pages/hour or 200 lines/hour "
-          f"(IEEE 1028 §6.5.2, row 'Source code'). It is much faster than "
-          f"review design, so this check takes little time.")
+    print("Historical planning assumption: 100 pages/hour or 200 lines/hour. "
+          "Calibrate this estimate to the actual review team; it is not an acceptance threshold.")
     print("Remember: this is NOT production code.")
     return 0
 

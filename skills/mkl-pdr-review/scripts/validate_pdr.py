@@ -259,6 +259,7 @@ class Robustez:
     elements: dict = field(default_factory=dict)
     relations: list = field(default_factory=list)
     note_text: str = ""
+    cu_ids: set = field(default_factory=set)
 
 
 @dataclass
@@ -274,35 +275,45 @@ class Spec:
 # Parsers
 # --------------------------------------------------------------------------
 
-def parse_robustez(path: str, text: str) -> Robustez:
-    r = Robustez(path=path, text=text)
-    lines = text.split("\n")
+def codigo_modelo(text: str, conservar_comentarios=False) -> tuple[str, str]:
+    """Blank annotations in executable notation, preserving source locations.
 
-    # Isolate note/legend blocks: their contents are not relations, but their text
-    # It serves to cover flows.
-    in_note = False
-    cuerpo, notas = [], []
-    for ln in lines:
-        s = ln.strip().lower()
-        if re.match(r"^(note|legend)\b", s) and not s.startswith("note over") is None:
-            pass
-        if re.match(r"^(note|legend)\b", s):
-            in_note = True
-            notas.append(ln)
-            continue
-        if in_note:
-            notas.append(ln)
-            if re.match(r"^end\s*(note|legend)\b", s) or s == "endnote" or s == "endlegend":
-                in_note = False
-            continue
-        cuerpo.append(ln)
-    r.note_text = "\n".join(notas)
-    cuerpo_txt = "\n".join(cuerpo)
+    PDR may use note text for flow labels, but a note cannot declare objects or
+    links. Single-line/quoted notes must not consume the next declaration.
+    """
+    text = re.sub(r"^[ \t]*/'[\s\S]*?(?:'/|\Z)",
+                  lambda m: "\n" * m.group().count("\n"), text, flags=re.MULTILINE)
+    codigo, notas, en_nota = [], [], False
+    for crudo in text.split("\n"):
+        ln = crudo.strip()
+        if en_nota:
+            notas.append(crudo)
+            codigo.append("")
+            if re.match(r"^end\s*(?:[hr]?note|legend)\b", ln, re.IGNORECASE):
+                en_nota = False
+        elif re.match(r"^(?:[hr]?note|legend)\b", ln, re.IGNORECASE):
+            notas.append(crudo)
+            codigo.append("")
+            header = re.sub(r'"(?:\\.|[^"\\])*"', "", ln)
+            en_nota = (":" not in header and not re.match(r'^(?:[hr]?note)\s+"', ln, re.IGNORECASE)
+                       and not re.search(r"\bend\s*(?:[hr]?note|legend)\b", ln, re.IGNORECASE))
+        else:
+            codigo.append("" if ln.startswith("'") and not conservar_comentarios else crudo)
+    return "\n".join(codigo), "\n".join(notas)
+
+
+def parse_robustez(path: str, text: str) -> Robustez:
+    cuerpo_txt, notas = codigo_modelo(text)
+    # Existing packages place CU identity in a single-line metadata comment.
+    # Keep that identity without allowing comment contents to declare the model.
+    identidad, _ = codigo_modelo(text, conservar_comentarios=True)
+    cu_ids = {f"CU-{int(i):02d}" for i in re.findall(r"\bCU-(\d+)\b", identidad)}
+    r = Robustez(path=path, text=cuerpo_txt, note_text=notas, cu_ids=cu_ids)
 
     for m in DECL_RE.finditer(cuerpo_txt):
         label = m.group("label") or m.group("bare") or ""
         alias = m.group("alias") or m.group("bare") or label
-        line = cuerpo_txt[: m.start()].count("\n") + 1
+        line = cuerpo_txt[: m.start("type")].count("\n") + 1
         r.elements[alias] = Element(alias, label, m.group("type").lower(), line)
 
     for m in REL_RE.finditer(cuerpo_txt):
@@ -310,7 +321,7 @@ def parse_robustez(path: str, text: str) -> Robustez:
         right = m.group("right").strip('"')
         if left.lower() in ("startuml", "enduml"):
             continue
-        line = cuerpo_txt[: m.start()].count("\n") + 1
+        line = cuerpo_txt[: m.start("left")].count("\n") + 1
         r.relations.append(
             (left, right, (m.group("label") or "").strip(), line, m.group("conn"))
         )
@@ -319,6 +330,7 @@ def parse_robustez(path: str, text: str) -> Robustez:
 
 def parse_dominio(text: str) -> dict:
     """Returns {clave: (nombre_original, {atributos})}."""
+    text, _notas = codigo_modelo(text)
     out = {}
     for m in CLASS_RE.finditer(text):
         name = m.group("q") or m.group("n")
@@ -346,6 +358,7 @@ def parse_dominio(text: str) -> dict:
 
 
 def parse_casos_uso(text: str) -> set[str]:
+    text, _notas = codigo_modelo(text)
     actores = set()
     for m in UC_ACTOR_RE.finditer(text):
         label = m.group("label") or m.group("bare") or ""
@@ -357,6 +370,7 @@ def parse_casos_uso(text: str) -> set[str]:
 
 
 def parse_spec(path: str, text: str) -> Spec:
+    text = re.sub(r"<!--[\s\S]*?(?:-->|\Z)", "", text)
     s = Spec(path=path, text=text)
     mid = re.search(r"\bCU-(\d+)\b", text)
     if mid:
@@ -369,15 +383,25 @@ def parse_spec(path: str, text: str) -> Spec:
         if len(cuerpo) > 8 and not cuerpo.startswith("-"):
             s.pasos.append((int(m.group(1)), cuerpo))
 
-    # Alternative / exception flow blocks: from their identifier to the
-    # next identifier or header.
-    marcas = [(m.start(), f"{m.group(1).upper()}-{int(m.group(2)):02d}")
-              for m in FLUJO_RE.finditer(text)]
+    # Definitions begin at a flow heading, a first-cell ID, or a bold/plain
+    # flow label. References and FA-01.1 substeps do not terminate a definition.
+    marcas = []
+    pos = 0
+    for linea in text.splitlines(keepends=True):
+        heading = re.match(r"^\s*#{1,6}\s+", linea)
+        flujo = FLUJO_RE.search(linea)
+        inicio = re.match(r"^\s*(?:\|\s*)?(?:\*\*)?(?:FA|FE)\s*[-_ ]?\s*\d+\b", linea, re.IGNORECASE)
+        fid = None
+        if flujo and (heading or inicio) and not re.match(r"\.\d", linea[flujo.end():]):
+            fid = f"{flujo.group(1).upper()}-{int(flujo.group(2)):02d}"
+        if heading or fid:
+            marcas.append((pos, fid))
+        pos += len(linea)
     for i, (pos, fid) in enumerate(marcas):
+        if fid is None:
+            continue
         fin = marcas[i + 1][0] if i + 1 < len(marcas) else len(text)
         bloque = text[pos:fin]
-        # It keeps the longest block seen for that id (the definition, not
-        # mere references).
         if len(bloque) > len(s.flujos.get(fid, "")):
             s.flujos[fid] = bloque
     return s
@@ -412,6 +436,9 @@ def check_sintaxis_robustez(rob: Robustez, errores: list, avisos: list) -> int:
                 f"{le.etype}<->{re_.etype} between '{le.display}' and '{re_.display}'"
             )
 
+    if not rob.elements:
+        viol += 1
+        errores.append(f"{tag} guideline #5 - the diagram has no usable robustness declarations")
     controles = [e for e in rob.elements.values() if e.etype == "control"]
     if rob.elements and not controles:
         viol += 1
@@ -534,10 +561,13 @@ def check_alternos_sin_comportamiento(spec: Spec, errores: list) -> int:
     """Guideline #7, second half: listing is not specifying."""
     n = 0
     for fid, bloque in sorted(spec.flujos.items()):
-        # Behavior = at least one step where the system does something.
-        tiene_sistema = re.search(r"\b(?:el\s+sistema|the\s+system)\b|\b(?:sistema|system)\s+\w+", norm(bloque))
-        tiene_pasos = len(re.findall(r"^\s*(?:\|\s*)?\d+[.)]", bloque, re.MULTILINE)) >= 1
-        if not (tiene_sistema and tiene_pasos):
+        # Both numbered lists and the published FA-01.1 table syntax carry
+        # behavior. The System must occur in a step, not merely in its summary.
+        pasos = re.findall(
+            r"^\s*(?:\|\s*)?(?:(?:FA|FE)\s*[-_ ]?\s*\d+\.\d+|\d+)[.)]?"
+            r"\s*(?:\|\s*|[.)]\s*|\s+)(.+)$", bloque, re.MULTILINE | re.IGNORECASE)
+        tiene_sistema = any(re.search(r"\b(?:sistema|system)\b", norm(paso)) for paso in pasos)
+        if not tiene_sistema:
             n += 1
             errores.append(
                 f"[{spec.path}] guideline #7 - flow {fid} is listed but does not "
@@ -636,31 +666,49 @@ def leer(path: str) -> str:
     try:
         with open(path, "r", encoding="utf-8") as fh:
             return fh.read()
-    except FileNotFoundError:
-        print(f"File does not exist: {path}", file=sys.stderr)
+    except (OSError, UnicodeError) as exc:
+        print(f"Cannot read input {path}: {exc}", file=sys.stderr)
         raise SystemExit(2)
 
 
-def emparejar(robs: list, specs: list) -> list:
-    """Match each robustness diagram with its specification by CU-XX, and if
-    There is no clue, by position."""
-    pares = []
-    usadas = set()
-    for rob in robs:
+def emparejar(robs: list, specs: list, avisos=None) -> list:
+    """Pair one-to-one by explicit CU identity; use position only without IDs.
+
+    An explicit conflicting or duplicated identity cannot be repaired by
+    silently borrowing another use case's evidence.
+    """
+    avisos = avisos if avisos is not None else []
+    ids_rob = [rob.cu_ids for rob in robs]
+    usos_rob, usos_spec = {}, {}
+    for ids in ids_rob:
+        for cu in ids:
+            usos_rob[cu] = usos_rob.get(cu, 0) + 1
+    for sp in specs:
+        if sp.cu_id:
+            usos_spec[sp.cu_id] = usos_spec.get(sp.cu_id, 0) + 1
+    usadas, pares = set(), []
+    for rob, ids in zip(robs, ids_rob):
         elegida = None
-        ids_rob = set(re.findall(r"\bCU-(\d+)\b", rob.text))
-        for sp in specs:
-            if sp.cu_id and sp.cu_id in {f"CU-{int(i):02d}" for i in ids_rob}:
-                elegida = sp
-                break
-        if elegida is None:
-            for sp in specs:
-                if id(sp) not in usadas:
-                    elegida = sp
-                    break
+        ambiguo = len(ids) > 1 or any(usos_rob[cu] > 1 or usos_spec.get(cu, 0) > 1 for cu in ids)
+        if ambiguo:
+            avisos.append(f"[{rob.path}] ambiguous CU identity; no specification can be paired reliably")
+        elif ids:
+            elegida = next((sp for sp in specs if id(sp) not in usadas and sp.cu_id in ids), None)
+        else:
+            # Retain legacy positional pairing only where identity is absent
+            # on at least one side and does not contradict known CU links.
+            elegida = next((sp for sp in specs if id(sp) not in usadas
+                            and usos_spec.get(sp.cu_id, 0) <= 1
+                            and (not sp.cu_id or sp.cu_id not in usos_rob)), None)
+        if elegida is None and not ambiguo and ids:
+            elegida = next((sp for sp in specs if id(sp) not in usadas and not sp.cu_id), None)
         if elegida is not None:
             usadas.add(id(elegida))
         pares.append((rob, elegida))
+    for sp in specs:
+        if id(sp) not in usadas:
+            motivo = " (ambiguous duplicate CU identity)" if usos_spec.get(sp.cu_id, 0) > 1 else ""
+            avisos.append(f"[{sp.path}] unpaired specification{motivo}: no robustness diagram verifies this use case")
     return pares
 
 
@@ -673,6 +721,7 @@ def validar(robs, specs, dominio, actores_cu, hay_dominio, hay_spec, hay_cu):
         "violaciones_sintaxis": 0,
     }
     capas = {}
+    pairing_incomplete = False
 
     # --- Guideline #5 and #2: by diagram ---
     viol = 0
@@ -735,7 +784,10 @@ def validar(robs, specs, dominio, actores_cu, hay_dominio, hay_spec, hay_cu):
     if hay_spec:
         total_sin_rama, total_sin_comp = 0, 0
         cub_tot, pas_tot = 0, 0
-        for rob, spec in emparejar(robs, specs):
+        pares = emparejar(robs, specs, avisos)
+        pairing_incomplete = (any(spec is None for _rob, spec in pares)
+                              or len({id(spec) for _rob, spec in pares if spec is not None}) != len(specs))
+        for rob, spec in pares:
             if spec is None:
                 avisos.append(
                     f"[{rob.path}] could not be matched to any specifications; "
@@ -759,6 +811,9 @@ def validar(robs, specs, dominio, actores_cu, hay_dominio, hay_spec, hay_cu):
         capas["#10 highlighter test"] = "executed (approximate)"
         capas["#7 alternate courses"] = "executed"
         capas["#6 user/system dialog"] = "executed"
+        if pairing_incomplete:
+            capas["#10 highlighter test"] = "partial - unpaired or ambiguous CU artifacts"
+            capas["#7 alternate courses"] = "partial - unpaired or ambiguous CU artifacts"
     else:
         for g in ("#10 highlighter test", "#7 alternate courses",
                   "#6 user/system dialog"):
@@ -779,7 +834,7 @@ def validar(robs, specs, dominio, actores_cu, hay_dominio, hay_spec, hay_cu):
     # Layers degraded by an ABSENT input that could have been provided. It is what
     # only one who must push the verdict to the intermediate state; the layers
     # partials by nature do not count (see verdict()).
-    degradadas = []
+    degradadas = ["CU artifact pairing"] if pairing_incomplete else []
     if not hay_dominio:
         degradadas += ["#9 entities in the domain", "#8 data flow"]
     if not hay_spec:
@@ -892,13 +947,20 @@ def main(argv=None) -> int:
 
     robs = [parse_robustez(path, leer(path)) for path in args.robustez]
     specs = [parse_spec(path, leer(path)) for path in args.spec]
+    specs_utiles = [spec for spec in specs if spec.pasos]
     dominio = parse_dominio(leer(args.dominio)) if args.dominio else {}
     actores_cu = parse_casos_uso(leer(args.casos_uso)) if args.casos_uso else set()
 
     errores, avisos, infos, metricas, capas, degradadas = validar(
-        robs, specs, dominio, actores_cu,
-        hay_dominio=bool(args.dominio), hay_spec=bool(specs), hay_cu=bool(args.casos_uso),
+        robs, specs_utiles, dominio, actores_cu,
+        hay_dominio=bool(dominio), hay_spec=bool(specs_utiles), hay_cu=bool(actores_cu),
     )
+
+    for spec in specs:
+        if not spec.pasos:
+            avisos.append(f"[{spec.path}] specification has no usable numbered behavior; dependent checks are not fully verified")
+            if "unusable supplied specification" not in degradadas:
+                degradadas.append("unusable supplied specification")
 
     print("Preliminary Design Review (PDR) Validation")
     print("=" * 52)

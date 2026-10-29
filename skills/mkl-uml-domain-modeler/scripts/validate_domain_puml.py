@@ -195,9 +195,30 @@ def generalization_pairs(text: str) -> set[tuple[str, str]]:
                 pairs.add((names[1], names[0]))  # child, parent
     return pairs
 
+def model_code(text: str) -> str:
+    """Mask annotations so their examples cannot become domain evidence."""
+    text = re.sub(r"^[ \t]*/'[\s\S]*?(?:'/|\Z)",
+                  lambda m: "\n" * m.group().count("\n"), text, flags=re.M)
+    lines, annotation = [], False
+    for raw in text.split("\n"):
+        line = raw.strip()
+        if annotation:
+            lines.append("")
+            if re.match(r"^end\s*(?:[hr]?note|legend)\b", line, re.I):
+                annotation = False
+        elif re.match(r"^(?:[hr]?note|legend)\b", line, re.I):
+            lines.append("")
+            header = re.sub(r'"(?:\\.|[^"\\])*"', "", line)
+            annotation = not (":" in header or re.match(r'^[hr]?note\s+"', line, re.I))
+        else:
+            lines.append("" if line.startswith("'") else raw)
+    return "\n".join(lines)
+
+
 def validate(text: str) -> tuple[list[str], list[str]]:
     errors: list[str] = []
     warnings: list[str] = []
+    original_text, text = text, model_code(text)
 
     stripped = text.strip()
     if not stripped.startswith("@startuml"):
@@ -230,6 +251,8 @@ def validate(text: str) -> tuple[list[str], list[str]]:
                 warnings.append(f"Identifier-like attribute in {class_name}: {line}")
 
     classes = detect_classes(text)
+    if not classes:
+        errors.append("The domain model has no usable class declarations.")
     for name in classes:
         hit = technical_term_in(name)
         if hit:
@@ -290,7 +313,7 @@ def validate(text: str) -> tuple[list[str], list[str]]:
             warnings.append(f"Hub-like class with {count} relationships: {name}. Review, do not automatically remove; preserve if it is a genuine central domain concept or needed for use-case traceability.")
 
     # In clean code-only output, comments are usually unnecessary unless the user requested annotations.
-    comment_lines = [line for line in text.splitlines() if line.strip().startswith("'")]
+    comment_lines = [line for line in original_text.splitlines() if line.strip().startswith("'")]
     if comment_lines:
         warnings.append("Comment lines detected. Remove role declarations, metadata, or explanatory comments from code-only PlantUML unless annotated output was requested.")
 
@@ -315,8 +338,8 @@ def main(argv: list[str]) -> int:
     path = Path(argv[1])
     try:
         text = read_model(path)
-    except Exception as exc:
-        print(f"ERROR: {exc}")
+    except (OSError, UnicodeError) as exc:
+        print(f"ERROR: cannot read UTF-8 input {path}: {exc}")
         return 2
 
     errors, warnings = validate(text)

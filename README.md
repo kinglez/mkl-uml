@@ -76,6 +76,8 @@ Standalone work is the default. Formal reviews are requested explicitly. Operati
 - [Usage examples](docs/EXAMPLES.md): first model, all eight skills and worked artifacts.
 - [MKL methodology](docs/MKL_METHODOLOGY.md): the complete design workflow.
 - [Bibliography](docs/BIBLIOGRAPHY.md): primary sources and attribution.
+- [Third-party sources](docs/THIRD_PARTY_SOURCES.md): content provenance and redistribution dispositions.
+- [Release notes](docs/RELEASE_NOTES.md): the local candidate and published-version boundaries.
 - [Validation record](docs/VALIDATION.md): executed checks and known limits.
 
 MKL is this edition's branding for an adapted use-case-driven workflow. The source literature remains attributed to its original authors. Skill instructions and outputs are English by default; request another output language when needed.

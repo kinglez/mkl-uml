@@ -19,7 +19,7 @@ Chosen because it requires structures absent from flat domains: **real inheritan
 - **Expected inheritance:** material-specific `Loan` subtypes **if and only if** sequences show varying behavior; otherwise the hierarchy is invented.
 - **Expected solution class:** a policy or due-date calculator, marked `<<solution>>` and justified; without that stereotype it is anti-pattern #2.
 - **Typical operations:** `Copy.checkAvailability()`, `Member.checkActivePenalty()`, `Loan.register(...)`. Each must originate in a message **addressed to that class**. Due-date calculation belongs to the loan policy, not `Loan` or `Member`. Misplacing it is anti-pattern #15, covered by `operacion_clase_equivocada`.
-- **Domain trap:** `Librarian` is an actor, **not a class**. A design class with that name confuses an actor with an object.
+- **Domain trap:** an external `Librarian` role does not automatically imply a design class. A separately evidenced staff/account concept may be modeled; distinguish its identity and responsibilities from the actor role.
 - **Second trap:** `Penalty` tempts a boolean attribute on `Member`. Dates, amounts, or history in the text imply a class; “penalized member” alone may imply an attribute. Decide from the specification.
 - **Anemia risk:** all calculation in `LoanManager` while `Loan` has only attributes: #4.
 
@@ -41,12 +41,12 @@ Chosen because it requires structures absent from flat domains: **real inheritan
 
 - **Classes:** `Patient`, `Practitioner`, `Consultation`, `Diagnosis`.
 - **Domain sensitivity:** do not invent clinical entities missing from the domain model. Put candidates in the delta with supporting text.
-- **Trap:** the full medical record may look like a class but often **aggregates** consultations. Use existential dependency to decide.
+- **Trap:** choose the medical-record/consultation relationship from evidenced ownership and lifecycle constraints. A whole/part phrase or existential dependency alone does not establish UML composition.
 
 ## Logistics — “Dispatch shipment”
 
 - **Classes:** `Shipment`, `Vehicle`, `Carrier`, `Waybill`, `Route`.
-- **Clear composition:** `Route` and its legs; a leg cannot exist without a route. Good for distinguishing composition from aggregation.
+- **Composition candidate:** `Route` and its legs when the supplied constraints establish exclusive composite ownership and deletion of still-owned parts with the whole. State whether detachment is allowed; otherwise retain an association until ownership is resolved.
 - **Expected solution classes:** tracking-service integration. Mark them explicitly.
 
 ## Industrial monitoring — “View alerts”
@@ -61,20 +61,20 @@ Chosen because it requires structures absent from flat domains: **real inheritan
 
 **Provenance**, the skill's central concern:
 
-1. Does every operation originate in a sequence message?
+1. Does every significant operation have a classified call, interface/framework contract, architecture constraint or justified design-decision origin within the selected scope?
 2. Does every problem class exist in the domain under the same name or with declared drift?
-3. Does every class **absent** from the domain carry `<<solution>>` and a rationale?
-4. Does every attribute trace to specification, prototype, or domain?
-5. Does every relationship come from the domain or an operation requirement?
+3. For a class absent from the domain, is it a justified `<<solution>>` class or a documented late domain discovery awaiting reconciliation?
+4. Does every attribute trace to domain/scenario/interface evidence or a documented architecture, configuration, framework contract or design decision? Technical/internal state need not be named in business use cases.
+5. Does every relationship have domain, collaboration, navigation, ownership, interface or architecture/design-decision evidence?
 
 **Method:**
 
-6. No *getters* or *setters*?
+6. Are trivial accessors omitted where they add no useful contract detail, with any necessary accessor behavior justified?
 7. Complete operation signatures: typed parameters and return values?
-8. No entity left without attributes?
+8. Is modeled state appropriate to the class's role, with absent state investigated rather than invented?
 9. No class left without operations without justification?
 10. Multiplicities supported rather than assumed?
-11. Aggregation/composition decided using existential dependency?
+11. Does composition follow evidenced exclusive ownership and deletion semantics, including any permitted detachment, rather than assumed permanent lifetime dependency?
 
 **Pipeline consistency:**
 
@@ -88,8 +88,8 @@ Chosen because it requires structures absent from flat domains: **real inheritan
 
 Any signal indicates fixture reproduction instead of assembly from inputs:
 
-- Classes, attributes, or operations appear **in no input artifact**.
+- Classes, attributes or operations have no supported scenario, domain, interface, architecture, configuration or design-decision origin after checking the selected scope.
 - Structure matches a listed domain without support: same class count or hierarchy shape.
 - Refactoring delta proposes classes unsupported by text.
 - A finding cites a nonexistent line or element. **Most serious and easiest to check:** every finding must identify a verifiable location.
-- Incomplete inputs produce a clean model on the first pass. An honest assembler **finds** upstream gaps; none can be more suspicious than several.
+- Incomplete inputs produce an unqualified completeness claim. A scoped model may have no located defects while dependent checks remain partial; report actual evidence gaps without inventing findings.
