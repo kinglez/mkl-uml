@@ -1,0 +1,64 @@
+@startuml
+title DR-01 · CU-01 Quote cart — preliminary BCE responsibilities
+left to right direction
+skinparam linetype ortho
+skinparam shadowing false
+skinparam nodesep 75
+skinparam ranksep 90
+
+actor "Shopper" as ACT_Shopper
+boundary "Quote request\nport" as B_Quote
+control "Check Cart\nrequest" as C_CheckRequest
+control "Resolve trusted\ncatalog values" as C_ResolveCatalog
+control "Total\nCart lines" as C_Total
+control "Check Coupon\neligibility" as C_CheckCoupon
+control "Apply selected\ndiscount" as C_Discount
+control "Complete\nPriceQuote" as C_Complete
+control "Return\nrefusal" as C_Refuse #LightCoral
+entity "Cart" as E_Cart
+entity "CartLine" as E_CartLine
+entity "Product" as E_Product
+entity "Coupon" as E_Coupon #LightBlue
+entity "PriceQuote" as E_PriceQuote
+
+ACT_Shopper -- B_Quote : 1 request\n7 result/refusal
+B_Quote -- C_CheckRequest : 1-2 request\nFE-01
+C_CheckRequest -- E_Cart : 2 nonempty
+C_CheckRequest -- E_CartLine : 2 quantity
+C_CheckRequest -- C_ResolveCatalog : 3 Product codes
+C_CheckRequest -- C_Refuse : FE-01
+C_ResolveCatalog -- E_Product : 3 trusted price\nFE-02 / FE-03
+C_ResolveCatalog -- E_Coupon : 5 trusted Coupon\nFA-01 / FA-02\nFE-04
+C_ResolveCatalog -- C_Refuse : FE-02 / FE-03 / FE-04
+C_ResolveCatalog -- C_Total : 4
+C_Total -- E_CartLine : 4 lines
+C_Total -- E_Product : 4 cents
+C_Total -- C_CheckCoupon : 5 subtotal
+C_CheckCoupon -- E_Coupon : FA-01 / FA-02\nconfiguration and eligibility
+C_CheckCoupon -- C_Refuse : FE-05 / FE-06 / FE-07
+C_CheckCoupon -- C_Discount : 5; FA-01..FA-03
+C_Discount -- C_Complete : 6 amounts
+C_Complete -- E_PriceQuote : 6
+C_Complete -- B_Quote : 7 PriceQuote
+C_Refuse -- B_Quote : FE-01..FE-07\nreason, no quote
+
+note bottom of B_Quote
+  Machine interface: no invented GUI.
+  Client supplies codes/quantities, CNY, optional code and explicit UTC instant.
+  A client price has no authoritative input field.
+end note
+note bottom of E_Product
+  Product and Coupon values come from the internal
+  trusted server-side catalog snapshot.
+  Trust does not waive configuration validation.
+end note
+legend bottom
+  Flow text: 1 submit; 2 check request; 3 resolve trusted Product;
+  4 total lines; 5 choose discount; 6 complete PriceQuote; 7 return.
+  FA-01 valid fixed; FA-02 valid percentage; FA-03 zero subtotal.
+  FE-01 invalid request; FE-02 unknown Product; FE-03 invalid Product;
+  FE-04 unknown Coupon; FE-05 expired; FE-06 minimum; FE-07 invalid Coupon.
+  All paths are read-only. Failure produces no successful PriceQuote.
+  Edges show communication responsibilities, not time or method calls.
+endlegend
+@enduml

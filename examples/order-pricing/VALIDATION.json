@@ -1,0 +1,136 @@
+{
+  "checked_at": "2026-10-30T02:05:37.650198+00:00",
+  "edition": "English repository publication of the order-pricing reference example",
+  "passed": true,
+  "status": "PASS",
+  "source_skill_version": "1.0.2",
+  "reference_unittest_methods": 15,
+  "oracle_defined_cases": 30,
+  "diagrams": 6,
+  "workflow_stages": 8,
+  "design_classifiers": 17,
+  "checks": [
+    {
+      "name": "01-domain",
+      "exit_code": 0,
+      "passed": true
+    },
+    {
+      "name": "02-use-cases",
+      "exit_code": 0,
+      "passed": true
+    },
+    {
+      "name": "03-specification",
+      "exit_code": 0,
+      "passed": true
+    },
+    {
+      "name": "04-robustness",
+      "exit_code": 0,
+      "passed": true
+    },
+    {
+      "name": "05-pdr",
+      "exit_code": 0,
+      "passed": true
+    },
+    {
+      "name": "06-sequence-1",
+      "exit_code": 0,
+      "passed": true
+    },
+    {
+      "name": "06-sequence-2",
+      "exit_code": 0,
+      "passed": true
+    },
+    {
+      "name": "07-classes",
+      "exit_code": 0,
+      "passed": true
+    },
+    {
+      "name": "08-cdr",
+      "exit_code": 0,
+      "passed": true
+    },
+    {
+      "name": "08-headers",
+      "exit_code": 0,
+      "passed": true
+    },
+    {
+      "name": "09-reference-tests",
+      "exit_code": 0,
+      "passed": true
+    },
+    {
+      "name": "09-visible-examples",
+      "exit_code": 0,
+      "passed": true
+    },
+    {
+      "name": "09-extension",
+      "exit_code": 0,
+      "passed": true
+    },
+    {
+      "name": "10-plantuml-syntax",
+      "exit_code": 0,
+      "passed": true
+    },
+    {
+      "name": "10-plantuml-svg",
+      "exit_code": 0,
+      "passed": true
+    },
+    {
+      "name": "10-plantuml-png",
+      "exit_code": 0,
+      "passed": true
+    }
+  ],
+  "rendering_requested": true,
+  "review_baselines_match": true,
+  "reviewed_headers_match": true,
+  "current_publication_runtimes": [
+    {
+      "python": "3.14.7",
+      "checks": 16,
+      "reference_unittest_methods": 15,
+      "passed": true
+    },
+    {
+      "python": "3.9.6",
+      "checks": 13,
+      "reference_unittest_methods": 15,
+      "passed": true
+    }
+  ],
+  "repository_regression_suite": {
+    "unittest_methods": 206,
+    "passed": true
+  },
+  "checkout_portability_probe": {
+    "passed": true,
+    "scope": "Isolated LF-to-CRLF text checkout, path containing spaces and Unicode, verifier invoked from unrelated working directory with inferred repository root. This simulates checkout encoding/path conditions, not the Windows operating system.",
+    "text_files_converted": 466,
+    "exit_code": 0,
+    "checks": 13,
+    "reference_unittest_methods": 15
+  },
+  "extension_result": {
+    "ok": true,
+    "subtotal": 25500,
+    "discount": 2000,
+    "payable": 23500,
+    "currency": "CNY"
+  },
+  "core_source_unchanged_during_extension": true,
+  "independent_publication_review": "PUBLICATION_REVIEW.md",
+  "origin_and_portability_edits": "ORIGIN.json",
+  "human_approval": false,
+  "formal_gate_disposition": "NOT FULLY VERIFIED",
+  "evidence_policy": "This is an executed publication summary, not the original local review record. Exact commands and diagnostic logs are regenerated under validation/latest/ and are excluded from Git. OS-specific CI results are published in GitHub Actions; the CRLF/path probe does not claim Windows OS execution."
+}

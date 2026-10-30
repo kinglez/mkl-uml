@@ -1,0 +1,24 @@
+@startuml
+' DS-02 — technical verification interaction; not another user goal or CU branch.
+title DS-02 · RNF-02 read-only observation\nTest harness scope, not CU-01 flow coverage
+skinparam style strictuml
+skinparam shadowing false
+skinparam defaultFontSize 13
+skinparam responseMessageBelowArrow true
+hide footbox
+participant TestHarness as INF_Test
+participant InMemoryCatalog as INF_Catalog
+boundary QuoteRequestPort as B_Port
+INF_Test -> INF_Catalog : snapshot() <<synchCall>>
+INF_Catalog --> INF_Test : deep copy of catalog state before <<reply>>
+INF_Test -> B_Port : handle(sameRequestAtSameInstant) <<synchCall>>
+B_Port --> INF_Test : success or refusal result <<reply>>
+INF_Test -> INF_Catalog : snapshot() <<synchCall>>
+INF_Catalog --> INF_Test : deep copy of catalog state after <<reply>>
+note over INF_Test
+  Compare before/after snapshots and the unchanged request.
+  Repeat the same call, compare both outputs to the literal oracle.
+  Actual executable assertions are in the reference tests.
+  This interaction does not claim that an empty order repository proves no order.
+end note
+@enduml

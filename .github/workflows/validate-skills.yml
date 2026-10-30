@@ -2,13 +2,29 @@ name: Validate skills
 
 on:
   pull_request:
-    paths: ["skills/**", "tools/**", "bin/**", "package.json", "tests/**", "docs/**", "README.md", "LICENSE", "NOTICE", ".github/workflows/validate-skills.yml"]
+    paths: ["skills/**", "tools/**", "bin/**", "package.json", "tests/**", "docs/**", "examples/**", "README.md", "LICENSE", "NOTICE", ".github/workflows/validate-skills.yml"]
   push:
     branches: [main]
-    paths: ["skills/**", "tools/**", "bin/**", "package.json", "tests/**", "docs/**", "README.md", "LICENSE", "NOTICE", ".github/workflows/validate-skills.yml"]
+    paths: ["skills/**", "tools/**", "bin/**", "package.json", "tests/**", "docs/**", "examples/**", "README.md", "LICENSE", "NOTICE", ".github/workflows/validate-skills.yml"]
   workflow_dispatch: {}
 
 jobs:
+  reference-example:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+      - run: python examples/order-pricing/scripts/verify.py
+        env:
+          PYTHONUTF8: "1"
+          PYTHONDONTWRITEBYTECODE: "1"
+
   assertions:
     strategy:
       fail-fast: false

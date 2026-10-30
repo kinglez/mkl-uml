@@ -5,6 +5,8 @@ Install the skills, then open your target project in Codex or Claude Code. Send 
 
 The prompts below use one technical support desk scenario. Output paths under `uml/` are example paths the prompts ask the agent to create, not files already created in your project. Run each relevant step after its inputs exist. You can also paste or attach your own requirements and diagrams instead of using these paths. Skill installation does not run the examples.
 
+For a completed reference with all eight stages, rendered diagrams, PDR/CDR correction records and executable tests, read the [order-pricing example](../examples/order-pricing/README.md) and its [replay prompts](../examples/order-pricing/HOW_TO_REPLAY.md). The complete example is also [available on GitHub](https://github.com/kinglez/mkl-uml/tree/main/examples/order-pricing).
+
 ## 1. Domain model
 
 Start with business behavior; no existing diagrams are required.
@@ -84,6 +86,7 @@ Expected: actionable findings and coverage, not an automatic formal approval. Re
 
 ```text
 $mkl-uml-sequence-diagram
+Read uml/pdr-review.md first and resolve any findings that block detailed design.
 Read uml/register-incident.md, uml/robustness.puml, uml/domain.puml and
 uml/requirements.md. Create DS-07 in uml/sequence.puml for CU-07.
 Include the authorized flow, FA-01 and FA-02, with explicit guards.

@@ -1,0 +1,26 @@
+{
+  "stage": "analysis",
+  "baseline_kind": "English publication source checksum record",
+  "hash_policy": "SHA-256 of UTF-8 text with universal-newline normalization to LF",
+  "purpose": "Detect changes to this publication edition. Checksum equality does not supply independent review or formal approval.",
+  "human_approval": false,
+  "formal_gate_disposition": "NOT FULLY VERIFIED",
+  "review_record": "05-pdr/PDR-01.md",
+  "publication_review": "PUBLICATION_REVIEW.md",
+  "inputs_sha256": {
+    "00-input/ACCEPTANCE_ORACLE.md": "306554ccc74f1870c91022540dd08ba1d4cc6911957b673c80349c832da624a5",
+    "00-input/acceptance-oracle.json": "1805b35c58b36fda8ef329e0378ef4871f517e78d2cfb877d4bde7ffd1e749d3",
+    "00-input/requirements.md": "1f140f71892a5be3fa7d6d30e798cdf18d847046cb235295b8fc90456522f8b7",
+    "01-domain/domain.puml": "99e79be19476f5c922b7378129873d034e5ea2073cd85cb01a01267ec7f5e1c1",
+    "01-domain/glossary.md": "bfe16312381165f70e9953d25a38163c0fe756d2d9ba0c763c9ad7bbfb2354c7",
+    "02-use-cases/actor-goal-map.md": "c714337ba7af0d9cbf9353ffce3df1fdbbd4331bbc352400b8e81616e2151973",
+    "02-use-cases/use-cases.puml": "0a8e231d6e1c4353d0276ead5342cd9d31e10c53dddb9728f1dbcb9c91925a66",
+    "03-spec/CU01-quote-cart.md": "9c09da139a7f64adb3fe21a3d73074493248cf31a87ca9a1a45430506e701f5a",
+    "03-spec/interface-contract.md": "8a1126744dc8cf83ffb148c0b837c0e35f6f0fb34210e509acce0fcb5c9d8b72",
+    "03-spec/pdr-corrections.md": "aa78ff362ba624708137a99227efb9099929269be5e70ffb9c6e05a0e6b43b14",
+    "04-robustness/correspondence.md": "11106dae7849d4c50eee56939a5e205aa043a45307bce9978c2cca16336f686b",
+    "04-robustness/robustness.puml": "6465a204c6dfdcbebd5c2136e4134b05278a059d259588a4a99067a065bb21ff",
+    "04-robustness/semantic-check.md": "8d560166ca2ec45d346511583b67050bd71c3dd5f5662844bf06ef6a6263b183",
+    "05-pdr/PDR-01.md": "27076008ca56cab8b6e47db4e752a6122404aa37cc2326eee462ed2549acab6f"
+  }
+}

@@ -1,0 +1,160 @@
+' Historical illustration, normalized for publication. Superseded, not a maintained template.
+@startuml
+' MC-01 — maintained design model for CU-01 / DS-01
+title MC-01 · CU-01 design class model\nDomain rules, application-owned contracts, replaceable adapters
+skinparam shadowing false
+skinparam classAttributeIconSize 0
+skinparam defaultFontSize 13
+skinparam linetype ortho
+hide empty members
+
+package "Domain values and rules" {
+  class Cart {
+    +validate() : void
+    +subtotal(products : Map<String,Product>, currency : String) : int
+  }
+  class CartLine {
+    +productCode : String {readOnly}
+    +quantity : int {readOnly}
+  }
+  class Product {
+    +code : String {readOnly}
+    +unitPrice : int {readOnly}
+    +currency : String {readOnly}
+  }
+  class Coupon {
+    +code : String {readOnly}
+    +kind : String {readOnly}
+    +minimumSubtotal : int {readOnly}
+    +expiresAt : DateTime {readOnly}
+    +currency : String {readOnly}
+    +config : Map<String,Object> {readOnly}
+    +check_eligibility(subtotal : int, evaluatedAt : DateTime, currency : String) : void
+  }
+  class PriceQuote {
+    +subtotal : int {readOnly}
+    +discount : int {readOnly}
+    +payable : int {readOnly}
+    +currency : String {readOnly}
+  }
+  Cart "1" --> "0..*" CartLine : lines
+  Cart ..> Product : trusted price values
+  CartLine ..> Product : code identity
+  PriceQuote ..> Cart : summarizes
+  PriceQuote ..> Coupon : optional rule origin
+}
+
+package "Application contracts and calculation seam" {
+  interface ProductCatalog <<solution>> {
+    +lookup_product(code : String) : Optional<Product>
+  }
+  interface CouponCatalog <<solution>> {
+    +lookup_coupon(code : String) : Optional<Coupon>
+  }
+  interface PolicyResolver <<solution>> {
+    +resolve(coupon : Optional<Coupon>) : DiscountPolicy
+  }
+  interface DiscountPolicy <<solution>> {
+    +discount(subtotal : int, currency : String) : int
+  }
+  class NoDiscount <<solution>> {
+    +discount(subtotal : int, currency : String) : int
+  }
+  class FixedDiscount <<solution>> {
+    +amount : int {readOnly}
+    +discount(subtotal : int, currency : String) : int
+  }
+  class PercentageDiscount <<solution>> {
+    +basisPoints : int {readOnly}
+    +discount(subtotal : int, currency : String) : int
+  }
+  class QuoteService <<solution>> {
+    -product_catalog : ProductCatalog
+    -coupon_catalog : CouponCatalog
+    -policy_resolver : PolicyResolver
+    +quote(cart : Cart, currency : String, couponCode : Optional<String>, evaluatedAt : DateTime) : PriceQuote
+  }
+  class Refusal <<solution>> {
+    +reasonCategory : String {readOnly}
+  }
+  NoDiscount ..|> DiscountPolicy
+  FixedDiscount ..|> DiscountPolicy
+  PercentageDiscount ..|> DiscountPolicy
+  ProductCatalog -[hidden]down-> CouponCatalog
+  CouponCatalog -[hidden]down-> PolicyResolver
+  PolicyResolver -[hidden]down-> DiscountPolicy
+  NoDiscount -[hidden]down-> FixedDiscount
+  FixedDiscount -[hidden]down-> PercentageDiscount
+  QuoteService ..> ProductCatalog
+  QuoteService ..> CouponCatalog
+  QuoteService ..> PolicyResolver
+  QuoteService ..> Cart
+  QuoteService ..> Coupon
+  QuoteService ..> PriceQuote : creates
+  QuoteService ..> DiscountPolicy : invokes
+  QuoteService ..> Refusal : propagates
+  PolicyResolver ..> DiscountPolicy : returns configured policy
+}
+
+package "Local boundary and adapters" {
+  class QuoteRequestPort <<solution>> {
+    -service : QuoteService
+    +handle(request : Map<String,Object>) : Map<String,Object>
+  }
+  class InMemoryCatalog <<solution>> {
+    -products : Map<String,Object>
+    -coupons : Map<String,Object>
+    +lookup_product(code : String) : Optional<Product>
+    +lookup_coupon(code : String) : Optional<Coupon>
+    +snapshot() : Map<String,Object>
+  }
+  class RegistryPolicyResolver <<solution>> {
+    -registrations : Map<String,PolicyFactory>
+    +resolve(coupon : Optional<Coupon>) : DiscountPolicy
+  }
+  InMemoryCatalog ..|> ProductCatalog
+  InMemoryCatalog ..|> CouponCatalog
+  RegistryPolicyResolver ..|> PolicyResolver
+  QuoteRequestPort ..> QuoteService
+  QuoteRequestPort ..> Cart : decodes input
+  QuoteRequestPort ..> Refusal : maps to failed result
+  RegistryPolicyResolver ..> DiscountPolicy : configured factories
+  InMemoryCatalog -[hidden]down-> RegistryPolicyResolver
+  RegistryPolicyResolver -[hidden]down-> QuoteRequestPort
+}
+
+note bottom of Cart
+  An unvalidated request may have zero lines.
+  The lines association is a read-only Python tuple, not duplicate storage.
+  validate requires a nonempty Cart and integer quantity 1..99, excluding Boolean.
+  subtotal uses only resolved trusted prices; CNY nonnegative integer cents.
+  Immutable value parts may be shared: association, not exclusive composition.
+end note
+note bottom of Coupon
+  Eligibility checks integer minimum, CNY, UTC expiry, then time and threshold.
+  Policy construction checks kind-specific configuration separately.
+  Negative minimum policy is explicitly outside the verified baseline.
+end note
+note bottom of PriceQuote
+  Constructor contract: integer CNY cents,
+  0 <= discount <= subtotal; payable = subtotal - discount.
+  Construction is lifecycle behavior, not a modeled ordinary operation.
+end note
+note bottom of DiscountPolicy
+  Same accepted subtotal domain for every implementation:
+  nonnegative integer cents, CNY; result in 0..subtotal;
+  deterministic, no input or policy-state mutation.
+  Finite shared contract cases support, but do not prove universal substitution.
+end note
+note bottom of RegistryPolicyResolver
+  PolicyFactory = callable(Coupon) -> DiscountPolicy, registered at composition root.
+  Default fixed/percentage factories validate their parameters.
+  Extension may add a factory and registration; core workflow remains unchanged.
+end note
+legend bottom
+MC-01 is the stable model identity. Class identities are enumerated in provenance.md.
+Python Mapping, Optional, Tuple, DateTime and callable types have explicit mappings there.
+Typed state describes validated use; deliberately malformed inputs are refused at validation.
+No persistence, order capability, framework or catalog network client is introduced.
+endlegend
+@enduml

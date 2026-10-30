@@ -1,0 +1,20 @@
+@startuml
+title Order pricing — user goal
+left to right direction
+skinparam linetype ortho
+skinparam packageStyle rectangle
+skinparam shadowing false
+
+actor "Shopper" as ACT_Shopper
+rectangle "Order Pricing" {
+  usecase "CU-01\nQuote cart" as CU_01
+}
+ACT_Shopper -- CU_01
+
+note bottom of CU_01
+  Input: Product codes, quantities, CNY,
+  optional Coupon code, explicit evaluation instant.
+  Output: PriceQuote or a clear refusal.
+  Trusted server-side catalog is inside this demo boundary.
+end note
+@enduml

@@ -1,0 +1,1047 @@
+{
+  "schemaVersion": "order-pricing-acceptance-oracle/v1",
+  "baseline": "requirements.md — baseline 1",
+  "evidenceBoundary": "Finite independent examples for a fictional local teaching demo; not exhaustive proof or customer/business approval.",
+  "conventionsStatus": "Input field names, fixture merge format and reasonCategory names are proposed technical demo conventions, not separately approved business requirements.",
+  "fixtures": {
+    "products": {
+      "BOOK-001": {
+        "unitPrice": 12000,
+        "currency": "CNY"
+      },
+      "PEN-002": {
+        "unitPrice": 1500,
+        "currency": "CNY"
+      }
+    },
+    "coupons": {
+      "SAVE30": {
+        "kind": "fixed",
+        "fixedAmount": 3000,
+        "minimumSubtotal": 20000,
+        "expiresAt": "2030-01-01T00:00:00Z"
+      },
+      "TENOFF": {
+        "kind": "percentage",
+        "basisPoints": 1000,
+        "minimumSubtotal": 10000,
+        "expiresAt": "2030-01-01T00:00:00Z"
+      },
+      "BIGSAVE": {
+        "kind": "fixed",
+        "fixedAmount": 50000,
+        "minimumSubtotal": 0,
+        "expiresAt": "2030-01-01T00:00:00Z"
+      }
+    }
+  },
+  "contractAssertions": {
+    "appliesTo": "every case, both successful and refused",
+    "refs": [
+      "RF-08",
+      "RF-10",
+      "RN-07",
+      "RNF-02",
+      "RNF-04"
+    ],
+    "repeatCount": 2,
+    "identicalResultOnRepeat": true,
+    "cartUnchanged": true,
+    "catalogUnchanged": true,
+    "couponDefinitionsUnchanged": true,
+    "couponStateUnchanged": true,
+    "ordersCreated": 0,
+    "failureProducesSuccessfulQuote": false,
+    "requestUnchanged": true
+  },
+  "cases": [
+    {
+      "caseID": "CP-01",
+      "scenario": "Main cart without coupon",
+      "refs": [
+        "CU-01",
+        "RF-01",
+        "RF-02",
+        "RF-03",
+        "RF-08"
+      ],
+      "input": {
+        "cart": [
+          {
+            "productCode": "BOOK-001",
+            "quantity": 2
+          },
+          {
+            "productCode": "PEN-002",
+            "quantity": 1
+          }
+        ],
+        "currency": "CNY",
+        "couponCode": null,
+        "evaluatedAt": "2026-10-29T00:00:00Z"
+      },
+      "expected": {
+        "ok": true,
+        "subtotal": 25500,
+        "discount": 0,
+        "payable": 25500,
+        "currency": "CNY"
+      }
+    },
+    {
+      "caseID": "CP-02",
+      "scenario": "Main cart with SAVE30 fixed coupon",
+      "refs": [
+        "RF-02",
+        "RF-04",
+        "RF-08"
+      ],
+      "input": {
+        "cart": [
+          {
+            "productCode": "BOOK-001",
+            "quantity": 2
+          },
+          {
+            "productCode": "PEN-002",
+            "quantity": 1
+          }
+        ],
+        "currency": "CNY",
+        "couponCode": "SAVE30",
+        "evaluatedAt": "2026-10-29T00:00:00Z"
+      },
+      "expected": {
+        "ok": true,
+        "subtotal": 25500,
+        "discount": 3000,
+        "payable": 22500,
+        "currency": "CNY"
+      }
+    },
+    {
+      "caseID": "CP-03",
+      "scenario": "Main cart with TENOFF percentage coupon",
+      "refs": [
+        "RF-02",
+        "RF-05",
+        "RF-08",
+        "RN-04"
+      ],
+      "input": {
+        "cart": [
+          {
+            "productCode": "BOOK-001",
+            "quantity": 2
+          },
+          {
+            "productCode": "PEN-002",
+            "quantity": 1
+          }
+        ],
+        "currency": "CNY",
+        "couponCode": "TENOFF",
+        "evaluatedAt": "2026-10-29T00:00:00Z"
+      },
+      "expected": {
+        "ok": true,
+        "subtotal": 25500,
+        "discount": 2550,
+        "payable": 22950,
+        "currency": "CNY"
+      }
+    },
+    {
+      "caseID": "CP-04",
+      "scenario": "Fixed discount exceeds subtotal and is capped",
+      "refs": [
+        "RF-04",
+        "RF-08",
+        "RN-03"
+      ],
+      "input": {
+        "cart": [
+          {
+            "productCode": "BOOK-001",
+            "quantity": 2
+          },
+          {
+            "productCode": "PEN-002",
+            "quantity": 1
+          }
+        ],
+        "currency": "CNY",
+        "couponCode": "BIGSAVE",
+        "evaluatedAt": "2026-10-29T00:00:00Z"
+      },
+      "expected": {
+        "ok": true,
+        "subtotal": 25500,
+        "discount": 25500,
+        "payable": 0,
+        "currency": "CNY"
+      }
+    },
+    {
+      "caseID": "CP-05",
+      "scenario": "Quantity one and fractional-cent percentage result rounds down",
+      "refs": [
+        "RF-01",
+        "RF-02",
+        "RF-05",
+        "RN-02",
+        "RN-04"
+      ],
+      "input": {
+        "cart": [
+          {
+            "productCode": "ROUND-333",
+            "quantity": 1
+          }
+        ],
+        "currency": "CNY",
+        "couponCode": "TENOFF",
+        "evaluatedAt": "2026-10-29T00:00:00Z"
+      },
+      "fixtureOverrides": {
+        "products": {
+          "ROUND-333": {
+            "unitPrice": 333,
+            "currency": "CNY"
+          }
+        },
+        "coupons": {
+          "TENOFF": {
+            "minimumSubtotal": 0
+          }
+        }
+      },
+      "expected": {
+        "ok": true,
+        "subtotal": 333,
+        "discount": 33,
+        "payable": 300,
+        "currency": "CNY"
+      }
+    },
+    {
+      "caseID": "CP-06",
+      "scenario": "Fixed coupon subtotal is one cent below minimum",
+      "refs": [
+        "RF-07",
+        "RN-06",
+        "RN-07"
+      ],
+      "input": {
+        "cart": [
+          {
+            "productCode": "BELOW-FIXED-MIN",
+            "quantity": 1
+          }
+        ],
+        "currency": "CNY",
+        "couponCode": "SAVE30",
+        "evaluatedAt": "2026-10-29T00:00:00Z"
+      },
+      "fixtureOverrides": {
+        "products": {
+          "BELOW-FIXED-MIN": {
+            "unitPrice": 19999,
+            "currency": "CNY"
+          }
+        }
+      },
+      "expected": {
+        "ok": false,
+        "reasonCategory": "COUPON_MINIMUM_NOT_REACHED"
+      }
+    },
+    {
+      "caseID": "CP-07",
+      "scenario": "Fixed coupon subtotal equals minimum",
+      "refs": [
+        "RF-04",
+        "RF-08",
+        "RN-06"
+      ],
+      "input": {
+        "cart": [
+          {
+            "productCode": "AT-FIXED-MIN",
+            "quantity": 1
+          }
+        ],
+        "currency": "CNY",
+        "couponCode": "SAVE30",
+        "evaluatedAt": "2026-10-29T00:00:00Z"
+      },
+      "fixtureOverrides": {
+        "products": {
+          "AT-FIXED-MIN": {
+            "unitPrice": 20000,
+            "currency": "CNY"
+          }
+        }
+      },
+      "expected": {
+        "ok": true,
+        "subtotal": 20000,
+        "discount": 3000,
+        "payable": 17000,
+        "currency": "CNY"
+      }
+    },
+    {
+      "caseID": "CP-08",
+      "scenario": "Coupon evaluation instant exactly equals expiry",
+      "refs": [
+        "RF-06",
+        "RN-05",
+        "RN-06",
+        "RN-07"
+      ],
+      "input": {
+        "cart": [
+          {
+            "productCode": "BOOK-001",
+            "quantity": 2
+          },
+          {
+            "productCode": "PEN-002",
+            "quantity": 1
+          }
+        ],
+        "currency": "CNY",
+        "couponCode": "SAVE30",
+        "evaluatedAt": "2030-01-01T00:00:00Z"
+      },
+      "expected": {
+        "ok": false,
+        "reasonCategory": "EXPIRED_COUPON"
+      }
+    },
+    {
+      "caseID": "CP-09",
+      "scenario": "Coupon evaluation instant is one microsecond before expiry",
+      "refs": [
+        "RF-04",
+        "RF-06",
+        "RN-05"
+      ],
+      "input": {
+        "cart": [
+          {
+            "productCode": "BOOK-001",
+            "quantity": 2
+          },
+          {
+            "productCode": "PEN-002",
+            "quantity": 1
+          }
+        ],
+        "currency": "CNY",
+        "couponCode": "SAVE30",
+        "evaluatedAt": "2029-12-31T23:59:59.999999Z"
+      },
+      "expected": {
+        "ok": true,
+        "subtotal": 25500,
+        "discount": 3000,
+        "payable": 22500,
+        "currency": "CNY"
+      }
+    },
+    {
+      "caseID": "CP-10",
+      "scenario": "Nonempty cart with a free product",
+      "refs": [
+        "RF-01",
+        "RF-02",
+        "RF-03",
+        "RF-08"
+      ],
+      "input": {
+        "cart": [
+          {
+            "productCode": "FREE-000",
+            "quantity": 1
+          }
+        ],
+        "currency": "CNY",
+        "couponCode": null,
+        "evaluatedAt": "2026-10-29T00:00:00Z"
+      },
+      "fixtureOverrides": {
+        "products": {
+          "FREE-000": {
+            "unitPrice": 0,
+            "currency": "CNY"
+          }
+        }
+      },
+      "expected": {
+        "ok": true,
+        "subtotal": 0,
+        "discount": 0,
+        "payable": 0,
+        "currency": "CNY"
+      }
+    },
+    {
+      "caseID": "CP-11",
+      "scenario": "Quantity upper boundary 99",
+      "refs": [
+        "RF-01",
+        "RF-02",
+        "RN-02"
+      ],
+      "input": {
+        "cart": [
+          {
+            "productCode": "PEN-002",
+            "quantity": 99
+          }
+        ],
+        "currency": "CNY",
+        "couponCode": null,
+        "evaluatedAt": "2026-10-29T00:00:00Z"
+      },
+      "expected": {
+        "ok": true,
+        "subtotal": 148500,
+        "discount": 0,
+        "payable": 148500,
+        "currency": "CNY"
+      }
+    },
+    {
+      "caseID": "CP-12",
+      "scenario": "Quantity zero is rejected",
+      "refs": [
+        "RF-09",
+        "RN-02",
+        "RN-07"
+      ],
+      "input": {
+        "cart": [
+          {
+            "productCode": "PEN-002",
+            "quantity": 0
+          }
+        ],
+        "currency": "CNY",
+        "couponCode": null,
+        "evaluatedAt": "2026-10-29T00:00:00Z"
+      },
+      "expected": {
+        "ok": false,
+        "reasonCategory": "INVALID_QUANTITY"
+      }
+    },
+    {
+      "caseID": "CP-13",
+      "scenario": "Quantity 100 is rejected",
+      "refs": [
+        "RF-09",
+        "RN-02",
+        "RN-07"
+      ],
+      "input": {
+        "cart": [
+          {
+            "productCode": "PEN-002",
+            "quantity": 100
+          }
+        ],
+        "currency": "CNY",
+        "couponCode": null,
+        "evaluatedAt": "2026-10-29T00:00:00Z"
+      },
+      "expected": {
+        "ok": false,
+        "reasonCategory": "INVALID_QUANTITY"
+      }
+    },
+    {
+      "caseID": "CP-14",
+      "scenario": "Negative quantity is rejected",
+      "refs": [
+        "RF-09",
+        "RN-02",
+        "RN-07"
+      ],
+      "input": {
+        "cart": [
+          {
+            "productCode": "PEN-002",
+            "quantity": -1
+          }
+        ],
+        "currency": "CNY",
+        "couponCode": null,
+        "evaluatedAt": "2026-10-29T00:00:00Z"
+      },
+      "expected": {
+        "ok": false,
+        "reasonCategory": "INVALID_QUANTITY"
+      }
+    },
+    {
+      "caseID": "CP-15",
+      "scenario": "Boolean true is not integer quantity one",
+      "refs": [
+        "RF-09",
+        "RN-02",
+        "RN-07"
+      ],
+      "input": {
+        "cart": [
+          {
+            "productCode": "PEN-002",
+            "quantity": true
+          }
+        ],
+        "currency": "CNY",
+        "couponCode": null,
+        "evaluatedAt": "2026-10-29T00:00:00Z"
+      },
+      "expected": {
+        "ok": false,
+        "reasonCategory": "INVALID_QUANTITY"
+      }
+    },
+    {
+      "caseID": "CP-16",
+      "scenario": "Fractional quantity is rejected",
+      "refs": [
+        "RF-09",
+        "RN-02",
+        "RN-07"
+      ],
+      "input": {
+        "cart": [
+          {
+            "productCode": "PEN-002",
+            "quantity": 1.5
+          }
+        ],
+        "currency": "CNY",
+        "couponCode": null,
+        "evaluatedAt": "2026-10-29T00:00:00Z"
+      },
+      "expected": {
+        "ok": false,
+        "reasonCategory": "INVALID_QUANTITY"
+      }
+    },
+    {
+      "caseID": "CP-17",
+      "scenario": "Empty cart is rejected",
+      "refs": [
+        "RF-01",
+        "RF-09",
+        "RN-07"
+      ],
+      "input": {
+        "cart": [],
+        "currency": "CNY",
+        "couponCode": null,
+        "evaluatedAt": "2026-10-29T00:00:00Z"
+      },
+      "expected": {
+        "ok": false,
+        "reasonCategory": "EMPTY_CART"
+      }
+    },
+    {
+      "caseID": "CP-18",
+      "scenario": "Unknown product is rejected",
+      "refs": [
+        "RF-01",
+        "RF-09",
+        "RN-07"
+      ],
+      "input": {
+        "cart": [
+          {
+            "productCode": "UNKNOWN-PRODUCT",
+            "quantity": 1
+          }
+        ],
+        "currency": "CNY",
+        "couponCode": null,
+        "evaluatedAt": "2026-10-29T00:00:00Z"
+      },
+      "expected": {
+        "ok": false,
+        "reasonCategory": "UNKNOWN_PRODUCT"
+      }
+    },
+    {
+      "caseID": "CP-19",
+      "scenario": "Unknown coupon is rejected without full-price fallback",
+      "refs": [
+        "RF-06",
+        "RN-07"
+      ],
+      "input": {
+        "cart": [
+          {
+            "productCode": "BOOK-001",
+            "quantity": 2
+          },
+          {
+            "productCode": "PEN-002",
+            "quantity": 1
+          }
+        ],
+        "currency": "CNY",
+        "couponCode": "UNKNOWN-COUPON",
+        "evaluatedAt": "2026-10-29T00:00:00Z"
+      },
+      "expected": {
+        "ok": false,
+        "reasonCategory": "UNKNOWN_COUPON"
+      }
+    },
+    {
+      "caseID": "CP-20",
+      "scenario": "Negative fixed amount is invalid coupon configuration",
+      "refs": [
+        "RF-09",
+        "RF-08",
+        "RN-03",
+        "RN-08"
+      ],
+      "input": {
+        "cart": [
+          {
+            "productCode": "BOOK-001",
+            "quantity": 2
+          },
+          {
+            "productCode": "PEN-002",
+            "quantity": 1
+          }
+        ],
+        "currency": "CNY",
+        "couponCode": "SAVE30",
+        "evaluatedAt": "2026-10-29T00:00:00Z"
+      },
+      "fixtureOverrides": {
+        "coupons": {
+          "SAVE30": {
+            "fixedAmount": -1
+          }
+        }
+      },
+      "expected": {
+        "ok": false,
+        "reasonCategory": "INVALID_COUPON_CONFIGURATION"
+      },
+      "note": "The rejection follows the common nonnegative-discount contract. The category spelling is a proposed technical convention."
+    },
+    {
+      "caseID": "CP-21",
+      "scenario": "Percentage rate below zero is invalid configuration",
+      "refs": [
+        "RF-05",
+        "RF-09",
+        "RN-08"
+      ],
+      "input": {
+        "cart": [
+          {
+            "productCode": "BOOK-001",
+            "quantity": 2
+          },
+          {
+            "productCode": "PEN-002",
+            "quantity": 1
+          }
+        ],
+        "currency": "CNY",
+        "couponCode": "TENOFF",
+        "evaluatedAt": "2026-10-29T00:00:00Z"
+      },
+      "fixtureOverrides": {
+        "coupons": {
+          "TENOFF": {
+            "basisPoints": -1
+          }
+        }
+      },
+      "expected": {
+        "ok": false,
+        "reasonCategory": "INVALID_COUPON_CONFIGURATION"
+      }
+    },
+    {
+      "caseID": "CP-22",
+      "scenario": "Percentage rate above 10000 is invalid configuration",
+      "refs": [
+        "RF-05",
+        "RF-09",
+        "RN-08"
+      ],
+      "input": {
+        "cart": [
+          {
+            "productCode": "BOOK-001",
+            "quantity": 2
+          },
+          {
+            "productCode": "PEN-002",
+            "quantity": 1
+          }
+        ],
+        "currency": "CNY",
+        "couponCode": "TENOFF",
+        "evaluatedAt": "2026-10-29T00:00:00Z"
+      },
+      "fixtureOverrides": {
+        "coupons": {
+          "TENOFF": {
+            "basisPoints": 10001
+          }
+        }
+      },
+      "expected": {
+        "ok": false,
+        "reasonCategory": "INVALID_COUPON_CONFIGURATION"
+      }
+    },
+    {
+      "caseID": "CP-23",
+      "scenario": "Fractional-cent fixed amount is invalid configuration",
+      "refs": [
+        "RF-09",
+        "RN-01",
+        "RN-08"
+      ],
+      "input": {
+        "cart": [
+          {
+            "productCode": "BOOK-001",
+            "quantity": 2
+          },
+          {
+            "productCode": "PEN-002",
+            "quantity": 1
+          }
+        ],
+        "currency": "CNY",
+        "couponCode": "SAVE30",
+        "evaluatedAt": "2026-10-29T00:00:00Z"
+      },
+      "fixtureOverrides": {
+        "coupons": {
+          "SAVE30": {
+            "fixedAmount": 3000.5
+          }
+        }
+      },
+      "expected": {
+        "ok": false,
+        "reasonCategory": "INVALID_COUPON_CONFIGURATION"
+      },
+      "note": "The decimal literal is deliberately malformed fixture data for validation; it must never enter monetary calculation."
+    },
+    {
+      "caseID": "CP-24",
+      "scenario": "Unsupported request currency is rejected",
+      "refs": [
+        "RF-09",
+        "RN-01",
+        "RN-07"
+      ],
+      "input": {
+        "cart": [
+          {
+            "productCode": "BOOK-001",
+            "quantity": 2
+          },
+          {
+            "productCode": "PEN-002",
+            "quantity": 1
+          }
+        ],
+        "currency": "USD",
+        "couponCode": null,
+        "evaluatedAt": "2026-10-29T00:00:00Z"
+      },
+      "expected": {
+        "ok": false,
+        "reasonCategory": "UNSUPPORTED_CURRENCY"
+      }
+    },
+    {
+      "caseID": "CP-25",
+      "scenario": "Percentage rate lower boundary zero is valid",
+      "refs": [
+        "RF-05",
+        "RF-08"
+      ],
+      "input": {
+        "cart": [
+          {
+            "productCode": "BOOK-001",
+            "quantity": 2
+          },
+          {
+            "productCode": "PEN-002",
+            "quantity": 1
+          }
+        ],
+        "currency": "CNY",
+        "couponCode": "TENOFF",
+        "evaluatedAt": "2026-10-29T00:00:00Z"
+      },
+      "fixtureOverrides": {
+        "coupons": {
+          "TENOFF": {
+            "basisPoints": 0
+          }
+        }
+      },
+      "expected": {
+        "ok": true,
+        "subtotal": 25500,
+        "discount": 0,
+        "payable": 25500,
+        "currency": "CNY"
+      }
+    },
+    {
+      "caseID": "CP-26",
+      "scenario": "Percentage rate upper boundary 10000 is valid",
+      "refs": [
+        "RF-05",
+        "RF-08",
+        "RN-03"
+      ],
+      "input": {
+        "cart": [
+          {
+            "productCode": "BOOK-001",
+            "quantity": 2
+          },
+          {
+            "productCode": "PEN-002",
+            "quantity": 1
+          }
+        ],
+        "currency": "CNY",
+        "couponCode": "TENOFF",
+        "evaluatedAt": "2026-10-29T00:00:00Z"
+      },
+      "fixtureOverrides": {
+        "coupons": {
+          "TENOFF": {
+            "basisPoints": 10000
+          }
+        }
+      },
+      "expected": {
+        "ok": true,
+        "subtotal": 25500,
+        "discount": 25500,
+        "payable": 0,
+        "currency": "CNY"
+      }
+    },
+    {
+      "caseID": "CP-27",
+      "scenario": "Percentage coupon subtotal is one cent below minimum",
+      "refs": [
+        "RF-05",
+        "RF-07",
+        "RN-06",
+        "RN-07"
+      ],
+      "input": {
+        "cart": [
+          {
+            "productCode": "BELOW-PERCENT-MIN",
+            "quantity": 1
+          }
+        ],
+        "currency": "CNY",
+        "couponCode": "TENOFF",
+        "evaluatedAt": "2026-10-29T00:00:00Z"
+      },
+      "fixtureOverrides": {
+        "products": {
+          "BELOW-PERCENT-MIN": {
+            "unitPrice": 9999,
+            "currency": "CNY"
+          }
+        }
+      },
+      "expected": {
+        "ok": false,
+        "reasonCategory": "COUPON_MINIMUM_NOT_REACHED"
+      }
+    },
+    {
+      "caseID": "CP-28",
+      "scenario": "Percentage coupon subtotal equals minimum",
+      "refs": [
+        "RF-05",
+        "RF-08",
+        "RN-06"
+      ],
+      "input": {
+        "cart": [
+          {
+            "productCode": "AT-PERCENT-MIN",
+            "quantity": 1
+          }
+        ],
+        "currency": "CNY",
+        "couponCode": "TENOFF",
+        "evaluatedAt": "2026-10-29T00:00:00Z"
+      },
+      "fixtureOverrides": {
+        "products": {
+          "AT-PERCENT-MIN": {
+            "unitPrice": 10000,
+            "currency": "CNY"
+          }
+        }
+      },
+      "expected": {
+        "ok": true,
+        "subtotal": 10000,
+        "discount": 1000,
+        "payable": 9000,
+        "currency": "CNY"
+      }
+    },
+    {
+      "caseID": "CP-29",
+      "scenario": "Boolean false is not an integer quantity",
+      "refs": [
+        "RF-09",
+        "RN-02",
+        "RN-07"
+      ],
+      "input": {
+        "cart": [
+          {
+            "productCode": "PEN-002",
+            "quantity": false
+          }
+        ],
+        "currency": "CNY",
+        "couponCode": null,
+        "evaluatedAt": "2026-10-29T00:00:00Z"
+      },
+      "expected": {
+        "ok": false,
+        "reasonCategory": "INVALID_QUANTITY"
+      }
+    },
+    {
+      "caseID": "CP-30",
+      "scenario": "Request attempts to supply two coupon codes",
+      "refs": [
+        "RF-10",
+        "RN-07"
+      ],
+      "input": {
+        "cart": [
+          {
+            "productCode": "BOOK-001",
+            "quantity": 2
+          },
+          {
+            "productCode": "PEN-002",
+            "quantity": 1
+          }
+        ],
+        "currency": "CNY",
+        "couponCode": [
+          "SAVE30",
+          "TENOFF"
+        ],
+        "evaluatedAt": "2026-10-29T00:00:00Z"
+      },
+      "expected": {
+        "ok": false,
+        "reasonCategory": "MULTIPLE_COUPONS_NOT_ALLOWED"
+      },
+      "note": "Request-boundary probe: an array in couponCode is a proposed malformed-request representation. The mandatory business property is that two coupons are never accepted; this category and wire representation are demo conventions."
+    }
+  ],
+  "policyContract": {
+    "refs": [
+      "RF-08",
+      "RN-01",
+      "RN-03",
+      "RN-04",
+      "RN-08",
+      "RNF-04"
+    ],
+    "boundary": "Pure discount calculation after input and coupon-condition validation. Minimum and expiry are outside this contract.",
+    "acceptedSubtotalDomain": "Reachable nonnegative integer-cent subtotals in CNY; the finite vectors sample this common domain.",
+    "policies": {
+      "none": {
+        "kind": "none"
+      },
+      "fixed3000": {
+        "kind": "fixed",
+        "fixedAmount": 3000
+      },
+      "percentage1000": {
+        "kind": "percentage",
+        "basisPoints": 1000
+      },
+      "fixed50000": {
+        "kind": "fixed",
+        "fixedAmount": 50000
+      }
+    },
+    "assertions": {
+      "repeatCount": 2,
+      "identicalDiscountOnRepeat": true,
+      "inputsUnchanged": true,
+      "policyStateUnchanged": true,
+      "currencyPreserved": true,
+      "discountIsIntegerCents": true,
+      "discountWithinZeroAndSubtotal": true
+    },
+    "vectors": [
+      {
+        "subtotal": 0,
+        "currency": "CNY",
+        "expectedDiscounts": {
+          "none": 0,
+          "fixed3000": 0,
+          "percentage1000": 0,
+          "fixed50000": 0
+        }
+      },
+      {
+        "subtotal": 333,
+        "currency": "CNY",
+        "expectedDiscounts": {
+          "none": 0,
+          "fixed3000": 333,
+          "percentage1000": 33,
+          "fixed50000": 333
+        }
+      },
+      {
+        "subtotal": 25500,
+        "currency": "CNY",
+        "expectedDiscounts": {
+          "none": 0,
+          "fixed3000": 3000,
+          "percentage1000": 2550,
+          "fixed50000": 25500
+        }
+      }
+    ]
+  }
+}

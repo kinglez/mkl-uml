@@ -1,0 +1,33 @@
+{
+  "basis": "Locally completed order-pricing teaching example, reviewed on 2026-10-29 and 2026-10-30.",
+  "publication_adaptation": "English documentation, portable paths, explicit UTF-8 I/O in example/test entry points, normalized historical illustrations and reproducible repository verification. Historical review records are adapted summaries, not byte-identical original records.",
+  "unchanged_requirement_oracle_and_core_sha256": {
+    "00-input/ACCEPTANCE_ORACLE.md": "306554ccc74f1870c91022540dd08ba1d4cc6911957b673c80349c832da624a5",
+    "00-input/acceptance-oracle.json": "1805b35c58b36fda8ef329e0378ef4871f517e78d2cfb877d4bde7ffd1e749d3",
+    "00-input/requirements.md": "1f140f71892a5be3fa7d6d30e798cdf18d847046cb235295b8fc90456522f8b7",
+    "09-reference-implementation/pricing/__init__.py": "ad70092a12beb2b099c39bf1cf6809a37808a61aaa9fb3e370d58d67e32526d0",
+    "09-reference-implementation/pricing/adapters.py": "7164928b7deb7f6b768e0a7585b281e3d8e03ad73a2d93c1fe24f40ab38f2e9e",
+    "09-reference-implementation/pricing/core.py": "2f9fab1b7f26c1ee041fe6beb5db1f160efd3d4007dc2d33cdbf83782233b09b",
+    "09-reference-implementation/pricing/policies.py": "a169564d536f9418609049dd1d8388782282a15c79e8a16582ddf49b2e6eb7d0",
+    "09-reference-implementation/pricing/service.py": "b90510f394c1feeddb2e6712a66d7ad49ac9d6548827386de0c5a3b0a1fe845c"
+  },
+  "entry_point_portability_edits": [
+    {
+      "path": "09-reference-implementation/run_example.py",
+      "original_sha256": "0701ed1390de6fd5dcb13306c27807973131a6f77a85dedc71b3be51d63259e1",
+      "adaptation": "Explicit UTF-8 file I/O; pricing behavior and expected results are unchanged."
+    },
+    {
+      "path": "09-reference-implementation/extension_demo.py",
+      "original_sha256": "09481ce1e89b73183319d4ad96c6d9b04ae7c266cda95018b15079c8b698b04a",
+      "adaptation": "Explicit UTF-8 file I/O; pricing behavior and expected results are unchanged."
+    },
+    {
+      "path": "09-reference-implementation/tests/test_pricing.py",
+      "original_sha256": "c97af08eb05ad57cd875a316994e6dfc1359293aca65b8f68e5e9ec956cc7cc2",
+      "adaptation": "Explicit UTF-8 file I/O; pricing behavior and expected results are unchanged."
+    }
+  ],
+  "hash_policy": "SHA-256 of UTF-8 text normalized to LF",
+  "formal_human_business_acceptance": "Not fully verified"
+}

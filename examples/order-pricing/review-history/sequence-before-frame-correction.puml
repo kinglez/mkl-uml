@@ -1,0 +1,161 @@
+' Historical illustration, normalized for publication. Superseded, not a maintained template.
+@startuml
+' DS-01 — CU-01 Quote cart, all specified local flows
+' Author: design author (AI). See operation-delta.md for allocation.
+title DS-01 · CU-01 Quote cart\nTrusted catalog, explicit refusals, integer cents
+skinparam style strictuml
+skinparam shadowing false
+skinparam defaultFontSize 13
+skinparam responseMessageBelowArrow true
+skinparam maxMessageSize 75
+hide footbox
+actor Shopper as ACT_Shopper
+boundary QuoteRequestPort as B_Port
+control QuoteService as C_Quote
+entity Cart as E_Cart
+participant ProductCatalog as INF_Products
+participant CouponCatalog as INF_Coupons
+participant PolicyResolver as INF_Resolver
+entity Coupon as E_Coupon
+participant DiscountPolicy as INF_Policy
+
+== Request boundary and Cart validation — CU-01 steps 1–2 ==
+' DS-01-M01
+ACT_Shopper -> B_Port : handle(request) <<synchCall>>
+break FE-01 invalid currency, time, shape or multiple Coupon codes
+  note across : Terminate this quote interaction; no successful PriceQuote is created.
+  B_Port --> ACT_Shopper : return failure(reasonCategory), no quote <<reply>>
+end
+note right of B_Port
+  Decode Product codes and quantities only.
+  Caller prices never become authoritative.
+  UTC time is explicit; no hidden clock.
+end note
+' DS-01-M02
+B_Port -> C_Quote : quote(cart, currency, couponCode, evaluatedAt) <<synchCall>>
+' DS-01-M03
+C_Quote -> E_Cart : validate() <<synchCall>>
+break FE-01 empty Cart or quantity not an integer 1..99 (Boolean excluded)
+  note across : Terminate this quote interaction; no successful PriceQuote is created.
+  E_Cart --> C_Quote : Refusal(EMPTY_CART or INVALID_QUANTITY) <<reply>>
+  C_Quote --> B_Port : Refusal(reasonCategory) <<reply>>
+  B_Port --> ACT_Shopper : return failure(reasonCategory), no quote <<reply>>
+end
+E_Cart --> C_Quote : validated Cart <<reply>>
+
+== Trusted Product resolution and total — CU-01 steps 3–4 ==
+loop each CartLine until the first absent/refused Product lookup
+' DS-01-M04
+  C_Quote -> INF_Products : lookup_product(productCode) <<synchCall>>
+  INF_Products --> C_Quote : Product, absent, or Refusal(invalid trusted Product) <<reply>>
+end
+break FE-03 Product lookup refused invalid authoritative price or currency
+  note across : Terminate this quote interaction; no successful PriceQuote is created.
+  C_Quote --> B_Port : Refusal(INVALID_PRODUCT_CONFIGURATION) <<reply>>
+  B_Port --> ACT_Shopper : return failure(INVALID_PRODUCT_CONFIGURATION), no quote <<reply>>
+end
+break FE-02 any Product absent from trusted catalog
+  note across : Terminate this quote interaction; no successful PriceQuote is created.
+  C_Quote --> B_Port : Refusal(UNKNOWN_PRODUCT) <<reply>>
+  B_Port --> ACT_Shopper : return failure(UNKNOWN_PRODUCT), no quote <<reply>>
+end
+' DS-01-M05
+C_Quote -> E_Cart : subtotal(resolvedProducts, currency) <<synchCall>>
+break FE-03 trusted Product cents invalid or currency unsupported
+  note across : Terminate this quote interaction; no successful PriceQuote is created.
+  E_Cart --> C_Quote : Refusal(INVALID_PRODUCT_CONFIGURATION) <<reply>>
+  C_Quote --> B_Port : Refusal(INVALID_PRODUCT_CONFIGURATION) <<reply>>
+  B_Port --> ACT_Shopper : return failure(INVALID_PRODUCT_CONFIGURATION), no quote <<reply>>
+end
+alt FA-03 valid nonempty Cart with only zero-priced Products
+  E_Cart --> C_Quote : subtotal = 0; still check Coupon conditions <<reply>>
+else ordinary valid Cart
+  E_Cart --> C_Quote : subtotal = sum(unitPrice * quantity) <<reply>>
+end
+
+== Coupon configuration and eligibility — CU-01 step 5 ==
+opt Coupon code supplied
+' DS-01-M06
+  C_Quote -> INF_Coupons : lookup_coupon(couponCode) <<synchCall>>
+  INF_Coupons --> C_Quote : Coupon, absent, or Refusal(invalid expiry/configuration) <<reply>>
+end
+break FE-07 lookup refused malformed selected Coupon configuration
+  note across : Terminate this quote interaction; no successful PriceQuote is created.
+  C_Quote --> B_Port : Refusal(INVALID_COUPON_CONFIGURATION) <<reply>>
+  B_Port --> ACT_Shopper : return failure(INVALID_COUPON_CONFIGURATION), no quote <<reply>>
+end
+break FE-04 supplied Coupon absent from catalog
+  note across : Terminate this quote interaction; no successful PriceQuote is created.
+  C_Quote --> B_Port : Refusal(UNKNOWN_COUPON) <<reply>>
+  B_Port --> ACT_Shopper : return failure(UNKNOWN_COUPON), no full-price fallback <<reply>>
+end
+' DS-01-M07
+C_Quote -> INF_Resolver : resolve(coupon or None) <<synchCall>>
+break FE-07 unregistered kind or invalid fixed/rate configuration
+  note across : Terminate this quote interaction; no successful PriceQuote is created.
+  INF_Resolver --> C_Quote : Refusal(INVALID_COUPON_CONFIGURATION) <<reply>>
+  C_Quote --> B_Port : Refusal(INVALID_COUPON_CONFIGURATION) <<reply>>
+  B_Port --> ACT_Shopper : return failure(INVALID_COUPON_CONFIGURATION), no quote <<reply>>
+end
+INF_Resolver --> C_Quote : configured DiscountPolicy (NoDiscount when absent) <<reply>>
+opt Coupon supplied and resolved
+' DS-01-M08
+  C_Quote -> E_Coupon : check_eligibility(subtotal, evaluatedAt, currency) <<synchCall>>
+  E_Coupon --> C_Quote : eligible or Refusal(configuration, expiry, or minimum) <<reply>>
+end
+break FE-07 eligibility refused noninteger minimum, invalid expiry or unsupported currency
+  note across : Terminate this quote interaction; no successful PriceQuote is created.
+  C_Quote --> B_Port : Refusal(INVALID_COUPON_CONFIGURATION) <<reply>>
+  B_Port --> ACT_Shopper : return failure(INVALID_COUPON_CONFIGURATION), no quote <<reply>>
+end
+break FE-05 eligibility refused evaluatedAt >= expiresAt
+  note across : Terminate this quote interaction; no successful PriceQuote is created.
+  C_Quote --> B_Port : Refusal(EXPIRED_COUPON) <<reply>>
+  B_Port --> ACT_Shopper : return failure(EXPIRED_COUPON), no quote <<reply>>
+end
+break FE-06 eligibility refused subtotal < minimumSubtotal
+  note across : Terminate this quote interaction; no successful PriceQuote is created.
+  C_Quote --> B_Port : Refusal(COUPON_MINIMUM_NOT_REACHED) <<reply>>
+  B_Port --> ACT_Shopper : return failure(COUPON_MINIMUM_NOT_REACHED), no quote <<reply>>
+end
+
+== Pure calculation and completion — CU-01 steps 5–7 ==
+' DS-01-M09
+C_Quote -> INF_Policy : discount(subtotal, currency) <<synchCall>> [apply selected discount]
+alt Basic no Coupon — policy is NoDiscount
+  INF_Policy --> C_Quote : discount = 0 <<reply>>
+else FA-01 eligible fixed Coupon — policy is FixedDiscount
+  INF_Policy --> C_Quote : discount = min(configuredAmount, subtotal) <<reply>>
+else FA-02 eligible percentage Coupon — policy is PercentageDiscount
+  INF_Policy --> C_Quote : discount = subtotal * basisPoints // 10000 <<reply>>
+end
+break AD-09 selected policy violates integer result or 0..subtotal bounds
+  note across : Terminate this quote interaction; no successful PriceQuote is created.
+  C_Quote --> B_Port : Refusal(POLICY_CONTRACT_VIOLATION) <<reply>>
+  B_Port --> ACT_Shopper : return failure(POLICY_CONTRACT_VIOLATION), no quote <<reply>>
+end
+note right of INF_Policy
+  Calculation contract: nonnegative integer CNY subtotal.
+  Result: integer 0..subtotal; deterministic; no mutation.
+  A zero subtotal yields zero under every supported policy.
+  Configuration/eligibility were checked before calculation.
+end note
+create entity PriceQuote as E_Result
+' DS-01-M10
+C_Quote -> E_Result : PriceQuote(subtotal, discount, subtotal-discount, currency) <<createMessage>>
+note right of E_Result
+  Constructor enforces the common quote invariants.
+  This lifecycle message is not an ordinary PriceQuote operation.
+end note
+C_Quote --> B_Port : successful PriceQuote <<reply>>
+B_Port --> ACT_Shopper : success(subtotal, discount, payable, CNY) <<reply>>
+
+legend bottom
+All calls are synchronous; dashed arrows are replies to their original caller.
+Every break is directly inside this interaction (outside loop/opt); it terminates the quote.
+The line loop stops after an absent Product; optional calls return before their outer refusal break.
+A refusal never reaches PriceQuote creation.
+No order, payment, redemption, persistence or mutation operation exists in this collaboration.
+Negative-minimum acceptance/refusal remains outside the bounded baseline; no new rule is inferred.
+endlegend
+@enduml

@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "sequences": {
+    "sequence.puml": {
+      "id": "DS-01",
+      "scope": "use-case",
+      "use_cases": ["CU-01"],
+      "requirements": ["RF-01", "RF-02", "RF-03", "RF-04", "RF-05", "RF-06", "RF-07", "RF-08", "RF-09", "RF-10"],
+      "reason": "Complete CU-01 behavior including all specified FA/FE paths; check with specification, robustness and domain."
+    },
+    "contract-observation.puml": {
+      "id": "DS-02",
+      "scope": "technical-probe",
+      "use_cases": [],
+      "requirements": ["RNF-02"],
+      "reason": "Technical harness observation protocol; not a user goal and does not claim CU branch/controller coverage. Check domain closure only; both interactions feed operation provenance and CDR."
+    }
+  }
+}

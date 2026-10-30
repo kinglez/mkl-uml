@@ -5,7 +5,7 @@
 
 Eight English-language agent skills connect business vocabulary, user goals, behavior, design responsibilities and tests. Start with one artifact or explicitly request the complete MKL workflow. Models use PlantUML; specifications and review records use Markdown.
 
-[Get started](#how-to-use) · [Workflow](#workflow) · [Stage outputs](#what-each-stage-produces) · [Worked example](#example-register-an-incident) · [All eight prompts](docs/EXAMPLES.md)
+[Get started](#how-to-use) · [Workflow](#workflow) · [Stage outputs](#what-each-stage-produces) · [Complete worked example](#complete-worked-example-order-pricing) · [All eight prompts](docs/EXAMPLES.md)
 
 ## What problems does this solve?
 
@@ -137,9 +137,30 @@ CDR can also generate inspection headers when requested. Those are review aids; 
 | 7 | [mkl-uml-design-class-model](skills/mkl-uml-design-class-model/README.md) | Where do typed state, operations and relationships belong? |
 | 8 | [mkl-cdr-review](skills/mkl-cdr-review/README.md) | Is the detailed design consistent enough for implementation handoff? |
 
+## Complete worked example: order pricing
+
+Explore the **[order-pricing reference example](examples/order-pricing/README.md)** to see all eight stages applied to one problem, including PDR/CDR findings, corrected models, executable Python code and tests. The example is fully in English and includes six rendered UML diagrams, 17 design classifiers and 30 independent acceptance cases.
+
+| Start here | What you can inspect |
+|---|---|
+| [Example guide](examples/order-pricing/README.md) | Business rules, expected prices, workflow, stage outputs and run commands. |
+| [Eight replay prompts](examples/order-pricing/HOW_TO_REPLAY.md) | Recreate the example with the eight skills, including explicit PDR-to-design handoff. |
+| [Traceability](examples/order-pricing/TRACEABILITY.md) | Follow a requirement through use case behavior, interactions, class members and tests. |
+| [Change and correction history](examples/order-pricing/CHANGE_IMPACT.md) | Review actual modeling corrections and add a discount policy without editing the core workflow. |
+| [Verification record](examples/order-pricing/VALIDATION.json) | Reproducible checks and their actual results, with formal acceptance kept separate. |
+
+From a checkout of this repository:
+
+```bash
+python3 examples/order-pricing/09-reference-implementation/run_example.py
+python3 examples/order-pricing/scripts/verify.py
+```
+
+Python's standard library is sufficient for these commands. Add `--render` to verification to regenerate SVG/PNG with a local PlantUML installation. The example is part of the GitHub repository; installing the skills does not copy these project artifacts into your application. [Browse the complete example on GitHub](https://github.com/kinglez/mkl-uml/tree/main/examples/order-pricing).
+
 ## Example: register an incident
 
-The quick-start request above is also the repository's worked example: **CU-07 Register incident**.
+The quick-start request above is illustrated by the smaller pipeline fixtures for **CU-07 Register incident**.
 
 - **Success:** an authorized Requester submits an existing Category; the system obtains its current ServiceAgreement, calculates the due date, registers the Incident and returns its identifier and due date.
 - **FA-01:** an unauthorized Requester receives a refusal; no Incident is created.

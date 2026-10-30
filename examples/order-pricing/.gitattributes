@@ -1,0 +1,2 @@
+# Preserve the inspection generator's trailing class separator verbatim.
+08-cdr/headers.java whitespace=-blank-at-eof
