@@ -1,164 +1,267 @@
 <!-- Copyright 2026 kingle.zhuang. See NOTICE for upstream attribution. -->
-# Usage examples
+# Tutorial: design an order-pricing feature
 
-Install the skills, then open your target project in Codex or Claude Code. Send these prompts in the agent chat. They are **not terminal commands**. Codex uses `$skill-name`; Claude Code uses `/skill-name`. For example, replace `$mkl-uml-domain-modeler` with `/mkl-uml-domain-modeler` and keep the rest of that prompt.
+Use the eight MKL skills to take **CU-01 Quote cart** from requirements to a reviewed design. Every step uses the same order-pricing scenario and links to a completed artifact you can compare with your result.
 
-The prompts below use one technical support desk scenario. Output paths under `uml/` are example paths the prompts ask the agent to create, not files already created in your project. Run each relevant step after its inputs exist. You can also paste or attach your own requirements and diagrams instead of using these paths. Skill installation does not run the examples.
+If you only want to read or run the finished example, start with the [example guide](../examples/order-pricing/README.md). This tutorial is for generating your own version alongside it. See the [documentation guide](README.md) for the reading order.
 
-For a completed reference with all eight stages, rendered diagrams, PDR/CDR correction records and executable tests, read the [order-pricing example](../examples/order-pricing/README.md) and its [replay prompts](../examples/order-pricing/HOW_TO_REPLAY.md). The complete example is also [available on GitHub](https://github.com/kinglez/mkl-uml/tree/main/examples/order-pricing).
+[Setup](#before-you-start) · [Scenario](#the-scenario) · [Eight steps](#1-name-the-business-concepts) · [Verify](#check-your-results) · [Your own project](#apply-this-to-your-project)
 
-## 1. Domain model
+## Before you start
 
-Start with business behavior; no existing diagrams are required.
+1. [Install the skills](INSTALLATION.md) for Codex or Claude Code.
+2. Open a checkout of this repository in your agent. The tutorial reads input files from `examples/order-pricing/`; installing the skills alone does not copy those files.
+3. Send the prompts below **one at a time in the agent chat**. Review each result before continuing.
+
+If you do not have a checkout yet, run these commands in a terminal:
+
+```bash
+git clone https://github.com/kinglez/mkl-uml.git
+cd mkl-uml
+```
+
+Prompts use Codex's `$skill-name` syntax. In Claude Code, replace it with `/skill-name`, for example `/mkl-uml-domain-modeler`.
+
+**Path convention:** `examples/order-pricing/` is the completed, read-only reference. Your new outputs go under `uml/order-pricing/`, with one numbered folder per stage. Keep those outputs separate so you can compare them with the reference without changing its reviewed baselines. If that output folder already contains work, select another new folder and replace the prefix consistently in every prompt.
+
+At each step, ask the agent to run the applicable bundled validator and report the command, result and missing checks. PlantUML source (`.puml`) is editable text; the reference includes PNG/SVG previews. Rendering your new diagrams additionally needs a renderer available to your agent.
+
+## The scenario
+
+A Shopper asks for a cart's item price, optionally using one Coupon. Product prices come from a trusted catalog. The system returns a subtotal, discount and payable amount, or a refusal. Quoting changes no cart or Coupon state and creates no Order.
+
+The main cart is two books at CNY 120.00 each and one pen at CNY 15.00: **CNY 255.00** before discounts.
+
+| Request | Expected result |
+|---|---|
+| No Coupon | Payable CNY 255.00 |
+| SAVE30, a CNY 30.00 discount when subtotal is at least CNY 200.00 | Payable CNY 225.00 |
+| TENOFF, a 10% discount when subtotal is at least CNY 100.00 | Payable CNY 229.50 |
+| BIGSAVE, a CNY 500.00 discount capped at the subtotal | Payable CNY 0.00 |
+| Unknown or expired Coupon, or an unmet minimum | Explicit refusal; no successful quote |
+
+Use the full [requirements](../examples/order-pricing/00-input/requirements.md) and [independent expected results](../examples/order-pricing/00-input/ACCEPTANCE_ORACLE.md) for the remaining cases, including invalid inputs, exact expiry and rounding. Amounts are integer cents: `25500` means CNY 255.00. The expected results were derived from the requirements independently of the reference implementation.
+
+The IDs let you follow the same item across files: RF = functional requirement, RN = business rule, RNF = quality/design constraint, CU = use case, FA/FE = its alternative/exception flows, DR = robustness diagram, DS = sequence diagram, MC = design class model, and CP = test case. Keep an existing ID when its title or diagram position changes.
+
+<a id="1-domain-model"></a>
+
+## 1. Name the business concepts
+
+**Purpose:** agree on the meaning of Cart, Product and Coupon before choosing implementation classes.
+
+**Input:** the supplied requirements and expected results. **Output:** `01-domain/domain.puml` and `01-domain/glossary.md` under your output folder.
 
 ```text
 $mkl-uml-domain-modeler
-Create a conceptual PlantUML domain model for a technical support desk.
-Requirements:
-- RF-01: A Requester registers an Incident with a Category and description.
-- RF-02: The due date is calculated from that Category's current ServiceAgreement.
-- RF-03: A requester not authorized for the category must be rejected.
-- RNF-01: Deadline policy can change independently of the Incident.
-An Incident has a description, registration date, due date and business reference.
-Save these requirements to uml/requirements.md and the model to uml/domain.puml.
-Explain assumptions and unresolved multiplicities. Keep implementation classes
-out of this conceptual view.
+Read examples/order-pricing/00-input/requirements.md and ACCEPTANCE_ORACLE.md
+in that same directory. Work only under uml/order-pricing; keep reference
+files unchanged. Create 01-domain/domain.puml and 01-domain/glossary.md there
+for CU-01 Quote cart. Model business concepts, relationships and value
+constraints. Distinguish them from software classes, record unresolved policy,
+and run the applicable checks.
 ```
 
-Expected: requirements and a domain model with `Requester`, `Incident`, `Category` and `ServiceAgreement`. The independent deadline policy requirement becomes an input to later design; it does not automatically make a policy class a domain entity.
+**Check before continuing:** the model explains Cart, CartLine, Product, Coupon and PriceQuote. Product prices are authoritative catalog values; a discount algorithm is not automatically a domain entity.
 
-## 2. Use case diagram
+Compare: [domain preview](../examples/order-pricing/01-domain/domain.png) · [domain source](../examples/order-pricing/01-domain/domain.puml) · [glossary](../examples/order-pricing/01-domain/glossary.md).
+
+<a id="2-use-case-diagram"></a>
+
+## 2. Identify the user goal
+
+**Purpose:** show who uses the system and what result they want.
+
+**Input:** requirements and domain model. **Output:** `02-use-cases/use-cases.puml`.
 
 ```text
 $mkl-uml-use-case-diagram
-Read uml/requirements.md and uml/domain.puml. Model the "Incident service"
-system boundary and its Requester actor. Use CU-07 for "Register incident".
-Save the PlantUML diagram to uml/use-cases.puml. Keep authorization and due-date
-calculation within the registration behavior unless the requirements justify
-separate user goals. Explain any proposed additional actors or goals.
+Read examples/order-pricing/00-input/requirements.md and the generated
+01-domain files under uml/order-pricing. Create
+uml/order-pricing/02-use-cases/use-cases.puml with the Order Pricing boundary,
+Shopper actor and CU-01 Quote cart. Keep price lookup and discount calculation
+inside that goal. Use only participating actors justified by the requirements;
+the trusted internal demo catalog is not an external actor. Run the checks.
 ```
 
-Expected: a system boundary, the Requester actor and the registration goal. Internal processing steps are not automatically separate use cases.
+**Check before continuing:** the diagram shows a Shopper asking for a quote. It does not introduce checkout, payment or order creation as part of CU-01.
 
-## 3. Use case specification
+Compare: [use case preview](../examples/order-pricing/02-use-cases/use-cases.png) · [source](../examples/order-pricing/02-use-cases/use-cases.puml).
+
+<a id="3-use-case-specification"></a>
+
+## 3. Specify success and refusal behavior
+
+**Purpose:** describe what happens, including paths a happy-path diagram can miss.
+
+**Input:** requirements, domain model, user goal and expected results. **Output:** `03-spec/CU01-quote-cart.md` and `03-spec/interface-contract.md`.
 
 ```text
 $mkl-use-case-specifier
-Read uml/requirements.md, uml/domain.puml and uml/use-cases.puml.
-Specify CU-07 Register incident in uml/register-incident.md.
-The requester is already authenticated. The system checks the category,
-checks authorization, obtains the current agreement, calculates the due date,
-registers the incident and returns its identifier and due date.
-Include a basic flow, FA-01 unauthorized requester, FA-02 unknown category,
-preconditions, postconditions and acceptance criteria. Both rejection paths
-terminate without creating an incident. Preserve CU-07 and map RF-01 to RF-03.
+Read the requirements and ACCEPTANCE_ORACLE.md in examples/order-pricing/00-input,
+and the generated 01-domain and 02-use-cases files under uml/order-pricing.
+Use examples/order-pricing/03-spec/CU01-quote-cart.md as a read-only behavior
+and ID reference. Under uml/order-pricing, write 03-spec/CU01-quote-cart.md
+and 03-spec/interface-contract.md. Preserve CU-01 and its FA/FE/RN/CA IDs. Cover the
+no-Coupon basic flow, fixed/percentage/zero-subtotal alternatives and every
+specified refusal. State triggers, system actions, return/termination points
+and expected results. Retain trusted prices, integer cents and read-only
+behavior. Run the specification checks.
 ```
 
-Expected: actor/system behavior with explicit success and rejection outcomes, suitable for analysis and test derivation.
+**Check before continuing:** invalid data is handled by a stated refusal path, rather than hidden in a precondition. A zero-priced nonempty cart is valid; a Coupon's unmet minimum still refuses it. Do not invent a rule for an unresolved policy.
 
-## 4. Robustness analysis
+Compare: [CU-01 specification](../examples/order-pricing/03-spec/CU01-quote-cart.md) · [interface contract](../examples/order-pricing/03-spec/interface-contract.md).
+
+<a id="4-robustness-analysis"></a>
+
+## 4. Connect behavior to responsibilities
+
+**Purpose:** discover the interaction interface, analysis responsibilities and domain information needed for each flow.
+
+**Input:** specification, domain model and interface contract. **Output:** `04-robustness/robustness.puml` and `04-robustness/correspondence.md`.
 
 ```text
 $mkl-uml-robustness-diagram
-Analyze CU-07 from uml/register-incident.md using uml/domain.puml.
-Create DR-07 in uml/robustness.puml with boundary/control/entity notation.
-Cover the basic flow, FA-01 and FA-02. Distinguish the Incident Form boundary,
-analysis responsibilities and domain entities. Explain any missing domain
-concepts before introducing them.
+Read the generated 01-domain, 02-use-cases and 03-spec files under
+uml/order-pricing. Create DR-01 in
+uml/order-pricing/04-robustness/robustness.puml with boundary/control/entity
+notation. Map basic steps and every FA/FE to responsibilities and data origins
+in correspondence.md in that same folder. Identify any missing domain concept
+before adding it. Run the applicable checks.
 ```
 
-Expected: the interaction boundary, control responsibilities and grounded domain entities, with both rejection flows represented.
+**Check before continuing:** each success and refusal path has actual system behavior. A boundary is an interaction interface, a control is an analysis responsibility, and an entity represents domain information. These are not yet a list of production services.
 
-## 5. PDR preparation
+Compare: [robustness preview](../examples/order-pricing/04-robustness/robustness.png) · [source](../examples/order-pricing/04-robustness/robustness.puml) · [correspondence](../examples/order-pricing/04-robustness/correspondence.md).
+
+<a id="5-pdr-preparation"></a>
+
+## 5. Review the analysis: PDR
+
+**PDR means Preliminary Design Review.** It asks whether the preceding analysis is consistent enough to support detailed design.
+
+**Input:** the outputs of steps 1–4 and source expectations. **Output:** `05-pdr/PDR-01.md`, including the handoff to step 6.
 
 ```text
 $mkl-pdr-review
-Review uml/requirements.md, uml/domain.puml, uml/use-cases.puml,
-uml/register-incident.md and uml/robustness.puml as scoped PDR preparation.
-Check vocabulary closure, BCE relationships and basic/alternative-flow coverage.
-Save located findings, coverage limits and proposed corrections to uml/pdr-review.md.
-Distinguish automated checks from semantic inspection and human acceptance.
-Finish that record with a detailed-design handoff: CU-07/DR-07 scope, reviewed
-source versions, finding/action status and correction-verification evidence,
-remaining constraints, and the technical transition basis. Record formal
-acceptance only when its actual decision evidence exists.
+Review the generated 01-domain through 04-robustness artifacts under
+uml/order-pricing against examples/order-pricing/00-input/requirements.md
+and ACCEPTANCE_ORACLE.md in that same input directory. Save a scoped PDR
+preparation review to uml/order-pricing/05-pdr/PDR-01.md. Record located
+findings, actual checks and missing evidence. Correct affected working files
+and recheck them. End with CU-01/DR-01 scope, reviewed source versions,
+open/closed/deferred actions, correction evidence, remaining constraints and
+the technical basis for proceeding. Record only actual reviewer participation.
 ```
 
-Expected: actionable findings and coverage, not an automatic formal approval. Resolve findings that affect detailed design before continuing. For a formal MKL PDR, request that scope explicitly and provide the applicable review evidence and decision makers.
+**Check before continuing:** resolve findings that would change detailed design. A “closed” label needs correction evidence. Formal human/business acceptance stays **Not fully verified** when that participation and decision evidence are absent.
 
-## 6. Sequence diagram and tests
+Compare: [PDR findings and handoff](../examples/order-pricing/05-pdr/PDR-01.md). The reference PDR caught an invented negative-minimum business rule; the requirements had not authorized that rule.
+
+<a id="6-sequence-diagram-and-tests"></a>
+
+## 6. Allocate calls and derive tests
+
+**Purpose:** decide how participants collaborate and what observable tests that behavior needs.
+
+**Input:** the PDR handoff and the reviewed analysis. **Output:** `06-interactions/sequence.puml`, `operation-delta.md`, `test-plan.md` and `DESIGN_DECISIONS.md` in that folder.
 
 ```text
 $mkl-uml-sequence-diagram
-Read uml/pdr-review.md first. Match its reviewed versions and CU-07/DR-07 scope
-to the current inputs; inspect open/deferred actions and closure evidence.
-Recheck changed analysis or findings that block the affected detailed design.
-Record the PDR basis and carried constraints in the design rationale.
-Read uml/register-incident.md, uml/robustness.puml, uml/domain.puml and
-uml/requirements.md. Create DS-07 in uml/sequence.puml for CU-07.
-Include the authorized flow, FA-01 and FA-02, with explicit guards.
-Distinguish operation calls, replies and any lifecycle messages.
-Document a DeadlinePolicy design responsibility justified by RNF-01.
-Save the receiver-operation mappings to uml/operation-delta.md and derive
-success/rejection tests in uml/test-plan.md. Preserve the existing CU/DR/FA IDs.
+First read uml/order-pricing/05-pdr/PDR-01.md. Match its CU-01/DR-01 scope
+and reviewed versions to current working files; recheck changed inputs or
+blocking findings before relying on that handoff. Read requirements.md and
+ACCEPTANCE_ORACLE.md in examples/order-pricing/00-input, plus the generated
+01-domain, 03-spec and 04-robustness files under uml/order-pricing.
+Create DS-01 for CU-01 in uml/order-pricing/06-interactions/sequence.puml,
+covering the basic flow and all FA/FE paths. Use explicit guards and terminating
+refusals. In that same folder save receiver/operation/source mappings to
+operation-delta.md, observable cases to test-plan.md, and rationale plus carried
+PDR constraints to DESIGN_DECISIONS.md. Distinguish calls from replies and
+lifecycle messages. Run applicable checks against these generated files.
 ```
 
-Expected: the interaction, a traceable operation delta, and tests with meaningful conditions and outcomes. Replies and object creation do not automatically create ordinary class operations.
+**Check before continuing:** every refusal ends without a successful quote; the no-Coupon branch does not require Coupon lookup. Expected test amounts come from the independent input, not the proposed implementation. A test plan describes tests; it is not an executed test result.
 
-## 7. Design class model
+Compare: [DS-01 preview](../examples/order-pricing/06-interactions/sequence.png) · [source](../examples/order-pricing/06-interactions/sequence.puml) · [operation allocation](../examples/order-pricing/06-interactions/operation-delta.md) · [test plan](../examples/order-pricing/06-interactions/test-plan.md).
+
+<a id="7-design-class-model"></a>
+
+## 7. Build the design class model
+
+**Purpose:** place typed state, operations and dependencies with justified responsibilities.
+
+**Input:** domain, interactions, operation allocation, contracts and design constraints. **Output:** `07-class-model/classes.puml`, `provenance.md` and `SOLID.md` in that folder.
 
 ```text
 $mkl-uml-design-class-model
-Read uml/domain.puml, uml/sequence.puml, uml/operation-delta.md,
-uml/register-incident.md and uml/requirements.md.
-Create MC-07 in uml/classes.puml with types, visibility and complete signatures.
-Trace operations to calls or explicit contracts. Distinguish DeadlinePolicy as
-a solution design class. Explain relationships and any new design decisions.
+Read examples/order-pricing/00-input/requirements.md and the generated
+01-domain, 03-spec and 06-interactions artifacts under uml/order-pricing.
+Create MC-01 in
+uml/order-pricing/07-class-model/classes.puml with typed state, complete
+operation signatures and justified relationships. In provenance.md, trace each
+added member or software class to behavior, a contract or a design decision.
+In SOLID.md, examine responsibility, discount extension, policy
+substitution, client needs and dependency ownership. Separate diagram-supported
+claims from claims needing source or execution. Run cross-artifact checks.
 ```
 
-Expected: a design view with justified operations and solution classes, distinct from the earlier conceptual domain model.
+**Check before continuing:** the discount extension has an explicit reason from RNF-01/RNF-04. Interface notation alone does not establish SOLID. Association multiplicities must match actual ownership and sharing.
 
-## 8. CDR preparation
+Compare: [class preview](../examples/order-pricing/07-class-model/classes.png) · [source](../examples/order-pricing/07-class-model/classes.puml) · [member origins](../examples/order-pricing/07-class-model/provenance.md) · [SOLID evidence](../examples/order-pricing/07-class-model/SOLID.md).
+
+<a id="8-cdr-preparation"></a>
+
+## 8. Review the detailed design: CDR
+
+**CDR means Critical Design Review.** It asks whether the design, behavior and tests agree well enough for the requested implementation handoff.
+
+**Input:** all working analysis/design artifacts and available test evidence. **Output:** `08-cdr/CDR-01.md` with findings, coverage and remaining actions.
 
 ```text
 $mkl-cdr-review
-Review uml/classes.puml and uml/sequence.puml against uml/domain.puml,
-uml/robustness.puml, uml/register-incident.md, uml/requirements.md and
-uml/test-plan.md. Perform scoped CDR preparation.
-Save findings and coverage to uml/cdr-review.md. Check operation provenance,
-flow coverage, signature consistency and meaningful test coverage.
-Identify unresolved design decisions and missing human review evidence.
+Review the generated 07-class-model and 06-interactions artifacts under
+uml/order-pricing against its 01-domain through 05-pdr artifacts and the source
+requirements/expectations in examples/order-pricing/00-input. Include the SOLID
+evidence record. Save uml/order-pricing/08-cdr/CDR-01.md. Check flow coverage,
+signatures, responsibility allocation and test expectations. Correct affected
+working files and recheck them. Record actual checks, located findings,
+technical recommendation and missing implementation/execution evidence.
+Keep formal acceptance separate; do not call a self-check independent review.
 ```
 
-Expected: a detailed-design consistency review and remaining actions. A formal CDR disposition requires its applicable evidence and designated decision maker; passing a script does not establish acceptance.
+**Check before finishing:** the record says which checks ran and what remains unverified. A clean validator result does not establish full business correctness, SOLID conformance or formal approval.
 
-## Review or change an existing diagram
+Compare: [CDR record](../examples/order-pricing/08-cdr/CDR-01.md) · [code inspection](../examples/order-pricing/08-cdr/CODE-AUDIT-01.md). The reference adds a small Python implementation and executed tests as further evidence; generating that implementation is a separate task from these eight modeling/review steps.
 
-Provide the existing file and the evidence relevant to your request. You can invoke a single skill without generating the preceding pipeline stages:
+## Check your results
+
+Ask your agent to review the files in **`uml/order-pricing/`**, run the applicable validators against those files, and compare its actual outcomes with the checkpoints above. Different layouts or class names can be reasonable when their behavior and origins are justified.
+
+To run the **maintained reference implementation**, use a terminal from this repository's root:
+
+```bash
+python3 examples/order-pricing/09-reference-implementation/run_example.py
+python3 examples/order-pricing/scripts/verify.py
+```
+
+These commands require Python 3.9+ and the standard library. The first prints the example quotes/refusals. The second checks the maintained reference's models, reviewed baselines and executable tests; it does **not** verify your new `uml/order-pricing/` outputs. Add `--render` only when local PlantUML is available.
+
+For the reference's additional technical-observation sequence, hash baselines and change/review maintenance, use [HOW_TO_REPLAY.md](../examples/order-pricing/HOW_TO_REPLAY.md). Those publication-maintenance steps are separate from this first-use tutorial.
+
+## Apply this to your project
+
+Replace the source requirements and expected outcomes with your own, choose one output folder, and retain your existing IDs. Run only the stages your task needs; a standalone diagram does not require all eight stages.
+
+For example, after completing step 6 you can request a focused correction:
 
 ```text
 $mkl-uml-sequence-diagram
-Review uml/sequence.puml for message-sort mistakes, missing branches and
-activation imbalance. Compare it with uml/register-incident.md if available.
-Report each finding with its location and impact. Apply corrections to the
-diagram, preserve CU/DS/FA/CP IDs, and report the checks actually run.
+Review uml/order-pricing/06-interactions/sequence.puml against
+uml/order-pricing/03-spec/CU01-quote-cart.md. Check Coupon guards, refusal
+termination and operation calls. Apply justified corrections, preserve
+CU/DS/FA/FE IDs, and report checks actually run and gaps.
 ```
 
-Here the paths refer to your existing project files; replace them or attach the corresponding files. Missing comparison sources limit verification coverage. To request Chinese explanations, append `Explain the result in Chinese; keep code identifiers unchanged.`
-
-## Complete worked artifacts
-
-The repository already contains a coherent support-desk fixture set. Open the files below to inspect actual inputs and outputs; these links do not require you to generate anything first. The filenames retain compatibility with the existing tests; their contents are English.
-
-| Artifact | Existing example |
-|---|---|
-| Requirements | [requisitos.md](https://github.com/kinglez/mkl-uml/blob/main/tests/fixtures/pipeline/requisitos.md) |
-| Conceptual domain model | [dominio.puml](https://github.com/kinglez/mkl-uml/blob/main/tests/fixtures/pipeline/dominio.puml) |
-| Actors and use cases | [casos_uso.puml](https://github.com/kinglez/mkl-uml/blob/main/tests/fixtures/pipeline/casos_uso.puml) |
-| CU-07 specification | [especificacion.md](https://github.com/kinglez/mkl-uml/blob/main/tests/fixtures/pipeline/especificacion.md) |
-| DR-07 robustness analysis | [robustez.puml](https://github.com/kinglez/mkl-uml/blob/main/tests/fixtures/pipeline/robustez.puml) |
-| DS-07 sequence | [secuencia.puml](https://github.com/kinglez/mkl-uml/blob/main/tests/fixtures/pipeline/secuencia.puml) |
-| MC-07 design classes | [modelo_clases_diseno.puml](https://github.com/kinglez/mkl-uml/blob/main/tests/fixtures/pipeline/modelo_clases_diseno.puml) |
-| Derived tests | [plan_pruebas.md](https://github.com/kinglez/mkl-uml/blob/main/tests/fixtures/pipeline/plan_pruebas.md) |
-
-These are regression fixtures used by the eight validator contracts, not a formal human approval record or a universal design template. Generated answers can differ from these fixtures. The fixtures support the profile checks described in [Validation](VALIDATION.md).
+For Chinese explanations, append `Explain the result in Chinese; keep code identifiers unchanged.`

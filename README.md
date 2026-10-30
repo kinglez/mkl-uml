@@ -1,25 +1,103 @@
 <!-- Copyright 2026 kingle.zhuang. See NOTICE for upstream attribution. -->
 # MKL UML Skills
 
-**Turn requirements into UML models you can trace, review and refine.**
+**Turn requirements into UML models, review the design, and trace it to tests.**
 
-Eight agent skills connect business vocabulary, user goals, behavior, design responsibilities and tests. Start with one artifact or explicitly request the complete MKL workflow. Models use PlantUML; specifications and review records use Markdown.
+Eight agent skills guide you from business concepts to detailed design. Use one skill for a specific diagram, or work through all eight stages. Diagrams use PlantUML; specifications and review records use Markdown.
 
-[Get started](#how-to-use) · [Workflow](#workflow) · [Stage outputs](#what-each-stage-produces) · [Complete worked example](#complete-worked-example-order-pricing) · [All eight prompts](docs/EXAMPLES.md)
+This guide follows one example throughout: **quote a shopping cart with an optional coupon**. The completed [order-pricing example](examples/order-pricing/README.md) includes requirements, diagrams, review findings, Python code and tests.
 
-## What problems does this solve?
+[Quick start](#quick-start) · [Run the finished example](#run-the-finished-example) · [Workflow](#workflow) · [Stage outputs](#stage-outputs) · [Documentation](#documentation)
 
-| Problem | How the skills help |
+## What does this help you do?
+
+| When you need to… | Use the skills to… |
 |---|---|
-| Requirements use inconsistent names or unclear concepts. | Build a shared domain vocabulary before choosing implementation classes. |
-| User goals are mixed with internal processing steps. | Define actors, the system boundary and observable use case behavior. |
-| Happy-path diagrams hide rejection and exception behavior. | Trace basic, alternative and exception flows through robustness, interactions and tests. |
-| Design classes contain unexplained state or operations. | Record their domain, interaction, contract or design-decision origins. |
-| Diagrams, specifications and tests drift apart. | Run PDR/CDR preparation checks and report located findings, missing evidence and required corrections. |
+| Understand requirements before coding | Agree on business concepts, actors and user goals. |
+| Work out success and failure behavior | Specify flows and show how responsibilities collaborate. |
+| Explain a design | Connect class state and operations to requirements and interactions. |
+| Keep documents and tests consistent | Review the links between artifacts and record gaps or corrections. |
+
+<a id="how-to-use"></a>
+
+## Quick start
+
+### 1. Get the example and install the skills
+
+Run in your **terminal**. This checkout supplies the example files used below:
+
+```bash
+git clone https://github.com/kinglez/mkl-uml.git
+cd mkl-uml
+```
+
+Choose your agent; either command installs all eight skills into this project:
+
+```bash
+# Codex
+npx skills@latest add kinglez/mkl-uml -a codex --skill '*' -y
+
+# Claude Code
+npx skills@latest add kinglez/mkl-uml -a claude-code --skill '*' -y
+```
+
+The Skills CLI needs Node.js 22.20+ and Git. Python 3.9+ runs the validators and executable example. To install into your own project, run the installation command there instead; the example files come from this checkout. See [installation options](docs/INSTALLATION.md).
+
+### 2. Create the first model
+
+Open this checkout in your agent. Paste the following into the **agent chat**:
+
+```text
+$mkl-uml-domain-modeler
+Read examples/order-pricing/00-input/requirements.md and
+examples/order-pricing/00-input/ACCEPTANCE_ORACLE.md.
+Create a conceptual domain model for CU-01 Quote cart.
+Save domain.puml and glossary.md under uml/order-pricing/01-domain/.
+Explain the business concepts, relationships and unresolved assumptions.
+Keep implementation services and discount strategies for detailed design.
+Leave the completed examples/order-pricing reference files unchanged.
+Run the applicable validator and report its actual result and limits.
+```
+
+For Claude Code, replace the first line with `/mkl-uml-domain-modeler`.
+
+**Check the result:** your new folder contains `domain.puml` and `glossary.md`. The model explains concepts such as Cart, CartLine, Product, Coupon and PriceQuote. Compare it with the [completed domain model](examples/order-pricing/01-domain/domain.png).
+
+### 3. Continue one stage at a time
+
+Follow the **[eight-stage tutorial](docs/EXAMPLES.md)**. Each stage explains its purpose, names its inputs, gives a copyable prompt, and links to a completed result. It uses `uml/order-pricing/` for your work and leaves the published example available for comparison.
+
+You can stop after the artifact you need. For your own project, replace the teaching requirements with your requirements and use your existing IDs.
+
+<a id="complete-worked-example-order-pricing"></a>
+
+## Run the finished example
+
+You can inspect and execute the committed example before generating any models. From the repository root:
+
+```bash
+python3 examples/order-pricing/09-reference-implementation/run_example.py
+python3 examples/order-pricing/scripts/verify.py
+```
+
+The cart contains two CNY 120.00 books and one CNY 15.00 pen: **CNY 255.00**. The demo prints these results, plus unknown and expired coupon refusals:
+
+| Coupon | Discount | Payable |
+|---|---:|---:|
+| None | CNY 0.00 | CNY 255.00 |
+| SAVE30 | CNY 30.00 | CNY 225.00 |
+| TENOFF | CNY 25.50 | CNY 229.50 |
+| BIGSAVE, capped at the subtotal | CNY 255.00 | CNY 0.00 |
+
+JSON amounts are integer cents: `22500` means CNY 225.00. Quoting creates no order and leaves the inputs unchanged. No live service or Python dependency installation is needed.
+
+The verifier checks the **committed reference example**, including its reviewed source baselines, validators, headers and tests. It does not check your newly generated `uml/order-pricing/` folder. A successful run ends with `Result: PASS`; its separate formal-acceptance status remains `NOT FULLY VERIFIED` because no human/business approval is claimed.
+
+Read the **[guided example tour](examples/order-pricing/README.md)** to follow the results back to their requirements and diagrams. Pre-rendered images are included. Add `--render` to the verifier only if you have PlantUML installed and want to regenerate them.
 
 ## Workflow
 
-The complete workflow connects analysis to detailed design, with a review at each handoff.
+The full workflow answers three questions: **What must the system do? How will it do it? Does the design agree with the requirements?**
 
 ```mermaid
 flowchart TB
@@ -46,168 +124,62 @@ flowchart TB
     Q -.->|"Rework design"| DD
 ```
 
-**PDR** means Preliminary Design Review; **CDR** means Critical Design Review. Resolve findings that affect the next stage before proceeding. Missing applicable evidence remains **Not fully verified**; a formal disposition needs the designated decision maker. A clean validator result alone is not approval.
+**PDR (Preliminary Design Review)** checks the analysis before detailed design. **CDR (Critical Design Review)** checks the detailed design before implementation handoff. Each review records what was checked, findings, corrections and remaining gaps. The next stage reads that record and rechecks affected inputs when they change.
 
-**Standalone work is the default.** You can create or review one diagram without completing every preceding stage. The diagram shows the explicitly requested full workflow.
+You can request a single artifact independently. Formal review is an explicit scope; automated checks alone establish neither formal approval nor SOLID conformance. See the [workflow guide](docs/MKL_METHODOLOGY.md) for the reasoning behind each stage.
 
-## How to use
+<a id="what-each-stage-produces"></a>
 
-### 1. Install into your project
+## Stage outputs
 
-Use the [Skills CLI](https://github.com/vercel-labs/skills), with Node.js 22.20+ and Git. Python 3.9+ is needed to run the bundled validators. Run one command from your target project:
-
-```bash
-# Codex
-npx skills@latest add kinglez/mkl-uml -a codex
-
-# Claude Code
-npx skills@latest add kinglez/mkl-uml -a claude-code
-```
-
-Choose skills when prompted. Add `--skill '*' -y` to select all eight, `--skill mkl-uml-domain-modeler` for one, or `-g` for personal installation. For pinned versions, offline packages, Windows and other hosts, see [Installation](docs/INSTALLATION.md).
-
-### 2. Give the agent a concrete request
-
-Open your project in Codex or Claude Code. Paste this into the **agent chat**, not your terminal:
+These are **existing files** in the completed example. The tutorial creates corresponding working outputs under `uml/order-pricing/`.
 
 ```text
-$mkl-uml-domain-modeler
-Create a conceptual PlantUML domain model for a technical support desk.
-- RF-01: A Requester registers an Incident with a Category and description.
-- RF-02: Its due date comes from the Category's current ServiceAgreement.
-- RF-03: Reject requesters who are not authorized for the Category.
-- RNF-01: Deadline policy can change independently of the Incident.
-An Incident has a description, registration date, due date and business reference.
-Save the requirements to uml/requirements.md and the model to uml/domain.puml.
-Explain assumptions and unresolved questions. Keep implementation classes
-out of this conceptual view.
+examples/order-pricing/
+├── 00-input/
+│   ├── requirements.md          Business rules and scope
+│   └── ACCEPTANCE_ORACLE.md     Independently derived expected results
+├── 01-domain/
+│   ├── domain.puml              1. Business concepts and relationships
+│   └── glossary.md
+├── 02-use-cases/use-cases.puml   2. Shopper and CU-01 Quote cart
+├── 03-spec/CU01-quote-cart.md    3. Success, alternative and exception flows
+├── 04-robustness/
+│   ├── robustness.puml          4. Boundary, control and entity analysis
+│   └── correspondence.md
+├── 05-pdr/PDR-01.md             5. Analysis findings and design handoff
+├── 06-interactions/
+│   ├── sequence.puml            6. Collaborations and guarded branches
+│   ├── operation-delta.md          Operations allocated to their receivers
+│   ├── test-plan.md                Observable expected behavior
+│   └── DESIGN_DECISIONS.md
+├── 07-class-model/
+│   ├── classes.puml             7. Typed state, operations and relationships
+│   ├── provenance.md               Why each member belongs in the design
+│   └── SOLID.md                    Evidence and limits for design principles
+├── 08-cdr/CDR-01.md             8. Detailed-design findings and readiness
+└── 09-reference-implementation/ Additional executable code and tests
 ```
 
-In Claude Code, use `/mkl-uml-domain-modeler` in place of `$mkl-uml-domain-modeler`. Expected result: `uml/requirements.md` and a domain model containing `Requester`, `Incident`, `Category` and `ServiceAgreement`. Request SVG/PNG as well if you want rendered diagrams and a renderer is available.
-
-### 3. Continue from the files you have
-
-Use the [eight copyable stage prompts](docs/EXAMPLES.md) for the workflow above. Each prompt names its inputs and output paths. Run a stage when its inputs exist; review findings and correct affected artifacts before the next handoff.
-
-For an existing diagram, invoke only the relevant skill:
-
-```text
-$mkl-uml-sequence-diagram
-Review uml/sequence.puml against uml/register-incident.md.
-Check operation calls, replies, missing branches and activation balance.
-Apply supported corrections, preserve CU/DS/FA IDs, and report the checks
-actually run and any missing comparison evidence.
-```
-
-Replace these example paths with your files or attach the artifacts. Installation copies the skills; it does not generate project outputs automatically.
-
-### 4. Inspect the artifacts and verification coverage
-
-Read the generated PlantUML/Markdown and the reported findings. Ask the agent to run the relevant bundled validator and recheck corrections. Keep unresolved assumptions, missing inputs and human decisions visible. For formal review, request that scope explicitly and supply its applicable evidence.
-
-For a full workflow, carry the [PDR handoff record](skills/mkl-pdr-review/references/review-protocol.md) into sequence design, including unresolved findings and the reviewed input versions. When SOLID is part of the requested review, use the [evidence guide](skills/mkl-cdr-review/references/solid-evidence.md) to examine concrete changes, replacements, client contracts and source dependencies. A clean diagram check is not a SOLID assessment.
-
-## What each stage produces
-
-These are **illustrative project outputs**, using the same flat paths as [the stage prompts](docs/EXAMPLES.md). They are created only when requested; the installation does not create this tree. A stage may update an existing artifact rather than create another copy.
-
-```text
-uml/
-├── requirements.md          # Input: goals, RF/RNF requirements and constraints
-├── domain.puml              # 1: conceptual domain model
-├── use-cases.puml           # 2: actors, system boundary and user goals
-├── register-incident.md     # 3: CU-07 basic and alternative flows
-├── robustness.puml          # 4: DR-07 boundary/control/entity analysis
-├── pdr-review.md            # 5: findings, coverage, decisions and rework
-├── sequence.puml            # 6: DS-07 interactions and guarded branches
-├── operation-delta.md       # 6: receiver/operation/source mappings
-├── test-plan.md             # 6: derived success and rejection tests
-├── classes.puml             # 7: MC-07 typed design classes and relationships
-└── cdr-review.md            # 8: detailed-design findings and handoff readiness
-```
-
-CDR can also generate inspection headers when requested. Those are review aids; production implementation is a subsequent task.
-
-| Stage | Skill | Main question answered |
-|---|---|---|
-| 1 | [mkl-uml-domain-modeler](skills/mkl-uml-domain-modeler/README.md) | What concepts and relationships exist in this domain? |
-| 2 | [mkl-uml-use-case-diagram](skills/mkl-uml-use-case-diagram/README.md) | Who uses the system, and for which goals? |
-| 3 | [mkl-use-case-specifier](skills/mkl-use-case-specifier/README.md) | What does the actor/system do on each flow? |
-| 4 | [mkl-uml-robustness-diagram](skills/mkl-uml-robustness-diagram/README.md) | Which interfaces, controls and entities realize that behavior? |
-| 5 | [mkl-pdr-review](skills/mkl-pdr-review/README.md) | Is the analysis consistent enough to proceed to detailed design? |
-| 6 | [mkl-uml-sequence-diagram](skills/mkl-uml-sequence-diagram/README.md) | Which participants collaborate, and which operations/tests follow? |
-| 7 | [mkl-uml-design-class-model](skills/mkl-uml-design-class-model/README.md) | Where do typed state, operations and relationships belong? |
-| 8 | [mkl-cdr-review](skills/mkl-cdr-review/README.md) | Is the detailed design consistent enough for implementation handoff? |
-
-## Complete worked example: order pricing
-
-Explore the **[order-pricing reference example](examples/order-pricing/README.md)** to see all eight stages applied to one problem, including PDR/CDR findings, corrected models, executable Python code and tests. The example is fully in English and includes six rendered UML diagrams, 17 design classifiers and 30 independent acceptance cases.
-
-| Start here | What you can inspect |
-|---|---|
-| [Example guide](examples/order-pricing/README.md) | Business rules, expected prices, workflow, stage outputs and run commands. |
-| [Eight replay prompts](examples/order-pricing/HOW_TO_REPLAY.md) | Recreate the example with the eight skills, including explicit PDR-to-design handoff. |
-| [Traceability](examples/order-pricing/TRACEABILITY.md) | Follow a requirement through use case behavior, interactions, class members and tests. |
-| [Change and correction history](examples/order-pricing/CHANGE_IMPACT.md) | Review actual modeling corrections and add a discount policy without editing the core workflow. |
-| [Verification record](examples/order-pricing/VALIDATION.json) | Reproducible checks and their actual results, with formal acceptance kept separate. |
-
-From a checkout of this repository:
-
-```bash
-python3 examples/order-pricing/09-reference-implementation/run_example.py
-python3 examples/order-pricing/scripts/verify.py
-```
-
-Python's standard library is sufficient for these commands. Add `--render` to verification to regenerate SVG/PNG with a local PlantUML installation. The example is part of the GitHub repository; installing the skills does not copy these project artifacts into your application. [Browse the complete example on GitHub](https://github.com/kinglez/mkl-uml/tree/main/examples/order-pricing).
-
-## Example: register an incident
-
-The quick-start request above is illustrated by the smaller pipeline fixtures for **CU-07 Register incident**.
-
-- **Success:** an authorized Requester submits an existing Category; the system obtains its current ServiceAgreement, calculates the due date, registers the Incident and returns its identifier and due date.
-- **FA-01:** an unauthorized Requester receives a refusal; no Incident is created.
-- **FA-02:** an unknown Category produces a refusal; no Incident is created.
-- **Design decision:** `DeadlinePolicy` is introduced during detailed design to satisfy RNF-01. It is a solution class, distinct from the conceptual domain vocabulary.
-
-Inspect the **existing files** below to see actual inputs and modeled outputs. Their legacy filenames are retained for validator compatibility; the contents are English.
-
-| Stage / evidence | Existing worked artifact |
-|---|---|
-| Input | [Requirements](tests/fixtures/pipeline/requisitos.md) |
-| 1 | [Domain model](tests/fixtures/pipeline/dominio.puml) |
-| 2 | [Actors and use cases](tests/fixtures/pipeline/casos_uso.puml) |
-| 3 | [CU-07 specification](tests/fixtures/pipeline/especificacion.md) |
-| 4 | [DR-07 robustness](tests/fixtures/pipeline/robustez.puml) |
-| 6 | [DS-07 sequence](tests/fixtures/pipeline/secuencia.puml) and [test plan](tests/fixtures/pipeline/plan_pruebas.md) |
-| 7 | [MC-07 design classes](tests/fixtures/pipeline/modelo_clases_diseno.puml) |
-
-PDR/CDR records are requested outputs, as shown in the tree; this fixture set does not contain signed review records. Fixtures demonstrate the supported modeling/checking profile. Use [the example prompts](docs/EXAMPLES.md) to produce your own artifacts and review records.
+Implementation is a subsequent task; it is included here to make the teaching design testable. The [traceability guide](examples/order-pricing/TRACEABILITY.md) connects requirement IDs to behavior, design members and tests.
 
 ## Documentation
 
-- [Operating contract](docs/OPERATING_CONTRACT.md): modes, inputs, coverage and stable IDs.
-- [Usage examples](docs/EXAMPLES.md): copyable prompts for all eight skills.
-- [MKL methodology](docs/MKL_METHODOLOGY.md): the complete design workflow.
-- [Installation](docs/INSTALLATION.md): host-specific and offline installation.
-- [Validation record](docs/VALIDATION.md): executed checks and known limits.
-- [Bibliography](docs/BIBLIOGRAPHY.md) and [third-party sources](docs/THIRD_PARTY_SOURCES.md): attribution and source dispositions.
-- [Release notes](docs/RELEASE_NOTES.md): versions and distribution boundaries.
+Start with the **[documentation reading guide](docs/README.md)**. Read only the material needed for your task:
 
-MKL is this edition's branding for an adapted use-case-driven workflow. Original literature remains attributed to its authors. Instructions and outputs are English by default; request another output language when needed.
+| Your next task | Read |
+|---|---|
+| Follow the eight skills using order pricing | [Step-by-step tutorial](docs/EXAMPLES.md) |
+| Inspect the already completed result | [Example tour](examples/order-pricing/README.md) |
+| Choose another installation method | [Installation](docs/INSTALLATION.md) |
+| Understand the workflow and review stages | [Workflow guide](docs/MKL_METHODOLOGY.md) |
+| Look up input requirements, IDs or review states | [Operating contract](docs/OPERATING_CONTRACT.md) |
+| Inspect actual checks, limits or version changes | [Validation record](docs/VALIDATION.md) · [Release notes](docs/RELEASE_NOTES.md) |
 
-## Development and distribution
+## Development and license
 
-From this repository root:
-
-```bash
-python3 -m unittest discover -s tests -v
-python3 tools/package_skill.py
-```
-
-The `.skill` suffix is a packaging convention; use the [host-specific installation guide](docs/INSTALLATION.md). Validators check supported profiles and heuristics; passing does not establish complete UML semantics or formal human acceptance.
-
-## Author and license
+From the repository root, run `python3 -m unittest discover -s tests -v` for the regression suite or `python3 tools/package_skill.py` to build the per-skill archives. [Distribution details](docs/INSTALLATION.md#offline-skill-archives) explain the archive format.
 
 **kingle.zhuang** · <kinglezhuang@vip.qq.com> · **mkl** · Copyright **2026**.
 
-[Apache-2.0](LICENSE). [Project information](NOTICE) includes upstream attribution, contribution and community conduct. This edition was translated and adapted with AI assistance; AI tools are not coauthors.
+[Apache-2.0](LICENSE). [NOTICE](NOTICE) contains upstream attribution and project guidance. MKL is this edition's branding for the adapted workflow; [bibliography](docs/BIBLIOGRAPHY.md) and [source notes](docs/THIRD_PARTY_SOURCES.md) retain the original authors' attribution. This edition was translated and adapted with AI assistance; AI tools are not coauthors.

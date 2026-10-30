@@ -1,37 +1,51 @@
-<!-- English-edition adaptation: Copyright 2026 kingle.zhuang. See NOTICE for upstream attribution. -->
-# Methodology: the MKL pipeline
+<!-- Copyright 2026 kingle.zhuang. See NOTICE for upstream attribution. -->
+# How the MKL workflow fits together
 
-## What is MKL?
+The workflow connects **requirements → behavior → design → tests**. Each stage answers a new question while checking its result against the preceding work. You can use one skill for one artifact or explicitly ask for the full workflow.
 
-MKL is a use-case-driven software development process that occupies a middle ground between RUP, with its many disciplines and artifacts, and lightweight agile approaches that may leave the bridge between requirements and design implicit. Its defining feature is **dynamic traceability**: concrete, verifiable rules connect successive artifacts. Domain concepts become nouns in use case text; robustness objects inform sequence interactions; operation-invoking messages inform class operations; signals, replies and lifecycle messages retain their own semantics.
+This page explains why the stages exist. To perform them, use the **[order-pricing tutorial](EXAMPLES.md)**. For other documents, see the [reading guide](README.md).
 
-Primary sources: Rosenberg, D., & Stephens, M. (2007), *Use Case Driven Object Modeling with UML: Theory and Practice*, Apress; and Rosenberg, D., Stephens, M., & Collins-Cope, M. (2005), *Agile Development [abbreviated title]*, Apress. See the [Consolidated Bibliography](BIBLIOGRAPHY.md).
+## One problem, eight questions
 
-## The pipeline, artifact by artifact
+In the example, a Shopper requests a price quote for a cart with an optional coupon. Two books and a pen cost CNY 255.00; an eligible SAVE30 coupon reduces payable to CNY 225.00. The system creates no Order.
 
-| # | Skill | Output | Inputs | Gate |
-|---|---|---|---|---|
-| 1 | `mkl-uml-domain-modeler` | Domain model (`.puml`): conceptual problem vocabulary | Business description / requirements | — |
-| 2 | `mkl-uml-use-case-diagram` | Use case diagram (`.puml`): actors, scope, relationships | Domain model + business description | — |
-| 3 | `mkl-use-case-specifier` | Textual specification (`.md`): basic and alternative courses in event/response style | Use case diagram + domain model | — |
-| 4 | `mkl-uml-robustness-diagram` | Robustness diagram (`.puml`): boundary/control/entity objects | Specification + domain model | — |
-| 5 | `mkl-pdr-review` | Preliminary Design Review verdict and review record | All preceding artifacts together | Gate 1 |
-| 6 | `mkl-uml-sequence-diagram` | Sequence diagram (`.puml`), operation delta, and test cases | Robustness + specification + domain | — |
-| 7 | `mkl-uml-design-class-model` | Design class model (`.puml`) | Domain + sequence diagram(s) + specification | — |
-| 8 | `mkl-cdr-review` | Critical Design Review verdict and record; optional code headers | Classes + sequences + robustness diagrams + specifications + domain + requirements + test plan | Gate 2 |
+| Stage | Question | What order pricing produces |
+|---|---|---|
+| 1. Domain model | What do the business words mean? | Cart, CartLine, Product, Coupon and PriceQuote, with relationships and a glossary. |
+| 2. Use case diagram | Who wants what from the system? | Shopper asks Order Pricing to perform CU-01 Quote cart. Price lookup is an internal step. |
+| 3. Use case specification | What happens for each input and outcome? | Basic behavior, discount alternatives and explicit refusal paths. |
+| 4. Robustness analysis | Which interface, responsibilities and domain information realize those steps? | Boundary/control/entity analysis and correspondence to the specified flows. |
+| 5. PDR | Does the analysis agree well enough to design from it? | Findings, corrections, reviewed inputs and a detailed-design handoff. |
+| 6. Sequence design | Who collaborates, and which operations and tests follow? | Guarded interactions, operation allocation, test plan and design rationale. |
+| 7. Class design | Where do typed state, operations and dependencies belong? | Design classes, justified relationships, member origins and scoped SOLID reasoning. |
+| 8. CDR | Do the detailed models, contracts and test evidence agree? | Findings, coverage, remaining actions and an implementation-handoff recommendation. |
 
-The two gates are deliberate: MKL reviews analysis before commitment to detailed design, and detailed design before commitment to implementation. Each gate uses a three-state verdict: accepted, accepted with rework verification, or reinspection required. The result is more informative than a binary approval.
+See the [completed artifacts](../examples/order-pricing/README.md#eight-stage-artifacts) to inspect the files for each row. The reference adds Python code and executed tests after modeling so that readers can challenge the design; generating implementation code is a subsequent task.
 
-## Backward traceability
+## Why the two reviews matter
 
-The chain is maintained by checking that domain concepts in use case text belong to the domain model; actors and use case relationships agree with the use case diagram; robustness objects are grounded in specification text; sequence messages realize robustness control responsibilities; and class operations trace to operation calls, contracts, requirements or justified design decisions. An inconsistency in any of these links is a finding, not merely a stylistic variation.
+**PDR — Preliminary Design Review** catches problems in the analysis before they become detailed design. In this example, it caught an invented rule rejecting a negative coupon minimum. The requirements had not defined that policy. The correction removed the invented rule and kept the unresolved question visible.
 
-## Standalone and formal workflow modes
+The PDR record tells the next stage which inputs were reviewed, what was corrected, what remains open and whether those issues affect detailed design. Sequence design reads that record first and rechecks changed inputs or unresolved blockers.
 
-Standalone assistance is the default. The pipeline table describes the explicit MKL workflow and does not impose its full input set on a standalone artifact request. See [Operating contract](OPERATING_CONTRACT.md) for minimum inputs, coverage states and stable IDs. Formal PDR/CDR sessions are opt-in. Run the checks that can be automated and **explicitly disclose** omitted checks. Undisclosed omissions make a review incomplete, rather than lightweight.
+**CDR — Critical Design Review** compares the detailed design with behavior, requirements and tests. The reference reviews caught incorrect sequence termination/frame coverage and a class multiplicity inconsistent with shared immutable CartLine values. These required semantic examination as well as tool execution.
 
-The same evidence discipline applies to bibliographic sources: each skill's `references/sources-and-methods.md` or equivalent distinguishes what was verified from what remains unverified. Report both completed verification and its limitations.
+A technical recommendation supports the reviewed scope. Formal acceptance also needs its applicable decision evidence and actual decision maker. In this teaching example, formal human/business acceptance remains **Not fully verified**. A missing formal decision is recorded separately from a useful technical review.
 
-## Skill locations
+## How the files stay connected
 
-Each pipeline stage corresponds to a directory under [`skills/`](../skills/). Its `README.md` documents purpose, methodological basis, concrete inputs and outputs, installation, validation, and the sources specific to that stage.
+Consider the SAVE30 rule. Its requirement states the minimum and discount. The specification states when that branch applies and what it returns. Robustness identifies the information and responsibilities involved. The sequence allocates calls, the class model defines the required operations, and a test compares the result with the independently expected **22500 cents** payable.
+
+That chain is **traceability**. Explicit links establish it; matching diagram numbers or similar class names alone do not. The [traceability guide](../examples/order-pricing/TRACEABILITY.md) shows the actual links. When a requirement changes, review and update the affected links while preserving unchanged identities.
+
+Domain concepts and implementation classes serve different purposes. Cart and Coupon describe the problem; a discount strategy or catalog adapter needs a design reason. Replies, signals and lifecycle messages also retain their semantics rather than all becoming ordinary class operations.
+
+## Use only the scope you need
+
+For a single diagram, supply the relevant goal, behavior or target artifact. The agent can complete independent work and report which comparisons lack evidence. A full eight-stage run is an explicit request, not a prerequisite for every task.
+
+Automated validators check supported syntax, local rules and selected heuristics. Rendered diagrams, semantic review, source inspection and executed behavioral tests answer different questions. Use the [operating contract](OPERATING_CONTRACT.md) when you need the exact input, coverage and ID rules. For SOLID claims, consult the example's [evidence record](../examples/order-pricing/07-class-model/SOLID.md); passing validators or drawing interfaces does not prove all five principles.
+
+## Method and sources
+
+MKL is this edition's branding for an adapted use-case-driven modeling workflow. Its methodological sources include Rosenberg and Stephens, *Use Case Driven Object Modeling with UML: Theory and Practice* (2007), and related work identified in the [bibliography](BIBLIOGRAPHY.md). Original sources remain attributed to their authors; the [source notes](THIRD_PARTY_SOURCES.md) distinguish verified references from unverified material.

@@ -1,4 +1,8 @@
-# Replay the eight-stage example
+# Advanced replay: maintain the eight-stage reference example
+
+**For a first run, use the [step-by-step tutorial](../../docs/EXAMPLES.md).** It writes your own outputs under `uml/order-pricing/` and leaves the completed reference example available for comparison.
+
+Use the prompts below when you intend to revise the maintained `examples/order-pricing/` artifacts themselves. These files are recorded in reviewed source baselines. Review the affected content and cross-artifact relationships before replacing a baseline; updating a checksum alone does not establish that the changed work was reviewed. The JSON handoff records belong to this reproducible reference example, rather than being a requirement for every project.
 
 Read the [business baseline](00-input/requirements.md) and [independent acceptance expectations](00-input/ACCEPTANCE_ORACLE.md), then send the prompts below to an agent **in chat**. They are not terminal commands. Start from a repository checkout with the skills available; the prompts identify their repository source paths explicitly.
 

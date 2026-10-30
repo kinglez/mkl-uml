@@ -1,6 +1,22 @@
 <!-- Copyright 2026 kingle.zhuang. Organization: mkl. -->
 # Validation record
 
+**Evidence reference:** this page records checks that were actually executed and their limits. To run the example yourself, use the [example guide](../examples/order-pricing/README.md#run-the-example). To learn the skills, follow the [tutorial](EXAMPLES.md). See the [documentation guide](README.md) for the reading order.
+
+## Documentation usability update — 2026-10-30
+
+The README and introductory documents now follow order pricing throughout. The tutorial creates separate working artifacts; the maintained reference and its historical acceptance boundary remain explicit. Two independent AI editorial reviews compared the new instructions with the unchanged business requirements, specification and actual example output, with no unresolved concrete documentation finding.
+
+| Check | Actual result |
+|---|---|
+| Source documentation | Local file links, heading anchors and the eight legacy tutorial anchors resolve. The six printed JSON results match the documented amounts and refusals. |
+| Standalone documentation | All eight in-memory skill payloads contain `package-docs/docs/README.md`, retain the root navigation link and provide the online example fallback. Installed local links resolve. |
+| Distribution and installer regressions | **12 distribution tests and 7 npx installation tests passed**, including archive/directory equality, standalone links and installation from a packed package. |
+| Maintained reference | **All 13 default checks passed**, including both sequence validators, inspected-header comparison, 15 reference test methods, 30 oracle cases, visible examples and the extension exercise. Rendering was not rerun because the diagrams are unchanged. |
+| Review baseline | Only the two changed example guides and their editorial maintenance note received new design-baseline hashes after affected-scope review. Requirements, oracle, models, pricing implementation and validator runtime are unchanged. |
+
+These are documentation-maintenance checks against the 1.0.3 runtime. The existing version tag remains the previously published snapshot; this update does not change its target or turn the reference verifier into a checker for newly generated tutorial files.
+
 ## 1.0.3 workflow and evidence update — 2026-10-30
 
 This source update strengthens PDR handoff, supported table recognition and scoped SOLID review. The implementation was tested and independently reviewed before updating the worked example's runtime snapshot. Formal human/business acceptance is still separate from these results.

@@ -1,5 +1,7 @@
 # Operating, input and traceability contract
 
+**Reference document:** use this when you need exact rules for inputs, review states, handoffs or stable IDs. For a first run, follow the [order-pricing tutorial](EXAMPLES.md); the [documentation guide](README.md) explains the reading order.
+
 This contract applies to all eight MKL skills. It separates the artifact operation from the review workflow and the evidence available. Existing Spanish CLI flags and supported parser terms remain compatible; the modes below are agent workflow choices, not new CLI flags.
 
 ## Modes and operations
@@ -65,7 +67,7 @@ A derived `/property` specifies derivability, not a storage strategy. Compositio
 
 ## Identifier lifecycle
 
-Use the project's existing ID scheme. Defaults are RF/RNF for requirements, CU for use cases, DR for robustness, DS for sequences, MC for class models, CP for tests, RN for rules, PDR/CDR for review records, and H for findings. FA/FE flow IDs are scoped to their parent CU; finding IDs are scoped to a review record. A full reference includes its scope, for example `CU-07/FA-02`.
+Use the project's existing ID scheme. Defaults are RF/RNF for requirements, CU for use cases, DR for robustness, DS for sequences, MC for class models, CP for tests, RN for rules, PDR/CDR for review records, and H for findings. FA/FE flow IDs are scoped to their parent CU; finding IDs are scoped to a review record. A full reference includes its scope, for example `CU-01/FA-02`.
 
 - Identity is stable across renamed titles, declaration order, prominence and partial regeneration. Display numbering and PlantUML aliases are not traceability identity.
 - Import existing IDs and the high-water mark before allocating. Keep a registry with stable business keys and active/retired status. Allocate above the reserved high-water mark, including retired IDs.
@@ -78,7 +80,7 @@ The repository helper `tools/trace_ids.py` produces a JSON registry using only P
 From the repository root, this executable example creates a new registry; the business key is illustrative. It is not an installation or a record of a project allocation:
 
 ```bash
-python3 tools/trace_ids.py --prefix CU --key reserve-room
+python3 tools/trace_ids.py --prefix CU --key quote-cart
 ```
 
 ## Deliverables
