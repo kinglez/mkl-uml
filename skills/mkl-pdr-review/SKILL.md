@@ -39,6 +39,7 @@ Default to a scoped preparation review of the supplied material. Conduct a forma
 4. Report actionable findings with source location, impact, severity, proposed correction and owning artifact. For a formal session, record disposition, owner, due date and verification evidence for agreed actions; do not invent participants or acceptance.
 5. Recommend correction, deferral, upstream revision or dismissal only when relevant. A fixed menu and a compulsory pause are local facilitation choices, not universal requirements of IEEE/ISO standards.
 6. Apply corrections when the user has authorized remediation; keep the review evidence and correction record distinct. Reuse existing authorization and verify the affected scope afterward.
+7. For a handoff to detailed design, end the existing review record with the reviewed scope/baseline, findings and closure evidence, remaining constraints, and technical transition recommendation. Keep formal acceptance separate. Use the compact handoff in [review-protocol.md](references/review-protocol.md) so another chat can continue from the actual reviewed state.
 
 ## Coverage and disposition
 
@@ -62,7 +63,7 @@ Use only available inputs accepted by `--help`. State execution, findings and om
 
 ## Focused references
 
-- For a formal PDR, read [pdr-guidelines.md](references/pdr-guidelines.md) and [review-protocol.md](references/review-protocol.md).
+- For a formal PDR or a handoff to detailed design, read [pdr-guidelines.md](references/pdr-guidelines.md) and [review-protocol.md](references/review-protocol.md).
 - For cross-artifact evidence, read [cross-artifact-checks.md](references/cross-artifact-checks.md).
 - For metrics or a specific smell, consult [pdr-metrics.md](references/pdr-metrics.md) or [anti-patterns.md](references/anti-patterns.md).
 - For source limits and worked examples, consult [sources-and-methods.md](references/sources-and-methods.md) or [regression-examples.md](references/regression-examples.md).

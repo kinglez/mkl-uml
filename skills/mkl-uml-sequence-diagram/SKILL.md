@@ -23,10 +23,12 @@ metadata:
 
 | Operation | Minimum input | Additional MKL evidence |
 |---|---|---|
-| Generate | Scenario behavior and participants/responsibilities | CU specification, DR diagram, domain model, approved PDR |
+| Generate | Scenario behavior and participants/responsibilities | CU specification, DR diagram, domain model, PDR record with findings and transition basis |
 | Review/refactor/validate | Existing sequence diagram | Specification, DR and domain for cross-artifact checks |
 
 A standalone interaction does not require every MKL predecessor. A formal MKL handoff needs the behavior specification and its analysis/domain sources; disclose missing coverage. Respect a requested conceptual or framework-specific level of detail.
+
+For MKL workflow work, read the PDR handoff before allocating dependent behavior. Match its scope and reviewed versions to the current inputs, and carry findings, closure evidence and remaining constraints into the design rationale. Follow the receiving-stage checks in [sequence-guidelines.md](references/sequence-guidelines.md); a missing or stale PDR limits that handoff, rather than blocking unrelated standalone work.
 
 ## Interaction workflow
 

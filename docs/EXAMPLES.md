@@ -78,6 +78,10 @@ uml/register-incident.md and uml/robustness.puml as scoped PDR preparation.
 Check vocabulary closure, BCE relationships and basic/alternative-flow coverage.
 Save located findings, coverage limits and proposed corrections to uml/pdr-review.md.
 Distinguish automated checks from semantic inspection and human acceptance.
+Finish that record with a detailed-design handoff: CU-07/DR-07 scope, reviewed
+source versions, finding/action status and correction-verification evidence,
+remaining constraints, and the technical transition basis. Record formal
+acceptance only when its actual decision evidence exists.
 ```
 
 Expected: actionable findings and coverage, not an automatic formal approval. Resolve findings that affect detailed design before continuing. For a formal MKL PDR, request that scope explicitly and provide the applicable review evidence and decision makers.
@@ -86,7 +90,10 @@ Expected: actionable findings and coverage, not an automatic formal approval. Re
 
 ```text
 $mkl-uml-sequence-diagram
-Read uml/pdr-review.md first and resolve any findings that block detailed design.
+Read uml/pdr-review.md first. Match its reviewed versions and CU-07/DR-07 scope
+to the current inputs; inspect open/deferred actions and closure evidence.
+Recheck changed analysis or findings that block the affected detailed design.
+Record the PDR basis and carried constraints in the design rationale.
 Read uml/register-incident.md, uml/robustness.puml, uml/domain.puml and
 uml/requirements.md. Create DS-07 in uml/sequence.puml for CU-07.
 Include the authorized flow, FA-01 and FA-02, with explicit guards.

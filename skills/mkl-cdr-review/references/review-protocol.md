@@ -35,6 +35,8 @@ Source: IEEE 1028 §5.2. Customer participation is context-dependent, not prohib
 5. Identify relevant unresolved decisions and recommend an action with a reason.
 6. Complete the record before reporting a formal disposition.
 
+For requested SOLID review or material extension/substitution/client/dependency claims, use [solid-evidence.md](solid-evidence.md) during examination. Scope each claim, challenge its actual evidence and distinguish a supported result, demonstrated finding and unverified layer. Record this coverage separately; no SOLID score or validator result supplies a formal disposition.
+
 The record supports assessment of completeness, applicable constraints, suitability and readiness. Matters outside the technical scope are assigned to organizational follow-up with ownership left explicit. Sources: IEEE 1028 §5.5.6, §5.6–5.7.
 
 ## Findings
@@ -78,6 +80,7 @@ Keep one review record containing:
 - Action status, actual owner, target/completion date and verification evidence.
 - Unresolved technical and management issues, recommended action and rationale.
 - Proposed technical disposition and any separate organizational decision.
+- Applicable SOLID claims, evidence, actual checks, coverage, outcomes and unresolved actions.
 - Measured material size and session assumptions when a formal budget is useful.
 
 This is a local record structure informed by IEEE 1028 §5.7 and the material-size field of §6.7. It does not reproduce those clauses.

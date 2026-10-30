@@ -33,6 +33,26 @@ For formal disposition, assess evidence coverage before findings and metrics. Mi
 
 The record identifies the objective, exact material, actual reviewers, performed/missing checks, findings with locations and consequences, recommended actions, actual decisions and rationale. Add action ownership, due/completion dates and verification evidence. Separate the technical recommendation from organizational acceptance where applicable.
 
+### Handoff to detailed design
+
+When the review feeds a later design stage or another chat, finish the same record with a compact handoff. Reuse existing project IDs and the finding ledger; a status change does not allocate a new finding identity. A commit, document revision, dated snapshot or content hash can identify the reviewed baseline. Choose an available versioning method rather than requiring a new manifest format.
+
+```text
+Detailed-design handoff
+Scope: <PDR record/revision; selected CU/DR IDs and applicable flows>
+Reviewed baseline: <source artifact references and their reviewed versions>
+Checks and limits: <mechanical results, semantic examination, missing evidence>
+Findings/actions: <existing ID; owning artifact; open/closed/deferred status;
+                  affected behavior and downstream effect; verification evidence>
+Technical transition: <scope that may proceed, or affected reinspection needed;
+                       remaining constraints and next verification>
+Formal disposition: <actual decision and evidence, or Not fully verified>
+```
+
+For a closed finding, identify the correction and the affected-scope check that verified it. An open or deferred action needs its consequence for the next stage; deferral does not remove a blocker or turn a missing check into acceptance. Do not invent owners, dates or decision evidence. If there are no findings, say so and retain the performed checks and limits.
+
+The receiving designer compares this baseline and scope with the current inputs before relying on the recommendation. A changed source or unresolved finding makes only the affected recommendation stale; re-examine that scope and preserve the earlier record. A file path, matching hash, clean CLI result or the word “closed” alone does not supply semantic verification. A bounded technical exercise may proceed on its recorded technical basis while formal human/business acceptance remains unverified.
+
 Use observed volume and a stated project rate for scheduling. The upstream IEEE 1028 §6.5.2 notes cite **3–4 pages/hour** for preliminary design; this is inherited planning guidance rather than a mandatory pace or a newly verified source transcription. The inherited source-code row has a page/line unit inconsistency and is not a usable header estimate. Wiegers' requirements-review discussion informs preparation and fatigue considerations, not a measured design-review guarantee.
 
 A clean review is valid. Evaluate examination coverage and effective negative regressions, rather than expecting a finding quota or repeating unchanged reviews. If a repeated review stalls, identify the concrete missing information, defect or scope problem.

@@ -36,6 +36,7 @@ Complete useful standalone class-design work from supplied evidence. Full MKL pr
 4. Trace attributes to required state and behavior. A derived property `/name` describes derivability; it makes no storage or indexing decision. Keep persistence decisions explicit in their own design context.
 5. Use association, dependency, inheritance and composition with their actual semantics. Composition permits at most one composite owner at a time; it does not require permanent attachment or exactly one owner at every instant.
 6. Preserve MC/class trace IDs across refactoring. Keep aliases distinct from class names and trace IDs; update their references consistently. Record compatibility implications of public signature changes.
+7. When SOLID or an extension/replacement contract is in scope, name the responsibility/change reason, protected variation, common behavior, actual client capabilities and contract ownership. Collect model/source/test evidence alongside member provenance and carry open verification actions to CDR. Model-only evidence leaves source-import and runtime claims partial; record the missing challenge instead of inferring success from interface arrows.
 
 ## Output and verification
 

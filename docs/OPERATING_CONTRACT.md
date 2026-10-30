@@ -40,6 +40,14 @@ These coverage states are separate from formal gate dispositions: **Accepted**, 
 
 Run a scoped review and recheck affected areas after correction. Fixed two-clean-pass/five-pass cycles and certificate bundles are not default requirements. Historical research/audit records in references are context, not instructions to repeat them. Reuse existing authorization for remediation or header generation. Review-only requests remain review-only.
 
+## PDR to detailed-design handoff
+
+For a full MKL handoff, the PDR record carries the selected CU/DR/flow scope, reviewed source versions, performed checks and limits, finding/action status with correction-verification evidence, remaining design constraints, and the technical transition recommendation. Record actual formal acceptance separately. Keep this information in the existing review record; a separate JSON manifest or hash scheme is optional.
+
+The sequence-design stage reads that record first, matches it to the current inputs, and re-examines changed sources or unresolved findings before relying on the affected recommendation. Preserve IDs and earlier evidence. A closed status needs verification evidence; a clean CLI result, matching hash or missing finding list cannot substitute for that examination. Update only the affected review scope when a source changes.
+
+Missing PDR evidence leaves a dependent MKL transition unverified; an indispensable missing input blocks that transition. It does not create a new prerequisite for unrelated standalone diagrams. A scoped technical exercise may proceed on a documented technical basis while formal human/business acceptance remains **Not fully verified**; do not represent that as a formal gate acceptance.
+
 ## Vocabulary and semantics
 
 | Origin | Closure requirement |

@@ -1,5 +1,16 @@
 # Release notes
 
+## 1.0.3 — 2026-10-30
+
+Source update on `main`; package and plugin metadata identify the same version. Existing CLI arguments and the eight independently installable skills remain compatible.
+
+- PDR produces a compact handoff with reviewed scope/versions, finding states, closure evidence and downstream implications. Sequence design checks that record against current inputs before relying on its transition recommendation; standalone work remains independent of a formal gate.
+- PDR recognizes substantive compact alternative/exception tables alongside numbered steps. Identifier lists, traceability rows and placeholders remain insufficient behavior evidence.
+- CDR normalizes PlantUML line wrapping when comparing control responsibilities with test-plan vocabulary. This removes a display-format false warning without claiming semantic test coverage.
+- SOLID review uses explicit responsibility, change, substitution, client and source-dependency evidence. Coverage, demonstrated findings and unverified claims remain separate from formal acceptance; no automatic SOLID score or certification is introduced.
+
+The order-pricing reference example is reverified against this runtime snapshot. Source publication does not publish an npm registry package, update existing installations or supply missing human review evidence.
+
 ## 1.0.2 — 2026-10-29
 
 Tagged source: [`v1.0.2`](https://github.com/kinglez/mkl-uml/tree/v1.0.2). This documentation release includes the GitHub homepage workflow diagram, problem statements, usage steps, stage artifact tree and linked CU-07 examples. Installation commands and package/plugin metadata identify the same version.

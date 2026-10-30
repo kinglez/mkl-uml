@@ -7,7 +7,7 @@ This original workflow adapts Rosenberg & Stephens, *Use Case Driven Object Mode
 |---|---|
 | **10 — Choose a design question** | Use the interaction to decide and explain responsibility allocation among collaborating objects. |
 | **9 — Cover the selected use case** | Include its basic and specified alternative/exception behavior together, or link explicitly scoped supporting interactions. |
-| **8 — Start from available evidence** | Use supplied actors, interfaces, domain concepts and scenario text; robustness diagrams are useful when available. Record missing origins without inventing predecessor artifacts. |
+| **8 — Start from available evidence** | Use supplied actors, interfaces, domain concepts and scenario text; in MKL workflow mode, inspect the PDR handoff before relying on the reviewed analysis. Record missing origins without inventing predecessor artifacts. |
 | **7 — Realize required behavior** | Treat supplied robustness Controllers as a behavior worklist and show which collaborators perform each responsibility. |
 | **6 — Reconcile text and interaction** | Trace actor actions and system responses to messages and observable outcomes, then inspect significant messages for an origin. |
 | **5 — Use activations purposefully** | Omit them by default under this style profile; include requested activations and verify each execution path. Presence alone is not a UML error. |
@@ -24,6 +24,16 @@ This original workflow adapts Rosenberg & Stephens, *Use Case Driven Object Mode
 4. Reconcile operations/state with the design class model and derive tests for required outcomes.
 
 Participants and annotations can be scaffolded mechanically; responsibility allocation requires judgment. See [behavior-allocation.md](behavior-allocation.md) and [test-derivation.md](test-derivation.md).
+
+## Consume the PDR handoff
+
+Apply this check when continuing a full MKL workflow or relying on a preliminary-review recommendation:
+
+1. Read the actual PDR record and select the CU/DR/flow scope it examined. Match its source versions to the current specification, robustness and domain evidence. Use the project's available revision or snapshot references; hashes are optional.
+2. Inspect the finding ledger, including open/deferred actions, affected behavior and closure evidence. Recheck changed or unresolved analysis before treating the affected design input as settled. Preserve finding IDs and earlier evidence; a new chat or a clean validator run does not close a finding.
+3. Record the PDR basis in the design rationale: record/version, scope used, verified corrections, carried constraints and missing evidence. Continue unaffected work within the requested scope and existing authorization. If an indispensable handoff input is absent, report the dependent transition as unverified or blocked rather than inventing approval.
+
+A scoped technical recommendation and a formal gate decision are separate. A teaching exercise can have a justified technical basis to continue while formal human/business acceptance remains **Not fully verified**. A formal transition still needs its applicable decision evidence. Standalone sequence work does not acquire a PDR prerequisite merely because this handoff procedure exists.
 
 ## Transform robustness behavior
 

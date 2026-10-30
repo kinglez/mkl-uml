@@ -105,6 +105,8 @@ Replace these example paths with your files or attach the artifacts. Installatio
 
 Read the generated PlantUML/Markdown and the reported findings. Ask the agent to run the relevant bundled validator and recheck corrections. Keep unresolved assumptions, missing inputs and human decisions visible. For formal review, request that scope explicitly and supply its applicable evidence.
 
+For a full workflow, carry the [PDR handoff record](skills/mkl-pdr-review/references/review-protocol.md) into sequence design, including unresolved findings and the reviewed input versions. When SOLID is part of the requested review, use the [evidence guide](skills/mkl-cdr-review/references/solid-evidence.md) to examine concrete changes, replacements, client contracts and source dependencies. A clean diagram check is not a SOLID assessment.
+
 ## What each stage produces
 
 These are **illustrative project outputs**, using the same flat paths as [the stage prompts](docs/EXAMPLES.md). They are created only when requested; the installation does not create this tree. A stage may update an existing artifact rather than create another copy.

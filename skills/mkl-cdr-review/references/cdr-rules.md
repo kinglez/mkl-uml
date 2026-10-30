@@ -26,6 +26,12 @@ List each selected `CU-XX`, its `DS-XX`, and the related model, requirements and
 
 Inspect suspicious classes and follow their originating interactions. For example, an unexpectedly one-sided collection API may reveal an out-of-scope scenario, deliberate contract or wrongly allocated call. Confirm which explanation the artifacts support before changing either diagram. An absent inverse operation alone is not a defect.
 
+## Applicable SOLID evidence
+
+When SOLID is requested or the selected design relies on an extension, substitution, client-contract or dependency claim, use [solid-evidence.md](solid-evidence.md) to challenge it. Rules 7, 8, 6, 3 and 1 supply relevant responsibility, collaboration, contract and test evidence; completing those rules does not automatically establish all five principles.
+
+Record the protected change or replacement, evidence revisions, actual challenge, coverage, outcome and limits. A completed check can find a violation; absent execution can leave a claim unverified without demonstrating a violation. Model-only work can assess modeled intent while leaving runtime and source-level claims partial. Keep the SOLID record proportionate to the selected scope rather than requiring five new gates or an interface for every class.
+
 ## Findings and formal readiness
 
 Keep proven inconsistencies separate from design-risk candidates. A formal clean result requires evidence that every applicable check was performed, including implementer and header inspection when applicable. A validator's clean preparation result can coexist with **Not fully verified** formal readiness. Record actual author and verifier identities; changing skill names does not create an independent reviewer.

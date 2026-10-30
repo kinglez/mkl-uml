@@ -36,7 +36,7 @@ Exit codes: `0` no errors · `1` there are errors, the package does not pass · 
 | Highlighter coverage | #10 | Warning by step | highlighter coverage | **Approximate** |
 | Session budget | — | Information | — | Estimation |
 
-**Error versus warning is not a gradation of severity, it is a gradation of certainty.** The verdict is derived from the errors; warnings ask for your judgment. A serious breach detected by heuristics serves as a warning, precisely so that a heuristic does not block a package on its own.
+**Diagnostic level and semantic certainty are different.** The proposed verdict uses reported errors, which include both deterministic profile violations and heuristic failure to recognize specified behavior. Inspect the diagnostic's basis before making a transition decision; neither an error nor a clean run replaces the semantic review. Preserve supported behavior and document representation limits rather than changing business rules to obtain a passing result.
 
 ---
 
@@ -85,9 +85,19 @@ This matters more than it seems: a check that requires an exact spelling is **mu
 
 ### Flow without behavior (#7)
 
-A flow counts as specified if its text block has at least one numbered step **and** mentions the system doing something. If you only state the condition —*"if the pet is not registered, show error"*— it is flagged.
+The supported profile recognizes numbered system steps and substantive compact Markdown flow tables. In a flow section, a table's action/behavior column must identify system behavior through its heading, an explicit System/Sistema role, or the action text. A flow row also needs an anchor/condition/trigger or outcome column. For example:
 
-**Limit:** is heuristic about the text. A flow written without the word "system" but with clear behavior can produce a false positive; one that says "the system does what is necessary" will pass the filter without specifying anything. Confirm the result by reading the text.
+```markdown
+## Alternative flows
+| Flow | Trigger | System behavior | Exit |
+| --- | --- | --- | --- |
+| FA-01 | Coupon is eligible | Applies the capped discount | Resume basic step 6 |
+| FE-01 | Coupon is unknown | Emits an unknown-Coupon refusal | Terminate without a quote |
+```
+
+English and existing Spanish headers/roles are supported. Inline-code and escaped pipes do not split a cell. Source/reference/traceability cells, ID-only content, empty/TBD action cells, comments, quoted examples and fenced/indented code do not establish behavior. An outcome column cannot substitute for an explicitly unfinished action column. The specification still needs usable numbered basic behavior for its dependent full-specification checks.
+
+**Limit:** this is structured lexical recognition, not a semantic action parser. It cannot prove that a guard, effect or continuation is correct or complete; vague non-placeholder prose may still be recognized. Inspect those meanings and cross-artifact correspondence even when the table passes. An unsupported representation remains a declared coverage limit, not a reason to invent or remove business behavior.
 
 ### Completeness of the dialogue (#6)
 

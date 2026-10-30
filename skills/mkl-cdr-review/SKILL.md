@@ -1,6 +1,6 @@
 ---
 name: mkl-cdr-review
-description: Review detailed-design consistency across class models, interactions, specifications and tests. Use for scoped CDR preparation or a formal MKL gate before implementation; report coverage, operation allocation, findings and a justified disposition.
+description: Review UML detailed-design consistency and scoped SOLID evidence across classes, interactions and tests. Use for CDR preparation or formal MKL handoff; report coverage, findings and disposition.
 license: Apache-2.0
 metadata:
   author: kingle.zhuang
@@ -40,6 +40,8 @@ Default to a scoped preparation review of the supplied material. Conduct a forma
 5. Present located findings and proportionate recommendations. Fixed four-way menus, deliberation pauses, and quantitative review budgets are optional MKL facilitation choices; do not attribute them as mandatory IEEE/ISO procedures.
 6. Generate code headers only when that action is authorized. Existing explicit authorization is sufficient; do not re-ask. Header generation and header inspection are different evidence.
 7. If remediation is authorized, apply and verify it while recording what changed. For formal independent rework verification, identify the actual independent reviewer; do not call repeated self-checks independent review.
+
+When SOLID is requested or a material design claim concerns extension, substitution, client contracts or dependency ownership, apply the [scoped SOLID evidence review](references/solid-evidence.md). Record evidence, checks actually performed, coverage, supported conclusions or findings, and missing layers separately from formal acceptance.
 
 ## Coverage and disposition
 

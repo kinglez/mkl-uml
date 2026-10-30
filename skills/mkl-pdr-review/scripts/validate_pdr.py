@@ -84,6 +84,9 @@ GENERIC_BOUNDARY = (
 
 # Normalization of flow identifiers: FA-01, FA1, FA 1, fa_01 are the same.
 FLUJO_RE = re.compile(r"\b(FA|FE)\s*[-_ ]?\s*0*(\d+)\b", re.IGNORECASE)
+REFERENCE_HEADING_RE = re.compile(
+    r"\b(?:traceability|coverage|mapping|references|requirements|acceptance|"
+    r"trazabilidad|cobertura|referencias|requisitos)\b", re.IGNORECASE)
 
 # PlantUML declarations in robustness diagrams.
 DECL_RE = re.compile(
@@ -160,6 +163,14 @@ def strip_accents(text: str) -> str:
 
 def norm(text: str) -> str:
     return strip_accents(text or "").strip().lower()
+
+
+def reference_heading(title: str) -> bool:
+    # Domain words in identified goal/flow titles are not section categories.
+    identified = (r"^(?:(?:alternative|alternate|exception)\s+(?:flow|course)\s+)?"
+                  r"(?:CU|FA|FE)\s*[-_ ]?\s*\d+\b")
+    return (not re.match(identified, title, re.IGNORECASE)
+            and bool(REFERENCE_HEADING_RE.search(title)))
 
 
 def key(text: str) -> str:
@@ -269,6 +280,8 @@ class Spec:
     pasos: list = field(default_factory=list)      # (number, text, section)
     flujos: dict = field(default_factory=dict)     # FA-01 -> text block
     cu_id: str = ""
+    flow_table_actions: dict = field(default_factory=dict)
+    flow_reference_only: set = field(default_factory=set)
 
 
 # --------------------------------------------------------------------------
@@ -369,9 +382,158 @@ def parse_casos_uso(text: str) -> set[str]:
     return actores
 
 
-def parse_spec(path: str, text: str) -> Spec:
+def specification_text(text: str) -> str:
+    """Exclude Markdown examples/annotations without treating them as behavior."""
     text = re.sub(r"<!--[\s\S]*?(?:-->|\Z)", "", text)
+    lines, fence = [], None
+    for line in text.splitlines(keepends=True):
+        marker = re.match(r"^[ \t]{0,3}(`{3,}|~{3,})", line)
+        if fence:
+            if marker and marker[1][0] == fence[0] and len(marker[1]) >= fence[1]:
+                fence = None
+            lines.append("\n" if line.endswith("\n") else "")
+        elif marker:
+            fence = (marker[1][0], len(marker[1]))
+            lines.append("\n" if line.endswith("\n") else "")
+        else:
+            quoted_or_code = re.match(r"^(?:[ \t]*>| {4}|\t)", line)
+            lines.append("\n" if quoted_or_code else line)
+    return "".join(lines)
+
+
+def table_cells(line: str):
+    """Split a Markdown row without splitting escaped or inline-code pipes."""
+    cells, cell, code, index, separated = [], [], 0, 0, False
+    while index < len(line):
+        char = line[index]
+        if char == "\\" and index + 1 < len(line):
+            cell.extend(line[index:index + 2])
+            index += 2
+            continue
+        if char == "`":
+            end = index + 1
+            while end < len(line) and line[end] == "`":
+                end += 1
+            length = end - index
+            code = length if not code else (0 if length == code else code)
+            cell.append(line[index:end])
+            index = end
+            continue
+        if char == "|" and not code:
+            cells.append("".join(cell).strip())
+            cell, separated = [], True
+        else:
+            cell.append(char)
+        index += 1
+    if not separated:
+        return None
+    cells.append("".join(cell).strip())
+    if line.lstrip().startswith("|"):
+        cells.pop(0)
+    if not cells[-1]:
+        cells.pop()
+    return cells
+
+
+def substantive_action(text: str, system_bound=False) -> bool:
+    """Recognize explicit action content, not its semantic adequacy."""
+    plain = norm(re.sub(r"<br\s*/?>", " ", text, flags=re.IGNORECASE))
+    plain = re.sub(r"\b(?:FA|FE|RF|RNF|RN|CU|DR|DS|MC|CP|PDR|CDR|H)"
+                   r"\s*[-_ ]?\s*\d+(?:\.\d+)?\b", "", plain, flags=re.IGNORECASE)
+    # References may annotate a real action; they cannot turn TBD into one.
+    reference = r"(?:see|refer(?:s)?\s+to|cf\.?|ver|vease)\b"
+    plain = re.sub(r"[\[(]\s*" + reference + r"[^\])]*[\])]", "", plain)
+    plain = re.sub(r"[;,:\-\u2013\u2014]\s*" + reference + r".*$", "", plain)
+    subject = re.search(r"\b(?:system|sistema)\b", plain)
+    if not system_bound:
+        if not subject:
+            return False
+        plain = plain[subject.end():]
+    plain = re.sub(r"[^a-z0-9]+", " ", plain).strip()
+    words = [word for word in plain.split() if word not in
+             {"the", "el", "system", "sistema", "action", "behavior", "behaviour",
+              "do", "does", "will", "shall", "must", "should", "is", "are", "be"}]
+    content = " ".join(words)
+    reference_only = re.match(r"^(?:see|refer(?:s)? to|references?|as (?:specified|described) in|"
+                              r"(?:specified|described|covered) (?:in|by)|cf|ver|vease)\b", content)
+    return bool(content) and not reference_only and content not in {
+        "tbd", "todo", "pending", "pending implementation", "none", "null", "na", "n a",
+        "not applicable", "not specified", "not defined", "not implemented", "not provided",
+        "to specified", "to defined", "to implemented", "to determined", "por definir", "pendiente",
+    }
+
+
+def table_flow_actions(text: str) -> dict:
+    """Read supported flow tables in flow sections; traceability is not execution."""
+    out, headings, active_flow = {}, [], None
+    lines, index = text.splitlines(), 0
+    while index < len(lines):
+        line = lines[index]
+        heading = re.match(r"^[ \t]*(#{1,6})\s+(.+)", line)
+        if heading:
+            while headings and headings[-1][0] >= len(heading[1]):
+                headings.pop()
+            headings.append((len(heading[1]), norm(heading[2])))
+            ids = flujos_declarados(heading[2])
+            active_flow = next(iter(ids)) if len(ids) == 1 else None
+        elif not line.lstrip().startswith("|") and re.match(
+                r"^[ \t]*(?:\*\*)?(?:FA|FE)\s*[-_ ]?\s*\d+\b", line, re.IGNORECASE):
+            ids = flujos_declarados(line)
+            active_flow = next(iter(ids)) if len(ids) == 1 else None
+        header = table_cells(line)
+        divider = table_cells(lines[index + 1]) if index + 1 < len(lines) else None
+        if (not header or not divider or len(header) != len(divider)
+                or not all(re.fullmatch(r":?-{3,}:?", c.replace(" ", "")) for c in divider)):
+            index += 1
+            continue
+        titles = [title for _level, title in headings]
+        flow_section = active_flow or any(re.search(
+            r"\b(?:alternative|alternate|exception)\s+(?:flows?|courses?)\b|\bflujos?\b", title)
+            for title in titles)
+        references = any(reference_heading(title) for title in titles)
+        headers = [norm(re.sub(r"[*_`]", "", cell)) for cell in header]
+        evidence_columns = [i for i, title in enumerate(headers) if not re.search(
+            r"\b(?:sources?|references?|tests?|requirements?|traceability|"
+            r"fuentes?|referencias?|pruebas?|requisitos?)\b", title)]
+        action_columns = [i for i in evidence_columns if re.search(
+            r"\b(?:behaviors?|behaviours?|actions?|responses?|"
+            r"comportamientos?|accion(?:es)?|respuestas?)\b", headers[i])]
+        if not action_columns:
+            action_columns = [i for i in evidence_columns if re.search(
+                r"\b(?:outcomes?|results?|resultados?)\b", headers[i])]
+        role_columns = [i for i, title in enumerate(headers) if title in {
+            "actor", "responsible party", "responsibility", "subject", "who",
+            "responsable", "sujeto", "quien", "participante"}]
+        anchored = any(re.search(
+            r"\b(?:conditions?|triggers?|anchors?|guards?|outcomes?|results?|condicion(?:es)?|"
+            r"disparadores?|resultados?)\b", title) for title in headers)
+        index += 2
+        while index < len(lines):
+            row = table_cells(lines[index])
+            if not row or len(row) != len(headers):
+                break
+            # Preserve underscore ID variants rather than deleting their separator.
+            identity = re.sub(r"^\*\*|\*\*$|^`|`$", "", row[0]).strip()
+            full = re.fullmatch(r"(FA|FE)\s*[-_ ]?\s*0*(\d+)(\.\d+)?", identity, re.IGNORECASE)
+            numbered = re.fullmatch(r"\d+[.)]?", identity)
+            fid = (f"{full[1].upper()}-{int(full[2]):02d}" if full else
+                   active_flow if numbered else None)
+            substep = bool(numbered or (full and full[3]))
+            if fid and flow_section and not references and (substep or anchored):
+                role = any(re.fullmatch(r"(?:the\s+|el\s+)?(?:system|sistema)",
+                           norm(re.sub(r"[*_`]", "", row[i]))) for i in role_columns)
+                for column in action_columns:
+                    bound = role or bool(re.search(r"\b(?:system|sistema)\b", headers[column]))
+                    if substantive_action(row[column], bound):
+                        out.setdefault(fid, []).append(row[column])
+            index += 1
+    return out
+
+
+def parse_spec(path: str, text: str) -> Spec:
+    text = specification_text(text)
     s = Spec(path=path, text=text)
+    s.flow_table_actions = table_flow_actions(text)
     mid = re.search(r"\bCU-(\d+)\b", text)
     if mid:
         s.cu_id = f"CU-{int(mid.group(1)):02d}"
@@ -385,25 +547,37 @@ def parse_spec(path: str, text: str) -> Spec:
 
     # Definitions begin at a flow heading, a first-cell ID, or a bold/plain
     # flow label. References and FA-01.1 substeps do not terminate a definition.
-    marcas = []
+    marcas, priorities, headings = [], {}, []
     pos = 0
     for linea in text.splitlines(keepends=True):
-        heading = re.match(r"^\s*#{1,6}\s+", linea)
+        heading = re.match(r"^\s*(#{1,6})\s+(.+)", linea)
+        if heading:
+            while headings and headings[-1][0] >= len(heading[1]):
+                headings.pop()
+            headings.append((len(heading[1]), norm(heading[2])))
+        reference_only = any(reference_heading(title) for _level, title in headings)
         flujo = FLUJO_RE.search(linea)
-        inicio = re.match(r"^\s*(?:\|\s*)?(?:\*\*)?(?:FA|FE)\s*[-_ ]?\s*\d+\b", linea, re.IGNORECASE)
+        inicio = re.match(r"^\s*(?:\|\s*)?(?:\*\*|`)?(?:FA|FE)\s*[-_ ]?\s*\d+\b", linea, re.IGNORECASE)
         fid = None
         if flujo and (heading or inicio) and not re.match(r"\.\d", linea[flujo.end():]):
             fid = f"{flujo.group(1).upper()}-{int(flujo.group(2)):02d}"
         if heading or fid:
-            marcas.append((pos, fid))
+            priority = 0 if reference_only else (2 if heading or table_cells(linea) is None else 1)
+            marcas.append((pos, fid, priority, reference_only))
         pos += len(linea)
-    for i, (pos, fid) in enumerate(marcas):
+    for i, (pos, fid, priority, reference_only) in enumerate(marcas):
         if fid is None:
             continue
         fin = marcas[i + 1][0] if i + 1 < len(marcas) else len(text)
         bloque = text[pos:fin]
-        if len(bloque) > len(s.flujos.get(fid, "")):
+        # A long reference-table row must not overwrite an explicit definition.
+        if (priority, len(bloque)) > priorities.get(fid, (-1, 0)):
             s.flujos[fid] = bloque
+            priorities[fid] = (priority, len(bloque))
+            if reference_only:
+                s.flow_reference_only.add(fid)
+            else:
+                s.flow_reference_only.discard(fid)
     return s
 
 
@@ -561,12 +735,21 @@ def check_alternos_sin_comportamiento(spec: Spec, errores: list) -> int:
     """Guideline #7, second half: listing is not specifying."""
     n = 0
     for fid, bloque in sorted(spec.flujos.items()):
-        # Both numbered lists and the published FA-01.1 table syntax carry
-        # behavior. The System must occur in a step, not merely in its summary.
-        pasos = re.findall(
-            r"^\s*(?:\|\s*)?(?:(?:FA|FE)\s*[-_ ]?\s*\d+\.\d+|\d+)[.)]?"
-            r"\s*(?:\|\s*|[.)]\s*|\s+)(.+)$", bloque, re.MULTILINE | re.IGNORECASE)
-        tiene_sistema = any(re.search(r"\b(?:sistema|system)\b", norm(paso)) for paso in pasos)
+        # Table headers/roles establish which cells describe system actions.
+        # A System token in a condition, source, note or placeholder does not.
+        pasos = []
+        for line in bloque.splitlines():
+            if fid in spec.flow_reference_only:
+                break
+            if re.match(r"^[ \t]*(?:\||\d+[.)]?[ \t]*\|)", line):
+                continue
+            match = re.match(
+                r"^[ \t]*(?:(?:FA|FE)\s*[-_ ]?\s*\d+\.\d+|\d+)"
+                r"(?:[.)][ \t]*|[ \t]+)(.+)$", line, re.IGNORECASE)
+            if match:
+                pasos.append(match[1])
+        tiene_sistema = bool(spec.flow_table_actions.get(fid)) or any(
+            substantive_action(paso) for paso in pasos)
         if not tiene_sistema:
             n += 1
             errores.append(
@@ -1016,9 +1199,9 @@ def main(argv=None) -> int:
     print(f"  {estado}")
     print(f"  Reason: {motivo}")
     print()
-    print("Remember: errors are deterministic failures to comply with the guidelines of the "
-          "PDR; warnings require your judgment. Marker coverage is "
-          "a lexical approach: you do the real test, phrase by phrase.")
+    print("Remember: syntax/profile errors and heuristic behavior diagnostics are different "
+          "evidence. Flow-action recognition and marker coverage do not prove semantic "
+          "completeness; inspect the actual behavior and review all warnings.")
 
     return 1 if errores else 0
 

@@ -778,7 +778,11 @@ def parse_controladores(text: str) -> list:
     for md in DECL_SEC_RE.finditer(codigo_modelo(text)):
         if (md.group("kind") or "").lower() != "control":
             continue
-        out.append(md.group("label") or md.group("bare") or "")
+        label = md.group("label") or md.group("bare") or ""
+        # PlantUML display escapes separate visible words; they are not part
+        # of a controller's responsibility vocabulary in a Markdown test table.
+        label = label.replace(r"\n", " ").replace(r"\r", " ")
+        out.append(" ".join(label.split()))
     return [c for c in out if c]
 
 
