@@ -3,7 +3,7 @@
 
 **Turn requirements into UML models you can trace, review and refine.**
 
-Eight English-language agent skills connect business vocabulary, user goals, behavior, design responsibilities and tests. Start with one artifact or explicitly request the complete MKL workflow. Models use PlantUML; specifications and review records use Markdown.
+Eight agent skills connect business vocabulary, user goals, behavior, design responsibilities and tests. Start with one artifact or explicitly request the complete MKL workflow. Models use PlantUML; specifications and review records use Markdown.
 
 [Get started](#how-to-use) · [Workflow](#workflow) · [Stage outputs](#what-each-stage-produces) · [Complete worked example](#complete-worked-example-order-pricing) · [All eight prompts](docs/EXAMPLES.md)
 
