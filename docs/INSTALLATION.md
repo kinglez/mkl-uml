@@ -46,7 +46,7 @@ For the complete order-pricing requirements and all eight prompts, continue with
 
 ## Other installation methods
 
-Use these only when you need a pinned source, offline files or a host-specific upload. The source tag for the current version is **[v1.0.3](https://github.com/kinglez/mkl-uml/tree/v1.0.3)**. Historical release evidence remains in the [release notes](RELEASE_NOTES.md).
+Use these only when you need a pinned source, offline files or a host-specific upload. The source tag for the current version is **[v1.0.4](https://github.com/kinglez/mkl-uml/tree/v1.0.4)**. Historical release evidence remains in the [release notes](RELEASE_NOTES.md).
 
 ### Pinned source or bundled npx installer
 
@@ -55,8 +55,8 @@ The bundled installer adds offline project documentation and legal notices. It r
 Run from any directory, choosing your agent:
 
 ```bash
-npx --yes --allow-git=all --package "git+https://github.com/kinglez/mkl-uml.git#v1.0.3" mkl-uml install --agent codex
-npx --yes --allow-git=all --package "git+https://github.com/kinglez/mkl-uml.git#v1.0.3" mkl-uml install --agent claude-code
+npx --yes --allow-git=all --package "git+https://github.com/kinglez/mkl-uml.git#v1.0.4" mkl-uml install --agent codex
+npx --yes --allow-git=all --package "git+https://github.com/kinglez/mkl-uml.git#v1.0.4" mkl-uml install --agent claude-code
 ```
 
 `--allow-git=all` permits this Git dependency with npm 12. npm 11 and earlier can omit it. This option applies to that command. See [npm configuration](https://docs.npmjs.com/cli/using-npm/config/).
@@ -111,7 +111,7 @@ To share the whole bundled installer as a local npm tarball instead:
 ```bash
 mkdir -p dist
 npm pack --ignore-scripts --pack-destination dist
-npx --yes --package ./dist/mkl-uml-1.0.3.tgz mkl-uml install --agent codex
+npx --yes --package ./dist/mkl-uml-1.0.4.tgz mkl-uml install --agent codex
 ```
 
 These methods use GitHub or local files. They do not publish an npm registry package or submit a marketplace listing.

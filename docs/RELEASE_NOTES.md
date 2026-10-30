@@ -1,5 +1,11 @@
 # Release notes
 
+## 1.0.4 — 2026-10-30
+
+Tagged source: [`v1.0.4`](https://github.com/kinglez/mkl-uml/tree/v1.0.4). This documentation release uses order pricing throughout the README and introductory guides, adds a documentation reading guide, and presents eight stage prompts with inputs, outputs and completion checks. Tutorial outputs are separate from the maintained reference example. Offline skill packages include the new documentation navigation.
+
+Package and plugin metadata identify the same version. The example retains its reviewed **1.0.3 validator snapshot** because the modeling instructions, validator runtime, business inputs, models and pricing implementation are unchanged. Installation instructions pin this new source tag. Publishing the source tag does not publish an npm registry package or imply formal design acceptance.
+
 ## 1.0.3 — 2026-10-30
 
 Source update on `main`; package and plugin metadata identify the same version. Existing CLI arguments and the eight independently installable skills remain compatible.
