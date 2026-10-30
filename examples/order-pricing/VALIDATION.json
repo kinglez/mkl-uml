@@ -1,9 +1,9 @@
 {
-  "checked_at": "2026-10-30T02:05:37.650198+00:00",
+  "checked_at": "2026-10-30T02:38:25.382511+00:00",
   "edition": "English repository publication of the order-pricing reference example",
   "passed": true,
   "status": "PASS",
-  "source_skill_version": "1.0.2",
+  "source_skill_version": "1.0.3",
   "reference_unittest_methods": 15,
   "oracle_defined_cases": 30,
   "diagrams": 6,
@@ -109,13 +109,13 @@
     }
   ],
   "repository_regression_suite": {
-    "unittest_methods": 206,
+    "unittest_methods": 240,
     "passed": true
   },
   "checkout_portability_probe": {
     "passed": true,
-    "scope": "Isolated LF-to-CRLF text checkout, path containing spaces and Unicode, verifier invoked from unrelated working directory with inferred repository root. This simulates checkout encoding/path conditions, not the Windows operating system.",
-    "text_files_converted": 466,
+    "scope": "Current 1.0.3 snapshot in an isolated LF-to-CRLF text checkout, path containing spaces and Unicode, verifier invoked from unrelated working directory with inferred repository root. This simulates checkout conditions, not the Windows operating system.",
+    "text_files_converted": 471,
     "exit_code": 0,
     "checks": 13,
     "reference_unittest_methods": 15
@@ -132,5 +132,15 @@
   "origin_and_portability_edits": "ORIGIN.json",
   "human_approval": false,
   "formal_gate_disposition": "NOT FULLY VERIFIED",
-  "evidence_policy": "This is an executed publication summary, not the original local review record. Exact commands and diagnostic logs are regenerated under validation/latest/ and are excluded from Git. OS-specific CI results are published in GitHub Actions; the CRLF/path probe does not claim Windows OS execution."
+  "evidence_policy": "This is an executed publication summary, not the original local review record. Exact commands and diagnostic logs are regenerated under validation/latest/ and are excluded from Git. OS-specific CI results are published in GitHub Actions; the CRLF/path probe does not claim Windows OS execution.",
+  "interpretation": "Mechanical results and scoped demo review do not create formal business approval.",
+  "source_runtime_commit": "24170e513586012a22c55d76b38544d8e3e61abb",
+  "enhancement_regressions": {
+    "pdr_table_methods": 31,
+    "cdr_display_label_methods": 3,
+    "independent_instruction_consumption_scenarios": 4,
+    "instruction_review_limit": "Scoped AI review of actual responses; not executable or universal SOLID proof.",
+    "independent_parser_reinspection": "Reference-only/annotated-placeholder and nested-reference false greens were reproduced, corrected and independently rechecked."
+  },
+  "retained_code_probes_passed": true
 }

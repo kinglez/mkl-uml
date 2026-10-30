@@ -2,6 +2,8 @@
 
 Follow **CU-01 Quote cart** from business requirements through all eight MKL UML stages, then run a small reference implementation to challenge the design. The example includes six maintained UML diagrams, 17 design classifiers, review findings and corrections, independent expected results, and executable tests.
 
+The current validator baseline is **1.0.3**. The maintained [PDR handoff](05-pdr/PDR-01.md#maintained-detailed-design-handoff) records scope, versions and action states; the [SOLID evidence record](07-class-model/SOLID.md#scoped-evidence-record) separates coverage from bounded conclusions. Historical review sections retain their original context; current execution is in [VALIDATION.json](VALIDATION.json).
+
 [Run the example](#run-the-example) · [Eight-stage artifacts](#eight-stage-artifacts) · [Replay the skills](HOW_TO_REPLAY.md) · [Trace a rule](TRACEABILITY.md) · [Review the changes](CHANGE_IMPACT.md)
 
 ## Run the example

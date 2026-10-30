@@ -6,6 +6,10 @@ This is an English publication adaptation of the workflow assessment performed o
 
 The workflow supports SOLID-oriented design. Completing eight stages, rendering diagrams and obtaining successful validator exits do not establish SOLID by themselves. The useful improvements are repeatable handoff records, explicit change impact and concrete design probes, rather than replacement of the eight-stage structure.
 
+## Maintenance outcome in 1.0.3
+
+The follow-up implementation strengthens the handoff producer/consumer contract with scope, input versions, finding states, closure evidence and downstream effects. The supported PDR profile now recognizes substantive compact flow tables as well as numbered steps; references and placeholders remain insufficient. CDR also normalizes visible line wrapping in control names. Scoped SOLID review now has a reusable evidence/challenge/result record, demonstrated by this example. These changes address the identified usability and recognition gaps without turning a passing validator into semantic proof or formal acceptance. See the current [validation record](VALIDATION.json) and the repository [SOLID guide](../../skills/mkl-cdr-review/references/solid-evidence.md).
+
 ## Stage contracts and feedback
 
 The assessment read all eight skill entry points and the relevant operating, methodology, PDR/CDR, behavior-allocation, provenance, test-derivation and state-modeling references. Source links below refer to repository files, without machine-specific paths or line-number assumptions.

@@ -77,6 +77,20 @@ All existing CU/FA/FE/RF/RN/RNF/CA identities and all resume/termination positio
 
 ## Handoff obligations
 
+### Maintained detailed-design handoff
+
+This compact handoff applies the current workflow guidance to the maintained example. It preserves the historical semantic review above; the English publication baselines identify the current files rather than reusing original local hashes.
+
+| Field | Recorded basis |
+|---|---|
+| Scope | PDR-01; CU-01 / DR-01; basic steps 1–7, FA-01–FA-03 and FE-01–FE-07. |
+| Reviewed baseline | Requirements baseline 1 and the maintained analysis artifacts, pinned by [analysis.json](../handoffs/analysis.json). The current validator snapshot and execution are in [SKILL_SOURCE.json](../SKILL_SOURCE.json) and [VALIDATION.json](../VALIDATION.json). |
+| Checks and limits | Vocabulary, BCE, flows, data origins and the independent expected values were examined as recorded above. Mechanical recognition does not establish semantic completeness or human participation. |
+| Finding/action state | PDR-01-F01 is closed: the unsupported negative-minimum mandate was removed and independently reinspected. The negative-minimum policy remains outside the bounded baseline; it is not a deferred in-scope blocker. No open in-scope blocking analysis finding remains. |
+| Downstream effect | Preserve trusted catalog data, explicit UTC, no-quote refusals, read-only behavior, separate eligibility/calculation and the shared policy contract. A changed source or reopened finding requires affected-scope reinspection before relying on this recommendation. |
+| Technical transition | Ready for detailed design of CU-01 within this teaching scope. Read this record before allocating behavior and retain its basis in the design decisions. |
+| Formal disposition | Not fully verified: formal human/business acceptance is absent. This is not production release authority. |
+
 Stage 6 may proceed for this fictional technical example. Carry forward the trusted catalog boundary, separate configuration/eligibility from pure discount calculation, justify the extension point and preserve the independent expected values. Wiring changes remain allowed; universal zero-change extension is not promised.
 
 The subsequent [CDR](../08-cdr/CDR-01.md) and [code audit](../08-cdr/CODE-AUDIT-01.md) provide the later implementation evidence. Negative-minimum policy, simultaneous-fault precedence and production capabilities remain outside the verified business scope. This technical readiness result supplies no formal human/business acceptance or production release authority.

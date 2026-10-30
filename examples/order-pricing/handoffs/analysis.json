@@ -21,6 +21,7 @@
     "04-robustness/correspondence.md": "11106dae7849d4c50eee56939a5e205aa043a45307bce9978c2cca16336f686b",
     "04-robustness/robustness.puml": "6465a204c6dfdcbebd5c2136e4134b05278a059d259588a4a99067a065bb21ff",
     "04-robustness/semantic-check.md": "8d560166ca2ec45d346511583b67050bd71c3dd5f5662844bf06ef6a6263b183",
-    "05-pdr/PDR-01.md": "27076008ca56cab8b6e47db4e752a6122404aa37cc2326eee462ed2549acab6f"
-  }
+    "05-pdr/PDR-01.md": "8d25a1734eaa2a199bb56522c780ce5e0fde757705deb703f787fca0d1fbd03a"
+  },
+  "maintenance_version": "1.0.3"
 }

@@ -2,6 +2,20 @@
 
 This is an author assessment of concrete changes, replacements, clients and source dependencies. It does not infer SOLID from UML arrows or a successful validator. Independent CDR and the actual test evidence are required to challenge it.
 
+## Scoped evidence record
+
+Scope: CU-01 / DS-01 / MC-01, RNF-01/04/05 and AD-01–AD-09. The current English source baselines are pinned in `../handoffs/design.json`; actual aggregate execution is recorded in `../VALIDATION.json`. The detailed evidence below is organized using the reusable [SOLID review format](https://github.com/kinglez/mkl-uml/blob/main/skills/mkl-cdr-review/references/solid-evidence.md).
+
+| Principle / bounded claim | Coverage | Outcome | Evidence, challenge and remaining limit |
+|---|---|---|---|
+| S: pricing, eligibility and representation have coherent owners | checked for the supplied design/source | supported in this scope | Compare policy-rule and catalog-format changes against the allocation below and the code audit. This does not predict every future business change. |
+| O: a pure discount variant fits the existing calculation contract | checked for the capped-half exercise | supported in this scope | The extension produces payable 23500 through new policy/registration with unchanged protected core/workflow files during execution. Runtime hashes alone do not prove a historical no-edit patch or unrelated extension axes. |
+| L: supported policies preserve the declared calculation contract | checked for the shared finite cases | supported for those cases | The same literal vectors and invalid-input cases exercise each replacement. Eligibility is separate. Unsampled inputs and future implementations remain unverified. |
+| I: core clients need only their declared collaborator capabilities | checked for source and tested substitutes | supported in this scope | The code audit and independent probes use minimal product, Coupon and resolver collaborators. Type annotations are not an access-control sandbox. |
+| D: concrete adapters depend on application-owned contracts | checked for inspected source/imports and substitutions | supported in this scope | Inspect service imports, adapter dependencies and outer wiring, then replace the collaborators. Runtime call direction alone is insufficient. |
+
+These are bounded assessments, not a SOLID score or formal gate acceptance. The following table supplies the concrete rationale and probe details; any missing source/execution layer in a future replay must be recorded as partial or blocked rather than inherited from this result.
+
 | Principle | Design evidence | Actual probe and limit |
 |---|---|---|
 | S — responsibility | Cart owns cart validity/total, Coupon owns eligibility, policies own pure discount algorithms, QuoteService coordinates one goal, adapters own representation/trusted snapshot setup. Product/CartLine are immutable values; PriceQuote enforces completed-result invariants. | Compare a discount-algorithm change with catalog-format change: the former adds a configured policy, the latter changes adapter conversion. Neither requires moving storage/transport work into Cart or QuoteService. This is a reasoned change axis, not a one-method-per-class rule. |

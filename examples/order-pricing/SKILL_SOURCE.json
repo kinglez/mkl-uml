@@ -1,11 +1,11 @@
 {
-  "version": "1.0.2",
-  "commit": "fb519f3bb2c0aff48dc655be4a15ddeb56ec60d4",
+  "version": "1.0.3",
+  "commit": "24170e513586012a22c55d76b38544d8e3e61abb",
   "repository": "https://github.com/kinglez/mkl-uml",
   "runtime_sha256": {
     "skills/mkl-cdr-review/scripts/generate_code_headers.py": "320c6ae36d91f4d577f510a752334e75bff13154a969702ce2ff81818f1ba278",
-    "skills/mkl-cdr-review/scripts/validate_cdr.py": "89b0fc83f782f6b241af73c75bb2aae5154dfd7900a6a290686cb2f665bc1156",
-    "skills/mkl-pdr-review/scripts/validate_pdr.py": "bb7de8cd924daba4b889136a55eb7e495b623240c810b6a5eeddcbfd38edcaed",
+    "skills/mkl-cdr-review/scripts/validate_cdr.py": "08dddbbd2c57285bf5fb3993c48dc94f01f68eaaaeb3aac1c20de878d0374e49",
+    "skills/mkl-pdr-review/scripts/validate_pdr.py": "d65382aa064fac7de2e2d1cc4437c0549d888e6e3cf29268c55dd993ea9e7692",
     "skills/mkl-uml-design-class-model/scripts/validate_design_class_puml.py": "3c6dcf26ab3cfede80f74d1ab27fe1f7316c154f5e65817aa64002efdacc57c3",
     "skills/mkl-uml-domain-modeler/scripts/validate_domain_puml.py": "0f92e80c8962883c3f4c642a253a6a39fdaeac5b7e14e5c619a1b1e1d95b936f",
     "skills/mkl-uml-robustness-diagram/scripts/validate_robustness_puml.py": "609ddadcc2d533a1b0bd850d1c9dea7f7a84d60e0a5bca6a74fd6d2e7f9f538b",
@@ -14,5 +14,9 @@
     "skills/mkl-use-case-specifier/scripts/validate_use_case_spec.py": "f4f7bb3f9eb805986d0536b0cd77feddeeeab1bf07e295424ace36f069564c29"
   },
   "hash_policy": "SHA-256 of UTF-8 text with universal-newline normalization to LF",
-  "edition": "English repository publication of the locally reviewed teaching example"
+  "edition": "English repository publication of the locally reviewed teaching example",
+  "previous_snapshot": {
+    "version": "1.0.2",
+    "commit": "fb519f3bb2c0aff48dc655be4a15ddeb56ec60d4"
+  }
 }

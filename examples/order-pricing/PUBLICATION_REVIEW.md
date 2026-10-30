@@ -1,5 +1,7 @@
 # English publication review
 
+> The original 1.0.2 publication review is retained below. Current runtime and workflow maintenance is recorded in the final integration note and VALIDATION.json.
+
 Review date: **2026-10-30**. Reviewer role: independent publication reviewer (AI), separate from the English-documentation and repository-adaptation authors.
 
 **Technical disposition: Ready for repository publication as a bounded teaching example.** The one located publication defect was corrected and rechecked. No unresolved material publication finding remains. Formal human/customer/business acceptance remains **Not fully verified**.
@@ -40,3 +42,9 @@ The [published validation summary](VALIDATION.json) records the coordinator's pu
 **PUB-01 — broken historical interface-contract link, Minor: Closed.** The normalized `review-history/pdr-initial-specification.md` originally linked to `interface-contract.md` in its own directory, where that file did not exist. The repository adaptation corrected it to `../03-spec/interface-contract.md`. The reviewer rechecked the target and the complete local Markdown-link scan. The publication source checksum was refreshed after that editorial correction.
 
 This conclusion supports publication of the reviewed English reference example. Finite execution and model-preservation checks do not provide universal SOLID/UML conformance, production readiness or missing formal business approval.
+
+## Maintainer integration note — 1.0.3
+
+The validator snapshot now identifies source commit `24170e513586012a22c55d76b38544d8e3e61abb`. Requirements, independent expected results, pricing core and six UML model bodies are unchanged. The maintained example adds the reusable PDR handoff and an explicit scoped SOLID evidence record; its reader obtains the validator version from SKILL_SOURCE.json. Publication checksums are updated only after examining those changes, not presented as a replacement for review.
+
+Separate independent AI reviews consumed the updated handoff/SOLID instructions in four scenarios and examined the PDR/CDR parser changes. Two additional reference/placeholder false greens were reproduced through the CLI, corrected and independently rechecked. All 240 repository tests passed, including 31 new PDR and 3 CDR regressions; all eight metadata checks, archive generation and plugin validation passed. The current example execution is recorded in VALIDATION.json. These are maintenance evidence, not a new signature on the original publication record or missing human/business acceptance.
