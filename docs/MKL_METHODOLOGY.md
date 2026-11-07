@@ -5,6 +5,30 @@ The workflow connects **requirements → behavior → design → tests**. Each s
 
 This page explains why the stages exist. To perform them, use the **[order-pricing tutorial](EXAMPLES.md)**. For other documents, see the [reading guide](README.md).
 
+## High-level architecture between analysis and detailed design
+
+For a system architecture task, analysis/PDR supplies confirmed behavior, domain concepts,
+responsibilities and current findings. `mkl-uml-c4-architecture` consumes those outputs and
+relevant functional/quality requirements, then produces selected C4 views, architectural
+decisions, alternatives, costs, data/dependency ownership and verification scenarios.
+Detailed design consumes that handoff when allocating classes, interfaces and interactions.
+
+Ask about relevant quality dimensions as well as successful functions: capacity/latency,
+availability/recovery, consistency, security/privacy, observability, maintainability,
+compatibility, deployment and cost. Turn important qualities into observable scenarios;
+keep unknown targets open rather than assigning plausible numbers. Questions depend on the
+scope, and inputs may come from any supplied medium. No PRD is required.
+
+Context/container normally explain a system; component/deployment add detail when they
+answer a concrete question. A small module can retain an existing host architecture.
+Use the [C4 guide](C4_ARCHITECTURE.md) for the handoff and checks. Missing essential choices
+block dependent detailed design; unrelated work can proceed with explicit limits. At CDR,
+compare the actual detailed design against architecture decisions manually, separately
+from the current UML CLI checks. Recheck affected outputs after an upstream change.
+
+The example below remains the original eight-stage UML tutorial, without a retroactively
+claimed C4 stage. Nine skills do not imply nine compulsory stages for every request.
+
 ## One problem, eight questions
 
 In the example, a Shopper requests a price quote for a cart with an optional coupon. Two books and a pen cost CNY 255.00; an eligible SAVE30 coupon reduces payable to CNY 225.00. The system creates no Order.

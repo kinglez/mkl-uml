@@ -41,6 +41,11 @@ Default to a scoped preparation review of the supplied material. Conduct a forma
 6. Apply corrections when the user has authorized remediation; keep the review evidence and correction record distinct. Reuse existing authorization and verify the affected scope afterward.
 7. For a handoff to detailed design, end the existing review record with the reviewed scope/baseline, findings and closure evidence, remaining constraints, and technical transition recommendation. Keep formal acceptance separate. Use the compact handoff in [review-protocol.md](references/review-protocol.md) so another chat can continue from the actual reviewed state.
 
+When a high-level architecture stage is requested, its consumer receives this analysis
+handoff before detailed design, together with relevant quality requirements and open
+architecture-changing issues. State that scope explicitly: the existing PDR checks do not
+review C4 automatically. Missing architecture evidence limits only comparisons that need it.
+
 ## Coverage and disposition
 
 Coverage (`checked` / `partial` / `blocked`) is separate from the proposed gate disposition:

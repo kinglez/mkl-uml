@@ -64,7 +64,7 @@ REQUIRED_FLAGS = {
     "mkl-cdr-review": {"--clases", "--secuencia"},
 }
 
-ALL_SKILLS = sorted(set(POSITIONAL) | set(MULTI_INPUT))
+ALL_SKILLS = sorted(set(POSITIONAL) | set(MULTI_INPUT) | {"mkl-uml-c4-architecture"})
 
 
 def run(cmd, cwd):
@@ -155,7 +155,14 @@ def main():
     targets = [args.skill] if args.skill else ALL_SKILLS
     ok = True
     for skill in targets:
-        if skill in POSITIONAL:
+        if skill == "mkl-uml-c4-architecture":
+            directory = SKILLS / skill
+            for level in ("context", "container", "component", "deployment"):
+                fixture = directory / "tests" / "fixtures" / (level + ".puml")
+                code, crashed, err = run([sys.executable, str(directory / "scripts/validate_c4.py"), str(fixture), "--level", level], directory)
+                ok &= report(skill, level, code, crashed, err)
+                ok &= code == 0
+        elif skill in POSITIONAL:
             script_rel, glob_pat = POSITIONAL[skill]
             ok &= check_positional(skill, script_rel, glob_pat)
         else:

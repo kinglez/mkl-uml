@@ -63,10 +63,33 @@ class DistributionTests(unittest.TestCase):
             self.assertFalse(any("__pycache__" in name or name.endswith((".pyc", ".DS_Store"))
                                  for name in directory_files))
 
+    def test_c4_archive_and_install_are_self_contained_and_identical(self):
+        name = "mkl-uml-c4-architecture"
+        with tempfile.TemporaryDirectory() as directory:
+            target = Path(directory)
+            installed = install_skills.install(target / "installed", [name])[0]
+            self.assert_markdown_links_resolve(installed)
+            with patch.object(package_skill, "DIST", target / "archives"):
+                archive = package_skill.package(ROOT / "skills" / name)
+            with zipfile.ZipFile(archive) as zipped:
+                archived = {p.split("/", 1)[1]: zipped.read(p) for p in zipped.namelist()}
+            copied = {p.relative_to(installed).as_posix(): p.read_bytes()
+                      for p in installed.rglob("*") if p.is_file()}
+            self.assertEqual(archived, copied)
+            self.assertFalse(any(p.startswith("package-docs/") for p in copied))
+            self.assertIn("assets/architecture-record.json", copied)
+            self.assertIn("scripts/validate_c4.py", copied)
+            for level in ("context", "container", "component", "deployment"):
+                path = installed / "tests" / "fixtures" / (level + ".puml")
+                self.assertTrue(path.is_file())
+                result = subprocess.run([sys.executable, str(installed / "scripts/validate_c4.py"),
+                                         str(path), "--level", level], capture_output=True, text=True)
+                self.assertEqual(result.returncode, 0, result.stderr + result.stdout)
+
     def test_all_installed_markdown_links_resolve_within_skill(self):
         with tempfile.TemporaryDirectory() as directory:
             installed = install_skills.install(Path(directory))[0:]
-            self.assertEqual(len(installed), 8)
+            self.assertEqual(len(installed), 9)
             for skill_dir in installed:
                 self.assert_markdown_links_resolve(skill_dir)
 

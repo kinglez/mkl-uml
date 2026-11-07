@@ -1,7 +1,7 @@
 <!-- Copyright 2026 kingle.zhuang. See NOTICE for upstream attribution. -->
 # Install MKL UML
 
-Install the eight skills into the project where you use your agent. Installation makes the skills available; you then invoke them in chat. To learn with the order-pricing files, first [clone this repository](../README.md#quick-start).
+Install the nine skills into the project where you use your agent. Installation makes the skills available; you then invoke them in chat. To learn with the order-pricing files, first [clone this repository](../README.md#quick-start).
 
 [Documentation guide](README.md) · [Eight-stage tutorial](EXAMPLES.md)
 
@@ -10,11 +10,11 @@ Install the eight skills into the project where you use your agent. Installation
 You need Node.js **22.20+** and Git. Choose one command and run it in your target project's **terminal**:
 
 ```bash
-# Codex: all eight skills in this project
-npx skills@latest add kinglez/mkl-uml -a codex --skill '*' -y
+# Codex: all nine skills in this project
+npx skills add kinglez/mkl-uml -a codex --skill '*' -y
 
-# Claude Code: all eight skills in this project
-npx skills@latest add kinglez/mkl-uml -a claude-code --skill '*' -y
+# Claude Code: all nine skills in this project
+npx skills add kinglez/mkl-uml -a claude-code --skill '*' -y
 ```
 
 These commands read the current GitHub repository. They do not require an MKL package on the npm registry. Python **3.9+** is needed when you run the bundled validators, not just to copy the skills.
@@ -22,9 +22,10 @@ These commands read the current GitHub repository. They do not require an MKL pa
 | If you want… | Change the command |
 |---|---|
 | To choose skills interactively | Omit `--skill '*' -y`. |
+| Only C4 architecture | Replace `--skill '*'` with `--skill mkl-uml-c4-architecture`. |
 | Only the domain modeler | Replace `--skill '*'` with `--skill mkl-uml-domain-modeler`. |
 | A personal installation across projects | Add `-g`. |
-| To list available skills without installing | Use `npx skills@latest add kinglez/mkl-uml --list`. |
+| To list available skills without installing | Use `npx skills add kinglez/mkl-uml --list`. |
 
 See the [Skills CLI reference](https://github.com/vercel-labs/skills/blob/main/docs/commands.md) for additional options. The CLI handles agent discovery and installation locations.
 
@@ -46,11 +47,13 @@ For the complete order-pricing requirements and all eight prompts, continue with
 
 ## Other installation methods
 
-Use these only when you need a pinned source, offline files or a host-specific upload. The source tag for the current version is **[v1.0.4](https://github.com/kinglez/mkl-uml/tree/v1.0.4)**. Historical release evidence remains in the [release notes](RELEASE_NOTES.md).
+Use these only when you need a pinned source, offline files or a host-specific upload. The latest previously published source tag documented here is **[v1.0.4](https://github.com/kinglez/mkl-uml/tree/v1.0.4)**. Historical release evidence remains in the [release notes](RELEASE_NOTES.md).
 
 ### Pinned source or bundled npx installer
 
-The bundled installer adds offline project documentation and legal notices. It requires Node.js **20+**, Python **3.9+** and Git for the GitHub source. It installs all eight skills by default and refuses to overwrite existing target skill directories.
+This checkout is a local **1.1.0 candidate** with nine skills. The pinned `v1.0.4` commands below install the previous eight-skill release, without C4. Use a local checkout for the new skill until publication.
+
+The bundled installer adds self-contained documentation and legal notices. It requires Node.js **20+**, Python **3.9+** and Git for the GitHub source. It installs all nine skills by default and refuses to overwrite existing target skill directories.
 
 Run from any directory, choosing your agent:
 
@@ -95,7 +98,7 @@ From the repository root:
 python3 tools/package_skill.py
 ```
 
-This creates `dist/<skill-name>.skill` for each skill. Each is a ZIP containing one skill root, its local resources, `LICENSE`, `NOTICE` and offline `package-docs/`. The `.skill` suffix is this builder's convention; upload support depends on the host.
+This creates `dist/<skill-name>.skill` for each skill. Each is a ZIP containing one skill root, its local resources, `LICENSE`, `NOTICE` and documentation. The original eight skills include offline `package-docs/`; the C4 skill keeps its domain-independent references directly inside the skill. The `.skill` suffix is this builder's convention; upload support depends on the host.
 
 For Claude web, build one and copy it to the documented `.zip` extension:
 
@@ -111,7 +114,7 @@ To share the whole bundled installer as a local npm tarball instead:
 ```bash
 mkdir -p dist
 npm pack --ignore-scripts --pack-destination dist
-npx --yes --package ./dist/mkl-uml-1.0.4.tgz mkl-uml install --agent codex
+npx --yes --package ./dist/mkl-uml-1.1.0.tgz mkl-uml install --agent codex
 ```
 
 These methods use GitHub or local files. They do not publish an npm registry package or submit a marketplace listing.

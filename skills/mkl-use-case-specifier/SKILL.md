@@ -28,6 +28,14 @@ metadata:
 
 Write a lean specification for a bounded goal; expand only when complexity or the requested formal handoff warrants it. Do not demand a complete upstream pipeline for a single specification.
 
+Accept supplied conversations, documents, tickets, images, contracts or current-system
+evidence without requiring a PRD or fixed input filename. For missing information, cover
+functional behavior and relevant qualities/constraints: workload and response criteria,
+security/privacy, recovery/data-loss bounds, consistency, compatibility and operations.
+Reuse answered questions; keep unknown architecture-changing targets open. Cross-cutting
+qualities can link to a shared requirement record rather than being forced into flow steps.
+Carry their sources, acceptance criteria and unresolved choices into analysis/architecture.
+
 ## Specification workflow
 
 1. Preserve the CU ID, goal, actors, trigger, and boundary. Describe preconditions as existing states, not hidden flow steps.

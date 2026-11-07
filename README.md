@@ -1,11 +1,11 @@
 <!-- Copyright 2026 kingle.zhuang. See NOTICE for upstream attribution. -->
 # MKL UML Skills
 
-**Turn requirements into UML models, review the design, and trace it to tests.**
+**Turn requirements into architecture and UML models, review the design, and trace it to tests.**
 
-Eight agent skills guide you from business concepts to detailed design. Use one skill for a specific diagram, or work through all eight stages. Diagrams use PlantUML; specifications and review records use Markdown.
+Nine independently usable skills cover analysis, C4 high-level architecture, detailed design and reviews. Use the skill needed for your question or connect their outputs into a workflow. Requirements can come from any supplied evidence: conversations, tickets, documents, images, contracts or an existing system. No PRD or input filename is required. Diagrams use PlantUML; specifications and review records use Markdown.
 
-This guide follows one example throughout: **quote a shopping cart with an optional coupon**. The completed [order-pricing example](examples/order-pricing/README.md) includes requirements, diagrams, review findings, Python code and tests.
+The existing eight-stage UML tutorial follows one example: **quote a shopping cart with an optional coupon**. The completed [order-pricing example](examples/order-pricing/README.md) includes requirements, diagrams, review findings, Python code and tests.
 
 [Quick start](#quick-start) · [Run the finished example](#run-the-finished-example) · [Workflow](#workflow) · [Stage outputs](#stage-outputs) · [Documentation](#documentation)
 
@@ -15,6 +15,7 @@ This guide follows one example throughout: **quote a shopping cart with an optio
 |---|---|
 | Understand requirements before coding | Agree on business concepts, actors and user goals. |
 | Work out success and failure behavior | Specify flows and show how responsibilities collaborate. |
+| Choose a high-level architecture | Link functional and quality requirements to system boundaries, applications, data stores and design trade-offs. |
 | Explain a design | Connect class state and operations to requirements and interactions. |
 | Keep documents and tests consistent | Review the links between artifacts and record gaps or corrections. |
 
@@ -31,7 +32,7 @@ git clone https://github.com/kinglez/mkl-uml.git
 cd mkl-uml
 ```
 
-Choose your agent; either command installs all eight skills into this project:
+Choose your agent; either command installs all nine skills into this project:
 
 ```bash
 # Codex
@@ -71,6 +72,28 @@ You can stop after the artifact you need. For your own project, replace the teac
 
 <a id="complete-worked-example-order-pricing"></a>
 
+## Start with your own architecture
+
+Install just the architecture skill with the standard command:
+
+```bash
+npx skills add kinglez/mkl-uml --skill mkl-uml-c4-architecture
+```
+
+Then provide your actual sources in chat:
+
+```text
+$mkl-uml-c4-architecture
+Read the sources supplied in this conversation and the current analysis artifacts.
+Identify confirmed functional requirements, applicable quality requirements and open
+architecture-changing questions. Create the C4 views needed for this scope using
+C4-PlantUML. Explain alternatives and trade-offs, render locally if available, and
+hand the decisions, quality scenarios and constraints to detailed design.
+Do not invent missing targets or a system around a bounded module.
+```
+
+Use **[the C4 guide](docs/C4_ARCHITECTURE.md)** for view selection, stage inputs/outputs and verification. A request for one diagram does not require the complete workflow. The command above discovers published GitHub content; this 1.1.0 candidate must be published before that command can install its new skill. Use the [local installer](docs/INSTALLATION.md#python-installer-and-windows) to try the current checkout.
+
 ## Run the finished example
 
 You can inspect and execute the committed example before generating any models. From the repository root:
@@ -97,36 +120,20 @@ Read the **[guided example tour](examples/order-pricing/README.md)** to follow t
 
 ## Workflow
 
-The full workflow answers three questions: **What must the system do? How will it do it? Does the design agree with the requirements?**
+Connect the stages through their outputs:
 
-```mermaid
-flowchart TB
-    R["Business goals and requirements"]
-    subgraph A["Analysis"]
-        direction LR
-        D["1. Domain model"] --> U["2. Use case diagram"]
-        U --> T["3. Use case specifications"]
-        T --> B["4. Robustness diagrams"]
-    end
-    P{"5. PDR"}
-    subgraph DD["Detailed design"]
-        direction LR
-        S["6. Sequence diagrams<br/>Operation delta and test plan"] --> C["7. Design class model"]
-    end
-    Q{"8. CDR"}
-    I["Implementation handoff"]
-    R --> A
-    A --> P
-    P -->|"Ready to proceed"| DD
-    P -.->|"Rework analysis"| A
-    DD --> Q
-    Q -->|"Ready to proceed"| I
-    Q -.->|"Rework design"| DD
-```
+| Stage | Reads | Produces for the next stage |
+|---|---|---|
+| Requirements and analysis | Supplied evidence in any medium | Concepts, use cases, behavior, BCE responsibilities and PDR findings |
+| High-level architecture — `mkl-uml-c4-architecture` | Confirmed requirements, relevant quality scenarios and current analysis/PDR | Selected C4 views, decisions, trade-offs, data ownership and detailed-design constraints |
+| Detailed design | Architecture handoff and specified behavior | Sequence diagrams, class model, contracts, lifecycle design where needed and test plan |
+| CDR and implementation handoff | Current architecture, detailed design and applicable test evidence | Findings, verified corrections, remaining blockers and implementation constraints |
 
-**PDR (Preliminary Design Review)** checks the analysis before detailed design. **CDR (Critical Design Review)** checks the detailed design before implementation handoff. Each review records what was checked, findings, corrections and remaining gaps. The next stage reads that record and rechecks affected inputs when they change.
+**PDR (Preliminary Design Review)** checks analysis consistency. **CDR (Critical Design Review)** checks detailed-design consistency. When architecture is in scope, CDR also needs a labeled semantic comparison against its decisions and views; its existing CLI does not parse C4 automatically. An upstream change reopens the affected downstream checks.
 
-You can request a single artifact independently. Formal review is an explicit scope; automated checks alone establish neither formal approval nor SOLID conformance. See the [workflow guide](docs/MKL_METHODOLOGY.md) for the reasoning behind each stage.
+The [official C4](https://c4model.com/) zoom is **system context → containers → components → code**. The code view uses a scoped UML class model of a component; sequence diagrams complement it with behavior. Context and container views normally explain a system-level design. Component and deployment views answer additional questions when needed. C4-PlantUML is the drawing library; it does not choose an architecture or prove quality targets. Rendering, semantic review and formal approval are separate evidence.
+
+The maintained order-pricing tutorial still demonstrates its original eight-stage UML path. It does not claim a newly executed C4 architecture stage. Formal review remains an explicit scope; automated checks alone establish neither formal approval nor SOLID conformance. See the [workflow guide](docs/MKL_METHODOLOGY.md).
 
 <a id="what-each-stage-produces"></a>
 
@@ -169,7 +176,8 @@ Start with the **[documentation reading guide](docs/README.md)**. Read only the 
 
 | Your next task | Read |
 |---|---|
-| Follow the eight skills using order pricing | [Step-by-step tutorial](docs/EXAMPLES.md) |
+| Design architecture from your own sources | [C4 architecture guide](docs/C4_ARCHITECTURE.md) |
+| Follow the original eight skills using order pricing | [Step-by-step tutorial](docs/EXAMPLES.md) |
 | Inspect the already completed result | [Example tour](examples/order-pricing/README.md) |
 | Choose another installation method | [Installation](docs/INSTALLATION.md) |
 | Understand the workflow and review stages | [Workflow guide](docs/MKL_METHODOLOGY.md) |

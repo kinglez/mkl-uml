@@ -6,15 +6,15 @@
   },
   "metadata": {
     "description": "MKL UML skill suite by kingle.zhuang, organization mkl, copyright 2026.",
-    "version": "1.0.4"
+    "version": "1.1.0"
   },
   "plugins": [
     {
       "name": "mkl-uml",
-      "description": "The complete eight-skill MKL design pipeline in professional English.",
+      "description": "Nine MKL skills for UML modeling, C4 architecture and design review.",
       "source": "./",
       "strict": false,
-      "version": "1.0.4",
+      "version": "1.1.0",
       "author": {
         "name": "kingle.zhuang",
         "email": "kinglezhuang@vip.qq.com"
@@ -25,7 +25,8 @@
         "uml",
         "plantuml",
         "software-design",
-        "requirements-engineering"
+        "requirements-engineering",
+        "c4"
       ],
       "skills": [
         "./skills/mkl-uml-domain-modeler",
@@ -35,7 +36,8 @@
         "./skills/mkl-pdr-review",
         "./skills/mkl-uml-sequence-diagram",
         "./skills/mkl-uml-design-class-model",
-        "./skills/mkl-cdr-review"
+        "./skills/mkl-cdr-review",
+        "./skills/mkl-uml-c4-architecture"
       ]
     }
   ]

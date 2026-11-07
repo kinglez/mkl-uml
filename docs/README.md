@@ -1,7 +1,7 @@
 <!-- Copyright 2026 kingle.zhuang. See NOTICE for upstream attribution. -->
 # Documentation guide
 
-MKL UML has eight skills for moving from requirements to a reviewed design. All introductory examples use **order pricing**: a Shopper asks for a shopping-cart quote with an optional coupon.
+MKL UML has nine skills covering analysis, C4 architecture and detailed-design review. Inputs can be any external evidence. The original eight-stage tutorial uses **order pricing**; the separate C4 guide is business-independent and starts from your own sources.
 
 You do not need to read every document before starting. Use this order:
 
@@ -14,8 +14,9 @@ You do not need to read every document before starting. Use this order:
 | Your question | Document | What it gives you |
 |---|---|---|
 | How do I install or select skills? | [Installation](INSTALLATION.md) | One recommended method, then alternatives for local/offline installs and Claude web. |
+| How do I create a high-level architecture? | [C4 architecture](C4_ARCHITECTURE.md) | Functional and quality questions, view selection, deliverables and detailed-design handoff. |
 | What do I send to the agent at each stage? | [Tutorial](EXAMPLES.md) | Eight copyable order-pricing prompts and concrete completion checks. |
-| Why are there eight stages, and what do PDR/CDR mean? | [Workflow guide](MKL_METHODOLOGY.md) | The purpose of each stage and how findings lead to corrections. |
+| How do analysis, architecture, detailed design and PDR/CDR connect? | [Workflow guide](MKL_METHODOLOGY.md) | The purpose of each stage and how findings lead to corrections. |
 | Which files does a skill need, and how do I preserve IDs? | [Operating contract](OPERATING_CONTRACT.md) | Reference rules for inputs, coverage, handoffs and identifiers. Consult it when those details matter. |
 | What has actually been tested? | [Validation record](VALIDATION.md) | Recorded executions and their limits. This is evidence, not the getting-started procedure. |
 | What changed in a version? | [Release notes](RELEASE_NOTES.md) | Version history and distribution details. |

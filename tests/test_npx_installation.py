@@ -37,7 +37,7 @@ class NpxInstallation(unittest.TestCase):
         self.assertIn('--destination', result.stdout)
         self.assertFalse(self.destination.exists())
 
-    def test_installs_all_eight_using_existing_payload_contract(self):
+    def test_installs_all_skills_using_existing_payload_contract(self):
         result = self.run_cli('install', '--agent', 'codex', '--destination', self.destination,
                               '--python', sys.executable)
         self.assertEqual(result.returncode, 0, result.stdout+result.stderr)
@@ -108,11 +108,21 @@ class NpxInstallation(unittest.TestCase):
             self.assertIn('package/NOTICE', members)
             self.assertFalse(any('__pycache__' in n or '.DS_Store' in n or n.endswith('.pyc') for n in members))
             self.assertFalse(any(n.startswith('package/dist/') for n in members))
-            package.extractall(extracted, filter='data')
+            # Extract our generated regular-file payload safely on Python 3.9+
+            # as well as versions that provide tarfile's data filter.
+            for member in package.getmembers():
+                target = (extracted / member.name).resolve()
+                self.assertTrue(target.is_relative_to(extracted.resolve()))
+                self.assertTrue(member.isfile() or member.isdir())
+                if member.isdir():
+                    target.mkdir(parents=True, exist_ok=True)
+                else:
+                    target.parent.mkdir(parents=True, exist_ok=True)
+                    target.write_bytes(package.extractfile(member).read())
         result = self.run_cli('install', '--agent', 'codex', '--destination', self.destination,
                               '--python', sys.executable, cli=extracted/'package/bin/mkl-uml.mjs')
         self.assertEqual(result.returncode, 0, result.stdout+result.stderr)
-        self.assertEqual(len(list(self.destination.iterdir())), 8)
+        self.assertEqual(len(list(self.destination.iterdir())), 9)
         for name in skill_names():
             actual = {p.relative_to(self.destination/name).as_posix(): p.read_bytes()
                       for p in (self.destination/name).rglob('*') if p.is_file()}

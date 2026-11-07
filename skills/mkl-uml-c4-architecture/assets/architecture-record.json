@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "scope": "Draft: identify current architectural scope from supplied sources.",
+  "required_levels": [
+    "context",
+    "container"
+  ],
+  "sources": [],
+  "requirements": [],
+  "quality_scenarios": [],
+  "decisions": [],
+  "views": [],
+  "handoff": {
+    "status": "draft",
+    "consumer": "Detailed design",
+    "notes": "Draft: record actual ready outputs and blockers."
+  }
+}

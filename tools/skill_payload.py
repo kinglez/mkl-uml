@@ -7,7 +7,7 @@ import re
 from urllib.parse import unquote, urlsplit
 
 ROOT = Path(__file__).resolve().parents[1]
-DOCS = ("README.md", "BIBLIOGRAPHY.md", "THIRD_PARTY_SOURCES.md", "RELEASE_NOTES.md", "MKL_METHODOLOGY.md", "OPERATING_CONTRACT.md", "INSTALLATION.md", "EXAMPLES.md", "VALIDATION.md")
+DOCS = ("README.md", "BIBLIOGRAPHY.md", "THIRD_PARTY_SOURCES.md", "RELEASE_NOTES.md", "MKL_METHODOLOGY.md", "OPERATING_CONTRACT.md", "INSTALLATION.md", "EXAMPLES.md", "VALIDATION.md", "C4_ARCHITECTURE.md")
 EXCLUDED = {"__pycache__", ".DS_Store", "Thumbs.db", ".git", ".pytest_cache"}
 LINK = re.compile(r"(?P<label>!?\[[^\]\n]*\])\((?P<target><[^>\n]+>|[^\s)]+)(?P<title>\s+[^)]+)?\)")
 # Also handles the outer destination in nested Markdown badges.
@@ -89,7 +89,10 @@ def build_payload(name, root=ROOT):
         if path.is_symlink() or not path.is_file():
             raise ValueError(f"Missing or unsafe required notice: {path}")
         selected[path] = Path(filename)
-    for path in [root / "README.md", *(root / "docs" / name for name in DOCS)]:
+    # C4 has a self-contained, domain-independent guide; retain legacy tutorial
+    # bundling for the original eight independently installed skills.
+    shared_docs = [] if name == "mkl-uml-c4-architecture" else [root / "README.md", *(root / "docs" / name for name in DOCS)]
+    for path in shared_docs:
         if path.is_symlink() or not path.resolve().is_relative_to(root):
             raise ValueError(f"Symlink documentation or escaped path is not allowed: {path}")
         if path.is_file():

@@ -16,7 +16,7 @@ Usage:
 
 Options:
   --agent NAME         codex or claude-code (required for install)
-  --skill NAME         Install one skill; omit to install all eight
+  --skill NAME         Install one skill; omit to install all nine
   --destination PATH   Override the agent's personal skills directory
   --python PATH        Python 3.9+ executable; otherwise auto-detected
   --help               Show this help

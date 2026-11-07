@@ -2,7 +2,7 @@
 
 **Reference document:** use this when you need exact rules for inputs, review states, handoffs or stable IDs. For a first run, follow the [order-pricing tutorial](EXAMPLES.md); the [documentation guide](README.md) explains the reading order.
 
-This contract applies to all eight MKL skills. It separates the artifact operation from the review workflow and the evidence available. Existing Spanish CLI flags and supported parser terms remain compatible; the modes below are agent workflow choices, not new CLI flags.
+This contract applies to all nine MKL skills. It separates the artifact operation from the review workflow and the evidence available. Existing Spanish CLI flags and supported parser terms remain compatible; the modes below are agent workflow choices, not new CLI flags.
 
 ## Modes and operations
 
@@ -49,6 +49,30 @@ For a full MKL handoff, the PDR record carries the selected CU/DR/flow scope, re
 The sequence-design stage reads that record first, matches it to the current inputs, and re-examines changed sources or unresolved findings before relying on the affected recommendation. Preserve IDs and earlier evidence. A closed status needs verification evidence; a clean CLI result, matching hash or missing finding list cannot substitute for that examination. Update only the affected review scope when a source changes.
 
 Missing PDR evidence leaves a dependent MKL transition unverified; an indispensable missing input blocks that transition. It does not create a new prerequisite for unrelated standalone diagrams. A scoped technical exercise may proceed on a documented technical basis while formal human/business acceptance remains **Not fully verified**; do not represent that as a formal gate acceptance.
+
+## Architecture and detailed-design handoff
+
+Requirements are source-neutral: preserve references to actual conversations, documents,
+images, contracts, tickets or system evidence. A PRD and specific input filenames are
+not mandatory. Separate confirmed functional requirements, quality scenarios, assumptions
+and open decisions. Existing code is evidence of current behavior, not automatic approval
+of intended behavior.
+
+When high-level architecture is requested, `mkl-uml-c4-architecture` consumes the current
+analysis/PDR and quality drivers. Its output is selected C4 sources/previews, source and
+scope mappings, decisions with alternatives/costs, ownership/dependencies, quality response
+strategies and detailed-design constraints. Context/container normally suit a system;
+component/deployment depend on the question. Reuse the current architecture for a bounded task.
+
+Sequence and class design read the architecture handoff before making dependent choices.
+Match current source versions, map components/responsibilities to classes/interfaces,
+and preserve communication, data ownership, failure and quality constraints. A stale or
+architecture-changing open issue blocks its dependent choice until rechecked.
+
+For CDR, manually compare those choices with the actual architecture. Report the compared
+artifacts, findings and omissions; existing CDR CLI checks do not parse C4. The optional
+C4 record checks a declared local profile, references and view consistency, not design
+adequacy or actual quality achievement. See the C4 skill's validation profile for exact limits.
 
 ## Vocabulary and semantics
 

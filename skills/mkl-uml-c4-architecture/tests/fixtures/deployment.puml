@@ -1,0 +1,7 @@
+@startuml
+!include <C4/C4_Deployment>
+title Deployment
+Deployment_Node(host, "Host", "Environment") {
+Container(app, "Application", "Runtime", "Handles input")
+}
+@enduml

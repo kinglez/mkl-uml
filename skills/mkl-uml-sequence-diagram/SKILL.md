@@ -19,6 +19,8 @@ metadata:
 - Preserve supplied identifiers and their mappings across renaming, reordering, splitting, and regeneration. Allocate new identifiers above the existing high-water mark; retain retired identifiers and never reuse them. If the registry is unavailable, mark new IDs provisional. Diagram aliases are separate from traceability IDs.
 - Distinguish UML semantics, local MKL conventions, and heuristic findings. Run a scoped verification pass and recheck affected parts after corrections. Do not require a fixed number of clean passes or issue an assurance certificate from a validator result.
 
+When high-level architecture is in scope, read its current C4 views, decisions, quality scenarios and constraints. Map components/responsibilities to detailed classes, interfaces and interactions; preserve data ownership, communications and relevant failure/quality constraints. Recheck affected choices when sources change. Missing essential choices block dependent work, not unrelated standalone tasks.
+
 ## Inputs and result
 
 | Operation | Minimum input | Additional MKL evidence |

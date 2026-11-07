@@ -1,0 +1,9 @@
+@startuml
+!include <C4/C4_Container>
+title Containers
+System_Boundary(target, "Target") {
+Container(app, "Application", "Runtime", "Handles input")
+ContainerDb(store, "Data", "Storage", "Stores data")
+}
+Rel(app, store, "Reads", "Protocol")
+@enduml

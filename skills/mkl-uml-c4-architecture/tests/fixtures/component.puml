@@ -1,0 +1,9 @@
+@startuml
+!include <C4/C4_Component>
+title Components
+Container_Boundary(app, "Application") {
+Component(entry, "Entry", "Module", "Accepts input")
+Component(core, "Core", "Module", "Owns behavior")
+}
+Rel(entry, core, "Invokes")
+@enduml

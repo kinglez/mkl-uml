@@ -3,6 +3,41 @@
 
 **Evidence reference:** this page records checks that were actually executed and their limits. To run the example yourself, use the [example guide](../examples/order-pricing/README.md#run-the-example). To learn the skills, follow the [tutorial](EXAMPLES.md). See the [documentation guide](README.md) for the reading order.
 
+## C4 architecture extension — local 1.1.0 candidate, 2026-11-07
+
+This candidate adds the ninth skill and a high-level architecture handoff. Its primary
+method reference is the official C4 model: context, containers, components and code;
+deployment is supporting. C4-PlantUML draws architecture macros. Scoped UML classes
+express the code zoom, with sequences as complementary behavior. Requirement sources
+remain arbitrary external evidence; no PRD or fixed input filename is required.
+
+| Check | Observed local evidence |
+|---|---|
+| Full repository suite | **263 tests passed** on Python **3.9.6** and **3.12.14**. This includes **22** new C4 contract tests and one new C4 distribution test. |
+| C4 contracts | Ready and blocked handoffs, source/requirement/decision/view links, unknown fields/references, quality scenarios/metadata, cross-view drift, ownership, unsupported syntax, malformed input and path containment are exercised. |
+| Adversarial shape probe | **189** field/type mutations returned structured results without uncaught exceptions; this finite probe is not exhaustive fuzzing. |
+| Real rendering | The four neutral C4 sources rendered to SVG and PNG using PlantUML **1.2026.9**, bundled C4-PlantUML **2.14.0**, Graphviz **16.1.0**. All four previews were inspected. No public renderer or library download was used. |
+| Code-level route | A neutral component-to-class mapping and proposed UML class view were locally rendered. The existing class checker reports no errors; without behavior/domain sources, five provenance/responsibility layers remain unexecuted. This is a notation/handoff exercise, not complete design verification. |
+| Installation/distribution | Actual standard Skills CLI installation of the new local skill into an isolated Codex project succeeded. The full suite packs a real npm tarball, installs offline and compares all nine payloads. C4 directory/archive bytes match; standalone links and four installed fixtures pass. |
+| Metadata and smoke | **9/9** Skill Creator checks pass. All nine validator smoke checks, structure check, Node syntax and local Claude plugin-manifest validation pass. Deliberately invalid legacy fixtures retain their expected findings. |
+| Maintained reference | The original order-pricing directory is byte-unchanged against HEAD and all **13** default reference checks pass. No new C4 business acceptance is claimed for that example. |
+
+The C4 checker does not run PlantUML or approve an architecture. It checks a documented
+literal profile and declared references; unsupported syntax remains partial and blocks
+strict readiness. Actual quality achievement, complete semantics, stale-source detection
+and formal human approval are outside that mechanical result. Existing PDR/CDR tools do
+not automatically parse C4. Their in-scope architecture comparison is a labeled semantic
+review. This candidate has no release tag or hosted CI result. Local verification does not imply publication.
+
+Independent forward evaluation used a meeting-notes-only desktop task in an isolated
+external workspace. It produced source/requirement/decision/view mappings and locally
+rendered views without demanding a PRD. Undefined policies remained draft and strict
+readiness was withheld. A scenario-metadata schema mismatch was reproduced, corrected
+and rechecked with the original input. Semantic inspection also corrected an authored
+view that had treated data artifacts as software systems; both the checker and renderer
+had accepted it. The modeling guidance now makes that abstraction distinction explicit.
+This is bounded AI evaluation, not independent human approval or proof across all tasks.
+
 ## Documentation usability update — 2026-10-30
 
 The README and introductory documents now follow order pricing throughout. The tutorial creates separate working artifacts; the maintained reference and its historical acceptance boundary remain explicit. Two independent AI editorial reviews compared the new instructions with the unchanged business requirements, specification and actual example output, with no unresolved concrete documentation finding.

@@ -1,7 +1,7 @@
 {
   "name": "mkl-uml",
-  "version": "1.0.4",
-  "description": "Install eight MKL UML skills for Codex or Claude Code.",
+  "version": "1.1.0",
+  "description": "Install nine MKL UML and C4 architecture skills for Codex or Claude Code.",
   "type": "module",
   "bin": {
     "mkl-uml": "bin/mkl-uml.mjs"
@@ -28,7 +28,8 @@
     "plantuml",
     "agent-skills",
     "codex",
-    "claude-code"
+    "claude-code",
+    "c4"
   ],
   "files": [
     "bin/*.mjs",
@@ -45,6 +46,7 @@
     "skills/*/tests/examples/**/*.md",
     "docs/*.md",
     "LICENSE",
-    "NOTICE"
+    "NOTICE",
+    "skills/*/tests/fixtures/**/*.puml"
   ]
 }

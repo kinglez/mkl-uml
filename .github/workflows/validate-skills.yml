@@ -58,6 +58,7 @@ jobs:
           - mkl-uml-sequence-diagram
           - mkl-uml-design-class-model
           - mkl-cdr-review
+          - mkl-uml-c4-architecture
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4

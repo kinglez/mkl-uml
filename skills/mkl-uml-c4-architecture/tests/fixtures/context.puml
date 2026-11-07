@@ -1,0 +1,7 @@
+@startuml
+!include <C4/C4_Context>
+title Context
+Person(user, "User")
+System(target, "Target")
+Rel(user, target, "Uses")
+@enduml

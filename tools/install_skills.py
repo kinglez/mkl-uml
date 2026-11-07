@@ -3,7 +3,7 @@
 """Install standalone skill directories into an explicit destination.
 
 No personal skills directory is inferred. Existing targets are never replaced.
-Omit the optional skill name to install all eight skills.
+Omit the optional skill name to install all nine skills.
 """
 import argparse
 from pathlib import Path

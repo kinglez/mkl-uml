@@ -2,7 +2,7 @@
 # Copyright 2026 kingle.zhuang. mkl standalone skill archives.
 """Package skills/<name>/ as dist/<name>.skill ZIP archives.
 
-Build all eight skills by default. Archives and explicit directory installs use
+Build all nine skills by default. Archives and explicit directory installs use
 an identical payload, including legal notices and rewritten standalone docs.
 """
 import argparse
