@@ -14,6 +14,7 @@ simplified documentation. The following records describe local executions on
 |---|---|
 | Original audit inputs | 16 findings corrected; 52 CLI replays with controls retained |
 | Regression suite | 286 tests passed on Python 3.9.6 and 3.12.14 |
+| Frozen reference / 1.1.1 runtime | 18 checks passed, including 8 gate methods and 15 reference test methods / 30 oracle cases; models, reviewed headers and 11 frozen input/code files unchanged |
 | Single-skill use | All nine independently installed/executed; isolated forward trials inspected actual artifacts |
 | Standard Skills CLI 1.7.4 | 9/9 local single-skill installs and validator executions passed |
 | Other maintainer checks | 9/9 metadata checks, 89 smoke calls, Python/Node syntax and plugin manifest passed |

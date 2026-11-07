@@ -95,3 +95,20 @@ Final metadata/doc recording updates are rehashed by the coordinator only after 
 actual reinspection; fresh combined verification supplies the current execution result.
 The browser blocked file:// preview, so no interactive-browser acceptance is claimed.
 Static HTML/tab targets/assets/JS syntax and actual diagram images are checked separately.
+
+## v1.1.1 runtime revalidation - 2026-11-07
+
+The corrective runtime content is recorded in commit 40baca56c314b87306e951af6ca950b7dcd0b4c1.
+The primary coordinator re-examined this unchanged model set and reran its combined
+verification in an isolated copy before adopting the new runtime snapshot. All 18
+checks passed, including the eight blocking/revalidation methods, 15 reference test
+methods / 30 oracle cases and exact regenerated-header comparison. Frozen requirements,
+independent expected results and reference Python sources remain unchanged across
+11 files. No new diagram, business rule or implementation was introduced.
+
+The changed domain/relationship parsers, normal-flow separation, nonempty branch coverage,
+C4 typed ownership and enum/signature translation retain this example's existing
+meaning and expected behavior. Original analysis/design findings and prior independent
+AI roles remain historical evidence; this update is primary-author revalidation, not a
+new independent review or human approval. Rendering was not repeated because diagram
+sources and previews are unchanged. Current execution is recorded in VALIDATION.json.

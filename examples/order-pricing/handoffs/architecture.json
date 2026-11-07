@@ -5,7 +5,7 @@
   "human_approval": false,
   "formal_gate_disposition": "NOT FULLY VERIFIED",
   "review_record": "architecture/REVIEW.md",
-  "maintenance_version": "1.1.0",
+  "maintenance_version": "1.1.1",
   "inputs_sha256": {
     "00-input/ACCEPTANCE_ORACLE.md": "306554ccc74f1870c91022540dd08ba1d4cc6911957b673c80349c832da624a5",
     "00-input/acceptance-oracle.json": "1805b35c58b36fda8ef329e0378ef4871f517e78d2cfb877d4bde7ffd1e749d3",
@@ -29,9 +29,9 @@
     "09-reference-implementation/pricing/service.py": "b90510f394c1feeddb2e6712a66d7ad49ac9d6548827386de0c5a3b0a1fe845c",
     "09-reference-implementation/run_example.py": "8b4e8297e08f218e9fb6258b07693c3832bec30e3e97a00ec9a848e0df758546",
     "09-reference-implementation/tests/test_pricing.py": "ceaeef29cf8d82b70366ed22cf22932f861303d17b712687472165fd97b9a76d",
-    "SKILL_SOURCE.json": "6e1eaa7d87f1ed7149e2458dd6de1fc34dfb016f9e51a616be0d5fe8843f4abb",
+    "SKILL_SOURCE.json": "668bf91977427b567be7705aa2803155dfcf5e07c22aa0c575560eb372ed1030",
     "architecture/README.md": "649e12ece80d761fe96950623b3537456e0380b09c4878ac62ae27b2474b8175",
-    "architecture/REVIEW.md": "1511d3b6f564efca2011ca60edd4db673f4ade7e8d21e2e58cdce65b163234bf",
+    "architecture/REVIEW.md": "31edc85907f8ae314c17f03e89cd25fe5b6b74a09c115cc844590945f63d17fd",
     "architecture/architecture-brief.md": "9cc77bd70ae3ef8c93bb5923ff20df77861fb536c1461cbeb38c99fed4f51cac",
     "architecture/architecture.json": "0a7709964a87cee9dc9995c55fdf5728115fa9509b79617941e68b2d3f8cc166",
     "architecture/code.puml": "6ff3bbc58484de7ff4a7a14213cd406ac0365e729611b8b6429373b6cb082759",
@@ -48,5 +48,10 @@
     "Primary author (AI)",
     "Independent reviewer: order_pricing_c4_review (AI)"
   ],
-  "replay_scope": "Existing DS/MC/code are examined evidence for this retrospective replay, not prerequisites for a new high-level design."
+  "replay_scope": "Existing DS/MC/code are examined evidence for this retrospective replay, not prerequisites for a new high-level design.",
+  "runtime_revalidation": {
+    "record": "architecture/REVIEW.md#v111-runtime-revalidation---2026-11-07",
+    "role": "Primary coordinator revalidation; prior independent roles remain historical",
+    "business_and_diagram_sources_changed": false
+  }
 }

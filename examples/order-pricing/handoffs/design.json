@@ -50,11 +50,11 @@
     "ORIGIN.json": "89d9459778e6335433a1fc45b9e5dbbcbfdac2dd13efc20673b79cffefaabce6",
     "PUBLICATION_REVIEW.md": "1ecd783086785181fd49d0520e5b28d0390a7baf744506af1a907bdddd093d5b",
     "README.md": "96528ff46b0067661ccbc715ef87293feb86f44eef8ff78e96c584f5631f30f5",
-    "SKILL_SOURCE.json": "6e1eaa7d87f1ed7149e2458dd6de1fc34dfb016f9e51a616be0d5fe8843f4abb",
+    "SKILL_SOURCE.json": "668bf91977427b567be7705aa2803155dfcf5e07c22aa0c575560eb372ed1030",
     "TRACEABILITY.md": "765902aaaa891bc4aefe4987ddb65348c58455164c7f843c9de3d32cc3134bc2",
     "WORKFLOW_REVIEW.md": "8b225c8d906445c4378d717e4ab6c9884a2a5c06f506386a6af1b2e94cc59a88",
     "architecture/README.md": "649e12ece80d761fe96950623b3537456e0380b09c4878ac62ae27b2474b8175",
-    "architecture/REVIEW.md": "1511d3b6f564efca2011ca60edd4db673f4ade7e8d21e2e58cdce65b163234bf",
+    "architecture/REVIEW.md": "31edc85907f8ae314c17f03e89cd25fe5b6b74a09c115cc844590945f63d17fd",
     "architecture/architecture-brief.md": "9cc77bd70ae3ef8c93bb5923ff20df77861fb536c1461cbeb38c99fed4f51cac",
     "architecture/architecture.json": "0a7709964a87cee9dc9995c55fdf5728115fa9509b79617941e68b2d3f8cc166",
     "architecture/code.puml": "6ff3bbc58484de7ff4a7a14213cd406ac0365e729611b8b6429373b6cb082759",
@@ -63,7 +63,7 @@
     "architecture/container.puml": "515bd0de939e9d5f81feb5ef28c5dafe0ac65736ef13460fb015d793cf870c69",
     "architecture/context.puml": "2b3b60fad558d74f82e8e3ce875a1bb8058f3936a9a76da27be40f8c314db74e",
     "handoffs/analysis.json": "911e219c54c733dab32e5c032619aaf29423c1112cfc5f746080948e73fa9ac6",
-    "handoffs/architecture.json": "b177ee5b4f9651b6fe9484163a7d3bd3438fcef67ceb36402e21b595a268ac2b",
+    "handoffs/architecture.json": "69cfd2fcf3d6a58557f7509d973063e643ce91e22c46ff22d58f514a36f8f250",
     "review-history/before-c4-SKILL_SOURCE.json": "cc1dd4111bba3e10a7558225fd3649b83c0e0bd1477a2c0ddddf67a6aaf165a6",
     "review-history/before-c4-VALIDATION.json": "4455b457fc9b2a97664656d6d71f6cd0edefb266f8b7ae4e95542ee852adc303",
     "review-history/before-c4-handoffs-analysis.json": "afab55f99430ca46f5005ec032f775c7b04587578be88649754edf723391b4c1",
@@ -79,7 +79,12 @@
     "scripts/verify.py": "82646826f41362623987bdf7458c3a183409a9e504d65fc5d1cd78a943890547"
   },
   "publication_technical_disposition": "Ready after independent AI publication review",
-  "maintenance_version": "1.1.0",
+  "maintenance_version": "1.1.1",
   "current_review_record": "architecture/REVIEW.md",
-  "current_technical_disposition": "Retained detailed design after scoped architecture replay and independent closure; no formal acceptance"
+  "current_technical_disposition": "Retained detailed design after scoped architecture replay and independent closure; no formal acceptance",
+  "runtime_revalidation": {
+    "record": "architecture/REVIEW.md#v111-runtime-revalidation---2026-11-07",
+    "role": "Primary coordinator revalidation; prior independent roles remain historical",
+    "business_and_diagram_sources_changed": false
+  }
 }

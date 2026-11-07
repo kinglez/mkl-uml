@@ -1,27 +1,32 @@
 {
-  "version": "1.1.0",
-  "commit": "d247203c535701199866abf954036e48d5cbe433",
+  "version": "1.1.1",
+  "commit": "40baca56c314b87306e951af6ca950b7dcd0b4c1",
   "repository": "https://github.com/kinglez/mkl-uml",
   "runtime_sha256": {
-    "skills/mkl-cdr-review/scripts/generate_code_headers.py": "320c6ae36d91f4d577f510a752334e75bff13154a969702ce2ff81818f1ba278",
-    "skills/mkl-cdr-review/scripts/validate_cdr.py": "08dddbbd2c57285bf5fb3993c48dc94f01f68eaaaeb3aac1c20de878d0374e49",
-    "skills/mkl-pdr-review/scripts/validate_pdr.py": "d65382aa064fac7de2e2d1cc4437c0549d888e6e3cf29268c55dd993ea9e7692",
-    "skills/mkl-uml-design-class-model/scripts/validate_design_class_puml.py": "3c6dcf26ab3cfede80f74d1ab27fe1f7316c154f5e65817aa64002efdacc57c3",
-    "skills/mkl-uml-domain-modeler/scripts/validate_domain_puml.py": "0f92e80c8962883c3f4c642a253a6a39fdaeac5b7e14e5c619a1b1e1d95b936f",
-    "skills/mkl-uml-robustness-diagram/scripts/validate_robustness_puml.py": "609ddadcc2d533a1b0bd850d1c9dea7f7a84d60e0a5bca6a74fd6d2e7f9f538b",
-    "skills/mkl-uml-sequence-diagram/scripts/validate_sequence_puml.py": "abd2bb5c335203b9c10822426473e05d75f769aaae9a9b92553fa5025dfebb12",
-    "skills/mkl-uml-use-case-diagram/scripts/validate_use_case_puml.py": "6224068cf8f65c7d9c9096da193d29f70d19e21c2532e2dc415af2ae7bbdd3f2",
-    "skills/mkl-use-case-specifier/scripts/validate_use_case_spec.py": "f4f7bb3f9eb805986d0536b0cd77feddeeeab1bf07e295424ace36f069564c29",
-    "skills/mkl-uml-c4-architecture/scripts/validate_c4.py": "9e2e5d5d9aaa94a75cf35f854191810b8669c7fabcbed2b8b65cef2bd3e328c5"
+    "skills/mkl-cdr-review/scripts/generate_code_headers.py": "c6b711147c9e398b402420c3af4989a913059b48c4f9856d15a7c52d36f24a5b",
+    "skills/mkl-cdr-review/scripts/validate_cdr.py": "172257407127cf2f9d7a1c418ae77339a17e61c17ce1dfd876f70f7c858834f6",
+    "skills/mkl-pdr-review/scripts/validate_pdr.py": "0ccd61c8ac73a0a2f3028c1d4bea7edec073ccf02023d62de7f6ebbf0a4d0b2f",
+    "skills/mkl-uml-design-class-model/scripts/validate_design_class_puml.py": "bc1abef53601040c5d5be3c168acda65679d86665c091541b0e8dba98c38bcb7",
+    "skills/mkl-uml-domain-modeler/scripts/validate_domain_puml.py": "b1340cd63c0a75c315ae9b6a29a580a46d9b0844962fb43df8b3e298b23fcc1e",
+    "skills/mkl-uml-robustness-diagram/scripts/validate_robustness_puml.py": "cc9f78c15074f99c1e97a3108b1815dee9127ee0f3fbfb4cab579ff7951acfdb",
+    "skills/mkl-uml-sequence-diagram/scripts/validate_sequence_puml.py": "4e83bf317e83a88e4e863a52aa3dc1f194ac30779fd2feb68ef185071db2e098",
+    "skills/mkl-uml-use-case-diagram/scripts/validate_use_case_puml.py": "e4b20674f28c8501b1687434aea0926061a3566b044f017bb2959a147a06498b",
+    "skills/mkl-use-case-specifier/scripts/validate_use_case_spec.py": "8b0705450624396a345bf529c9a0ef8cfed81baad694bc94b6bf2bb60836821c",
+    "skills/mkl-uml-c4-architecture/scripts/validate_c4.py": "5b537da6d3a0c93cf7a98dbde44b5555bd13d34ed7cbda1b797048fd647e4854"
   },
   "hash_policy": "SHA-256 of UTF-8 text with universal-newline normalization to LF",
-  "edition": "Nine-skill architecture replay of frozen teaching requirements; source runtime from d247203",
+  "edition": "Frozen teaching requirements revalidated against the v1.1.1 corrective runtime; no business or model change",
   "previous_snapshot": {
-    "version": "1.0.3",
-    "commit": "24170e513586012a22c55d76b38544d8e3e61abb",
+    "version": "1.1.0",
+    "commit": "d247203c535701199866abf954036e48d5cbe433",
+    "release_tag": "v1.1.0",
     "previous_snapshot": {
-      "version": "1.0.2",
-      "commit": "fb519f3bb2c0aff48dc655be4a15ddeb56ec60d4"
+      "version": "1.0.3",
+      "commit": "24170e513586012a22c55d76b38544d8e3e61abb",
+      "previous_snapshot": {
+        "version": "1.0.2",
+        "commit": "fb519f3bb2c0aff48dc655be4a15ddeb56ec60d4"
+      }
     }
   }
 }

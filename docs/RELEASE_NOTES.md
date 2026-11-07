@@ -22,7 +22,8 @@ Source tag: [`v1.1.1`](https://github.com/kinglez/mkl-uml/tree/v1.1.1).
   `docs/reference/`, including offline/npm payloads.
 
 This source release retains the frozen example requirements, independent expected
-results and reference implementation. Existing installations are not automatically
+results and reference implementation. Its runtime snapshot was revalidated through
+the unchanged models and inspected headers. Existing installations are not automatically
 updated. A source tag is separate from an npm registry publication or formal approval.
 
 ## 1.1.0 — 2026-11-07

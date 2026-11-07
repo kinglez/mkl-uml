@@ -1,8 +1,8 @@
 {
-  "checked_at": "2026-11-07T03:39:03.508706+00:00",
+  "checked_at": "2026-11-07T05:16:46.236554+00:00",
   "passed": true,
   "status": "PASS",
-  "source_skill_version": "1.1.0",
+  "source_skill_version": "1.1.1",
   "checks": [
     {
       "name": "01-domain",
@@ -111,24 +111,6 @@
       "exit_code": 0,
       "passed": true,
       "log": "validation/latest/09-code-probes.log"
-    },
-    {
-      "name": "10-plantuml-syntax",
-      "exit_code": 0,
-      "passed": true,
-      "log": "validation/latest/10-plantuml-syntax.log"
-    },
-    {
-      "name": "10-plantuml-svg",
-      "exit_code": 0,
-      "passed": true,
-      "log": "validation/latest/10-plantuml-svg.log"
-    },
-    {
-      "name": "10-plantuml-png",
-      "exit_code": 0,
-      "passed": true,
-      "log": "validation/latest/10-plantuml-png.log"
     }
   ],
   "workflow_stages": 9,
@@ -138,41 +120,9 @@
   "oracle_defined_cases": 30,
   "diagrams": 10,
   "review_baselines_match": true,
-  "rendering_requested": true,
+  "rendering_requested": false,
   "reviewed_headers_match": true,
   "formal_gate_disposition": "NOT FULLY VERIFIED",
   "human_approval": false,
-  "interpretation": "Mechanical results and scoped demo review do not create formal business approval.",
-  "edition": "Local nine-stage architecture replay of the maintained Order Pricing example; not a release or formal approval",
-  "source_runtime_commit": "d247203c535701199866abf954036e48d5cbe433",
-  "design_classifiers": 17,
-  "architecture_components": 6,
-  "source_declarations": 22,
-  "frozen_requirement_oracle_and_reference_python_files": 11,
-  "runtimes": [
-    {
-      "python": "3.9.6",
-      "passed": true,
-      "checks": 21,
-      "rendering_requested": true
-    },
-    {
-      "python": "3.12.14",
-      "passed": true,
-      "checks": 18,
-      "rendering_requested": false
-    }
-  ],
-  "independent_review": {
-    "reviewer": "order_pricing_c4_review (AI)",
-    "record": "architecture/REVIEW.md",
-    "semantic_findings_closed": 2,
-    "editorial_findings_closed": 4,
-    "formal_human_approval": false
-  },
-  "browser_preview": {
-    "static_checks": "passed",
-    "interaction_check": "not_run",
-    "reason": "Browser URL policy blocked the local file protocol"
-  }
+  "interpretation": "Mechanical results and scoped demo review do not create formal business approval."
 }
