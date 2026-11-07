@@ -34,6 +34,11 @@ Use `alt` for exclusive outcomes, `opt` for optional behavior, `loop` for repeti
 
 Declare the scenario outcomes needed to explain collaboration rather than every possible implementation condition. Deep nesting is a readability/review candidate; split or link interactions when that clarifies scope. Numeric size/nesting warnings are local heuristics.
 
+For activation checks, a selected `break` stops the remaining enclosing interaction.
+All `par` operands participate; preserve each operand's order when combining their
+interleavings. Enumeration is bounded: a cap warning means the retained complete paths
+are a sample, not exhaustive concurrency or loop verification.
+
 ## Participants and names
 
 | PlantUML role | Use | Preferred prefix |

@@ -1,118 +1,127 @@
 # Operating, input and traceability contract
 
-**Reference document:** use this when you need exact rules for inputs, review states, handoffs or stable IDs. For a first run, follow the [order-pricing tutorial](EXAMPLES.md); the [documentation guide](README.md) explains the reading order.
-
-This contract applies to all nine MKL skills. It separates the artifact operation from the review workflow and the evidence available. Existing Spanish CLI flags and supported parser terms remain compatible; the modes below are agent workflow choices, not new CLI flags.
+Advanced reference for connecting stages or interpreting reviews. For daily use, start
+with the [skill selector](STANDALONE.md). These rules apply to all nine skills.
 
 ## Modes and operations
 
-| Dimension | Value | Behavior |
-|---|---|---|
-| Workflow | standalone (default) | Complete the requested artifact or scoped review using supplied evidence |
-| Workflow | MKL workflow (explicit) | Check the applicable cross-artifact handoff and formal gate evidence |
-| Operation | generate/complete | Need a goal and enough behavior or responsibilities to construct the requested scope |
-| Operation | review | Need the artifact being reviewed; report located findings and coverage |
-| Operation | refactor | Need the artifact and intended correction; preserve supplied identity and constraints |
-| Operation | validate | Need an input in the chosen validator's supported profile; distinguish syntax, local rules and heuristics |
+**Standalone is the default:** complete the requested artifact or scoped review.
+Use the full MKL workflow only when requested. These modes are agent behavior, not CLI flags.
+Generation needs a goal and sufficient behavior/responsibilities. Review, refactoring
+and validation need their actual target. Preserve scope and existing authorization;
+a review-only request does not authorize changing its inputs.
 
-A missing target blocks that operation. A missing predecessor makes only dependent checks unverified. Continue independent useful work. Ask for clarification only when missing information changes the requested result; do not require a full pipeline for a standalone diagram.
+Missing information blocks only the choice/check that depends on it. Continue useful
+independent work and ask only questions that change the requested result.
 
 ## Input matrix
 
-| Skill | Minimum standalone evidence | Additional evidence for a full MKL handoff |
+| Skill | Standalone input | Additional full-handoff evidence |
 |---|---|---|
-| Domain modeler | Business scope/concepts, or target domain model | Requirements and specified domain behavior |
-| Use case diagram | Subject boundary and actor goals, or target diagram | Requirement/actor sources, domain vocabulary, CU registry |
-| Use case specifier | Goal and behavior/draft, or target specification | Actor/CU diagram, domain, rules and acceptance sources |
-| Robustness | Goal and specified flows, or target diagram | CU text, domain model, actor/interface context |
-| PDR | Supplied preliminary-design artifact(s) for scoped checks | Robustness, CU text, domain and applicable scope/interface/review evidence |
-| Sequence | Scenario and participants/responsibilities, or target sequence | CU text, robustness, domain and PDR evidence |
-| Design class model | Design responsibilities/constraints, or target model | Domain, interaction calls, CU state requirements and design decisions |
-| CDR | Supplied detailed-design artifact(s) for scoped checks | Classes, sequences, CU text and applicable domain, robustness, requirements, tests and human review evidence |
+| Domain modeler | Business concepts/behavior or target model | Requirements and domain behavior |
+| Use case diagram | Boundary/goals or target diagram | Actors, vocabulary and CU registry |
+| Use case specifier | Goal/behavior or target specification | Rules, acceptance and related models |
+| Robustness | Specified scenario or target diagram | CU text, domain and interface context |
+| PDR | Supplied analysis targets | Robustness, specification, domain and applicable scope/review evidence |
+| C4 architecture | Architecture question/drivers or views | Current analysis/PDR, quality scenarios and decisions |
+| Sequence | Scenario/responsibilities or target sequence | Specification, robustness, domain and applicable PDR/architecture |
+| Design class model | Responsibilities/contracts or target model | Domain, interaction calls, behavior and architecture |
+| CDR | Supplied detailed-design targets | Classes, sequences, specification, applicable analysis/requirements/tests and human review evidence |
 
-The CLI minimum may differ from a full review minimum. Sequence CLI requires `--secuencia`; class CLI requires `--clases`; PDR CLI requires `--robustez`; CDR CLI requires both `--clases` and `--secuencia`. Optional inputs enable dependent checks, not evidence that those checks occurred. Do not fabricate a file to satisfy a CLI.
+CLI minimums: sequence `--secuencia`; class `--clases`; PDR `--robustez`;
+CDR `--clases` plus `--secuencia`. Optional inputs enable comparisons only when usable.
+Never fabricate an artifact to satisfy a CLI. Supplied Spanish CLI flags remain compatible.
 
 ## Coverage and acceptance
 
-Use **checked** when the named check ran against sufficient evidence, **partial** when some applicable checks or paths remain unverified, and **blocked** when the target or indispensable evidence for that operation is missing. List executed tools and omitted checks with their reasons.
+- **checked:** the named check ran with sufficient evidence.
+- **partial:** some applicable checks or paths remain unverified.
+- **blocked:** the target or indispensable evidence is missing.
 
-A supplied path is not sufficient evidence by itself. Empty files, comments, notes and unrecognized supporting structures do not establish coverage. Parse the usable artifact before marking its dependent checks as executed; an absent usable review target blocks its review. Pair every supplied use case with its applicable artifacts and evaluate local flow IDs within that use case. References to a flow in explanatory prose do not establish that the flow is implemented in an interaction fragment.
+Empty files, comments, notes and unrecognized support do not establish completed checks.
+Parse usable evidence first. Pair every supplied use case with its applicable artifacts;
+scope local flows by their CU. A label or prose reference alone is not implemented behavior.
+Report executed tools and omitted checks with reasons.
 
-These coverage states are separate from formal gate dispositions: **Accepted**, **Accepted with rework verification**, and **Reinspection required**. Missing applicable evidence withholds acceptance (**Not fully verified**); an absent review target means **Not reviewed — entry criteria not met**. A machine result is a provisional input to a gate decision, never proof of semantic correctness or evidence of human participation. Document justified non-applicability rather than hiding missing checks.
-
-Run a scoped review and recheck affected areas after correction. Fixed two-clean-pass/five-pass cycles and certificate bundles are not default requirements. Historical research/audit records in references are context, not instructions to repeat them. Reuse existing authorization for remediation or header generation. Review-only requests remain review-only.
+Formal dispositions are separate: **Accepted**, **Accepted with rework verification**,
+or **Reinspection required**. Missing applicable evidence means **Not fully verified**;
+a missing review target means **Not reviewed — entry criteria not met**. Machine results
+are provisional evidence, not human participation or formal approval. Explain justified
+non-applicability. Recheck corrected scope; fixed multi-pass counts/certificates are not required.
+Historical audits are records, not instructions to repeat their ceremonies.
 
 ## PDR to detailed-design handoff
 
-For a full MKL handoff, the PDR record carries the selected CU/DR/flow scope, reviewed source versions, performed checks and limits, finding/action status with correction-verification evidence, remaining design constraints, and the technical transition recommendation. Record actual formal acceptance separately. Keep this information in the existing review record; a separate JSON manifest or hash scheme is optional.
+Keep the reviewed CU/DR/flow scope, input versions, checks/limits, findings and correction
+evidence, remaining constraints and technical recommendation in the PDR record.
+Separate JSON manifests/hashes are optional; record actual formal acceptance separately.
 
-The sequence-design stage reads that record first, matches it to the current inputs, and re-examines changed sources or unresolved findings before relying on the affected recommendation. Preserve IDs and earlier evidence. A closed status needs verification evidence; a clean CLI result, matching hash or missing finding list cannot substitute for that examination. Update only the affected review scope when a source changes.
-
-Missing PDR evidence leaves a dependent MKL transition unverified; an indispensable missing input blocks that transition. It does not create a new prerequisite for unrelated standalone diagrams. A scoped technical exercise may proceed on a documented technical basis while formal human/business acceptance remains **Not fully verified**; do not represent that as a formal gate acceptance.
+The next stage reads that record, matches current inputs and re-examines changed sources
+or unresolved blockers. A closed finding needs correction-verification evidence; a clean
+CLI result, matching hash or missing finding list is not a substitute. Reopen only the
+affected scope. Missing PDR evidence limits its dependent transition, not unrelated
+standalone tasks. Scoped technical work may proceed on a documented basis while formal
+acceptance remains unverified.
 
 ## Architecture and detailed-design handoff
 
-Requirements are source-neutral: preserve references to actual conversations, documents,
-images, contracts, tickets or system evidence. A PRD and specific input filenames are
-not mandatory. Separate confirmed functional requirements, quality scenarios, assumptions
-and open decisions. Existing code is evidence of current behavior, not automatic approval
-of intended behavior.
+Requirements may come from any supplied medium; no PRD or filename is mandatory.
+Separate confirmed functions/quality scenarios, assumptions and open choices. Existing
+code shows current behavior, not automatic agreement on intended behavior.
 
-When high-level architecture is requested, `mkl-uml-c4-architecture` consumes the current
-analysis/PDR and quality drivers. Its output is selected C4 sources/previews, source and
-scope mappings, decisions with alternatives/costs, ownership/dependencies, quality response
-strategies and detailed-design constraints. Context/container normally suit a system;
-component/deployment depend on the question. Reuse the current architecture for a bounded task.
+When architecture is requested, carry selected views/previews, sources/scope, alternatives
+and costs, data/dependency ownership, quality strategies and detailed-design constraints.
+Context/container views normally explain a system; add other views for a real question.
+Reuse existing architecture for bounded work.
 
-Sequence and class design read the architecture handoff before making dependent choices.
-Match current source versions, map components/responsibilities to classes/interfaces,
-and preserve communication, data ownership, failure and quality constraints. A stale or
-architecture-changing open issue blocks its dependent choice until rechecked.
-
-For CDR, manually compare those choices with the actual architecture. Report the compared
-artifacts, findings and omissions; existing CDR CLI checks do not parse C4. The optional
-C4 record checks a declared local profile, references and view consistency, not design
-adequacy or actual quality achievement. See the C4 skill's validation profile for exact limits.
-
-The maintained order-pricing example demonstrates this path with an architecture
-brief, declared links, component allocation and a separate reviewed architecture
-handoff. Its example verifier enforces analysis -> architecture -> design input edges,
-checks current hashes and exercises blocking/revalidation. These example-specific
-records are not mandatory input formats for other projects.
+Sequence/class design reads current architecture before dependent choices: map
+responsibilities to interfaces/classes, preserve communications, ownership and failure/
+quality constraints. Stale evidence or an architecture-changing open question blocks
+its dependent choice until rechecked. CDR manually compares actual design and architecture;
+its CLI does not parse C4. The optional C4 record checks a local profile and declared
+links/consistency, not design adequacy or achieved quality.
 
 ## Vocabulary and semantics
 
-| Origin | Closure requirement |
-|---|---|
-| Domain entity/value/property | Resolve to domain evidence or propose a domain delta |
-| Actor | Resolve to an external participating role; supporting actors need not initiate |
-| Boundary | Resolve to an interaction interface: screen, API, webhook, device port or adapter |
-| Solution class | Resolve to a responsibility, architectural constraint or explicit design decision |
-| Operation | Resolve to an operation call, contract, requirement or justified design decision |
-| Signal/lifecycle/reply | Record the appropriate interaction semantics separately from ordinary operations |
+Domain elements resolve to domain evidence or a proposed delta. Actors are external
+participating roles; supporting actors need not initiate. Boundaries represent actual
+interaction interfaces. Solution classes and operations need a responsibility, contract,
+requirement or justified design decision.
 
-A reply returns results of an earlier operation; a Signal can lead to a reception; creation/destruction has lifecycle semantics. Arrow style alone can be ambiguous. For mechanical provenance, annotate labels with `<<synchCall>>`, `<<asynchCall>>`, `<<reply>>`, `<<asynchSignal>>`, `<<createMessage>>`, or `<<deleteMessage>>`; explicit operation calls need a signature. Unannotated synchronous labels retain lexical matching for compatibility. Ambiguous asynchronous messages remain unverified. The tools are profile-specific parsers, not a complete UML metamodel validator.
+Keep replies, Signals/receptions and creation/destruction distinct from operation calls.
+For mechanical provenance use `<<synchCall>>`, `<<asynchCall>>`, `<<reply>>`,
+`<<asynchSignal>>`, `<<createMessage>>` or `<<deleteMessage>>`; operation calls need
+a signature. Unannotated synchronous labels retain lexical matching; ambiguous async
+messages remain unverified. Parsers check profiles, not the complete UML metamodel.
 
-A derived `/property` specifies derivability, not a storage strategy. Composition permits at most one composite owner at a time and allows detachment before composite deletion. Neither justifies an automatic database or permanent-lifetime policy. UML semantics are distinct from local BCE rules and heuristic quality checks. See [the bibliography](BIBLIOGRAPHY.md) for primary normative references.
+Derived `/property` means derivable, not a storage/caching policy. Composition permits
+at most one composite owner at a time and detachment before composite deletion;
+it does not imply permanent attachment or a database choice. Separate UML semantics,
+local BCE conventions and heuristics. See the [bibliography](BIBLIOGRAPHY.md).
 
 ## Identifier lifecycle
 
-Use the project's existing ID scheme. Defaults are RF/RNF for requirements, CU for use cases, DR for robustness, DS for sequences, MC for class models, CP for tests, RN for rules, PDR/CDR for review records, and H for findings. FA/FE flow IDs are scoped to their parent CU; finding IDs are scoped to a review record. A full reference includes its scope, for example `CU-01/FA-02`.
+Keep the project's scheme. Defaults: RF/RNF requirements, CU use cases, DR robustness,
+DS sequences, MC class models, CP tests, RN rules, PDR/CDR reviews and H findings.
+FA/FE IDs belong to their CU; findings belong to their review. Write scoped references
+such as `CU-01/FA-02`. Similar numbers, display order and aliases are not traceability.
 
-- Identity is stable across renamed titles, declaration order, prominence and partial regeneration. Display numbering and PlantUML aliases are not traceability identity.
-- Import existing IDs and the high-water mark before allocating. Keep a registry with stable business keys and active/retired status. Allocate above the reserved high-water mark, including retired IDs.
-- Omission from a partial edit does not retire an artifact. Retire explicitly, retain its history, and never reuse its key or ID for a different artifact.
-- Splits/merges receive new identities where needed and record predecessor/successor links. Existing unaffected artifacts retain their IDs. Resolve collisions explicitly; do not silently renumber.
-- Without an existing registry, preserve observed IDs and mark new allocations provisional until the authoritative namespace is checked. Never imply that CU/DR/DS happen to share a number as proof of traceability: maintain explicit links.
+- Preserve identity through renaming, reordering and partial regeneration.
+- Import existing keys, IDs and the reserved high-water mark, including retired IDs.
+  Allocate above it; retain a registry with stable keys and active/retired status.
+- Omission from a partial edit does not retire anything. Retire explicitly, keep history,
+  and never reuse a retired key/ID for a different identity.
+- Splits/merges receive needed new identities and predecessor/successor links.
+  Resolve collisions explicitly; preserve unaffected items.
+- Without an authoritative registry, preserve observed IDs and mark new ones provisional.
 
-The repository helper `tools/trace_ids.py` produces a JSON registry using only Python's standard library. It retains omitted keys, supports scoped namespaces and explicit retirement, and rejects collisions and inconsistent high-water marks. It writes to stdout; callers choose where to save the result. Installed skills can follow this contract manually without requiring the helper or sibling skills.
-
-From the repository root, this executable example creates a new registry; the business key is illustrative. It is not an installation or a record of a project allocation:
-
-```bash
-python3 tools/trace_ids.py --prefix CU --key quote-cart
-```
+The optional [registry helper](../tools/trace_ids.py) retains omitted keys, scoped
+namespaces and retirement history; it writes JSON to stdout. Installed skills can follow
+the same rules manually without that helper or sibling skills.
 
 ## Deliverables
 
-Match the user's requested artifact and language. A code-only request can return code only; disclose material limitations in artifact notes when necessary. A scoped review needs findings and coverage, not an entire formal report. A formal handoff adds the applicable traceability, decisions, remaining risks and action ownership. Do not invent accepted decisions, owners, dates or test evidence.
+Match the requested artifact and language. A small/code-only task needs no formal report
+bundle; a scoped review needs findings and coverage. Formal handoffs add applicable
+traceability, decisions, risks and action ownership. Do not invent approval, participants,
+owners, dates or test results. Reuse existing authorization for corrections/header generation.

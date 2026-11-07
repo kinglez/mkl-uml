@@ -300,6 +300,7 @@ class Clase:
     kind: str = "class"
     estereotipos: set = field(default_factory=set)
     atributos: list = field(default_factory=list)
+    literales: list = field(default_factory=list)  # enumeration literals, not properties
     operaciones: list = field(default_factory=list)
     recepciones: list = field(default_factory=list)  # Signal receptions, not Operations
     no_parseadas: list = field(default_factory=list)
@@ -461,17 +462,24 @@ def separar_nivel(texto: str, separador: str) -> list:
     return partes
 
 
-def parametros_de(texto: str) -> list:
-    """Return (name, type, default) for each UML parameter, without guessing."""
+def parametros_detallados(texto: str) -> list:
+    """Return (direction, name, type, default), preserving UML direction."""
     out = []
     for parametro in separar_nivel(texto or "", ","):
         if not parametro:
             continue
         por_defecto = separar_nivel(parametro, "=")
         firma = separar_nivel(por_defecto[0], ":")
-        out.append((firma[0], ":".join(firma[1:]).strip(),
+        direction = re.match(r"^(inout|in|out|return)\s+(.+)$", firma[0], re.I)
+        name = direction[2] if direction else firma[0]
+        out.append((direction[1].lower() if direction else "", name, ":".join(firma[1:]).strip(),
                     "=".join(por_defecto[1:]).strip()))
     return out
+
+
+def parametros_de(texto: str) -> list:
+    """Legacy name/type/default view for signature checks."""
+    return [(name, kind, default) for _direction, name, kind, default in parametros_detallados(texto)]
 
 
 def limites_multiplicidad(texto: str):
@@ -543,6 +551,9 @@ def parse_clases(path: str, text: str) -> Modelo:
                 continue
             ma = ATRIB_RE.match(ln)
             if ma:
+                if c.kind == "enum" and ln == ma.group("nombre"):
+                    c.literales.append(ln)
+                    continue
                 c.atributos.append(Miembro(
                     nombre=ma.group("nombre"), visibilidad=ma.group("vis") or "",
                     linea=n_linea, tipo=(ma.group("tipo") or "").strip(),
@@ -842,6 +853,23 @@ def check_criterio_entrada(mod, secuencias, specs, errores, avisos) -> bool:
     return falla
 
 
+def operand_has_messages(text: str, start_line: int, message_pattern) -> bool:
+    """A guard is a declaration; only messages in its own operand realize it."""
+    depth = 0
+    for line in text.splitlines()[start_line:]:
+        if re.match(r"^\s*(?:alt|opt|loop|par|critical|break|group)\b", line, re.I):
+            depth += 1
+        elif re.match(r"^\s*end\s*$", line, re.I):
+            if depth == 0:
+                break
+            depth -= 1
+        elif re.match(r"^\s*else\b", line, re.I) and depth == 0:
+            break
+        if message_pattern.match(line):
+            return True
+    return False
+
+
 def check_r9_flujos(secuencias, specs, errores) -> int:
     """Compare (CU, local flow) identities using executable branch labels only."""
     por_cu = {}
@@ -853,8 +881,9 @@ def check_r9_flujos(secuencias, specs, errores) -> int:
                 f"cannot pair its local flow evidence with a specification.")
             continue
         cubiertos = por_cu.setdefault(next(iter(cus)), set())
-        for _kw, etiqueta, _n in s.fragmentos:
-            cubiertos |= flujos_de(etiqueta)
+        for _kw, etiqueta, n in s.fragmentos:
+            if operand_has_messages(codigo_modelo(s.text), n, MSG_DIR_RE):
+                cubiertos |= flujos_de(etiqueta)
     faltan, declarados_cu = set(), set()
     for i, texto in enumerate(specs, start=1):
         cus = identidad_cu(texto)
@@ -1030,8 +1059,6 @@ def check_r3_firmas(mod, avisos) -> None:
     """Rule #3: Complete and precise types, parameters and returns."""
     tag = f"[{mod.path}]"
     for c in mod.clases.values():
-        if c.kind == "enum":
-            continue
         for a in c.atributos:
             if not a.tipo:
                 avisos.append(

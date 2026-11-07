@@ -7,7 +7,7 @@ Nine independently usable skills cover analysis, C4 high-level architecture, det
 
 The nine-skill tutorial follows one example: **quote a shopping cart with an optional coupon**. The completed [order-pricing example](examples/order-pricing/README.md) includes requirements, diagrams, review findings, Python code and tests.
 
-[Quick start](#quick-start) · [Run the finished example](#run-the-finished-example) · [Workflow](#workflow) · [Stage outputs](#stage-outputs) · [Documentation](#documentation)
+[Quick start](#quick-start) · [Examples](#examples) · [Use one skill](docs/STANDALONE.md) · [Run the finished example](#run-the-finished-example) · [Workflow](#workflow) · [Stage outputs](#stage-outputs) · [Documentation](#documentation)
 
 ## What does this help you do?
 
@@ -33,7 +33,7 @@ cd mkl-uml
 ```
 
 Choose your agent. These commands install the skills available in the published
-GitHub revision into this project. Version 1.1.0 includes all nine skills:
+GitHub revision into this project. Version 1.1.1 includes all nine skills:
 
 ```bash
 # Codex
@@ -79,27 +79,387 @@ You can stop after the artifact you need. For your own project, replace the teac
 
 <a id="complete-worked-example-order-pricing"></a>
 
-## Start with your own architecture
+## Examples
 
-Install just the architecture skill with the standard command:
+Choose any one of these nine **standalone prompts**. Each includes its own context for
+an internal enterprise knowledge base; none requires running another example first.
+These are usage illustrations, separate from the completed order-pricing tutorial.
+Business examples stay here; the skill instructions and new protocol regressions remain
+independent of this application.
+
+Install the selected skill in your target project, replacing the name as needed:
 
 ```bash
-npx skills add kinglez/mkl-uml --skill mkl-uml-c4-architecture
+npx skills add kinglez/mkl-uml --skill mkl-uml-c4-architecture -a codex -y
 ```
 
-Then provide your actual sources in chat:
+Paste a prompt into **agent chat**. For Claude Code, use `-a claude-code` when installing
+and replace `$skill-name` with `/skill-name` in chat. Requirement sources may be
+conversation notes, files or attachments. For review prompts, provide the actual targets;
+illustrative paths below do not refer to existing files in this repository.
+
+Output trees show proposed files, not already generated deliverables. Save SVG/PNG
+previews alongside diagram sources when a local renderer is available; otherwise report
+the missing rendering. See [standalone inputs and limits](docs/STANDALONE.md).
+
+<a id="start-with-your-own-architecture"></a>
+<details>
+<summary><strong>1. C4 architecture — design the high-level structure</strong> — <code>mkl-uml-c4-architecture</code></summary>
 
 ```text
 $mkl-uml-c4-architecture
-Read the sources supplied in this conversation and the current analysis artifacts.
-Identify confirmed functional requirements, applicable quality requirements and open
-architecture-changing questions. Create the C4 views needed for this scope using
-C4-PlantUML. Explain alternatives and trade-offs, render locally if available, and
-hand the decisions, quality scenarios and constraints to detailed design.
-Do not invent missing targets or a system around a bounded module.
+
+Design the high-level architecture of an internal enterprise knowledge base.
+
+Business requirements:
+- Employees upload, search for, and read documents.
+- Document access is controlled by department; administrators maintain permissions.
+- Integrate with the existing single sign-on service.
+- Prefer the existing technology stack and databases.
+
+Read the supplied information first. Ask only questions that change an architecture
+choice, including the available stack, department-membership source and permission
+semantics. Keep unspecified performance, capacity and recovery targets open;
+do not invent numbers or treat proposals as confirmed decisions.
+
+Produce:
+1. A system context diagram with users, the knowledge base and external dependencies.
+2. A container diagram with application/data-store responsibilities and communication.
+3. A component view of a core container only if it resolves a real design question.
+4. Notes on data ownership, authentication versus authorization, permission boundaries,
+   alternatives, trade-offs, quality scenarios and how those scenarios would be verified.
+
+Save editable sources, available local previews and architecture.md under architecture/.
+Use C4-PlantUML for the architecture views. Report checks actually run and their limits.
+Stop at high-level architecture; leave class models, sequences and code for later.
 ```
 
-Use **[the C4 guide](docs/C4_ARCHITECTURE.md)** for view selection, stage inputs/outputs and verification. A request for one diagram does not require the complete workflow. The command above discovers the published GitHub revision. Use the [local installer](docs/INSTALLATION.md#python-installer-and-windows) for a checkout or the [pinned installation](docs/INSTALLATION.md#pinned-source-or-bundled-npx-installer) for v1.1.0.
+**Expected files:**
+
+```text
+architecture/
+├── context.puml
+├── container.puml
+├── component.puml       # Only when useful
+└── architecture.md
+```
+
+</details>
+
+<details>
+<summary><strong>2. Use case diagram — identify actors and goals</strong> — <code>mkl-uml-use-case-diagram</code></summary>
+
+```text
+$mkl-uml-use-case-diagram
+
+Create a use case diagram for an internal enterprise knowledge base.
+
+Business requirements:
+- Employees upload, search for, and read documents.
+- Documents are accessible according to department permissions.
+- Administrators maintain access permissions.
+- Authentication uses the existing single sign-on service.
+
+Identify the subject boundary, external roles and actor-valued goals. Explain which
+external systems actually participate. Separate actor participation from initiation;
+use include/extend only where the stated behavior justifies them.
+
+Ask only questions that change the boundary, roles or goals. Keep unknown permission
+policies open, including whether administrators have any special reading privileges.
+
+Save use-cases.puml and actors-and-goals.md under analysis/use-cases/.
+The notes should map actors and goals to the supplied requirements and list open issues.
+Render locally if available and report actual checks and limits.
+Only create the use case view; detailed flows, class design and code are outside this task.
+```
+
+**Expected files:**
+
+```text
+analysis/use-cases/
+├── use-cases.puml
+└── actors-and-goals.md
+```
+
+</details>
+
+<details>
+<summary><strong>3. Use case specification — define observable behavior</strong> — <code>mkl-use-case-specifier</code></summary>
+
+```text
+$mkl-use-case-specifier
+
+Write a textual use case specification for 'Read a department-protected document'
+in an internal enterprise knowledge base.
+
+Known requirements:
+- An employee selects a document to read.
+- Authentication uses the existing single sign-on service.
+- Access depends on department permissions maintained by administrators.
+- An unauthorized employee must not receive the document content.
+
+Describe the actor, goal, boundary, trigger, preconditions, numbered basic flow,
+alternatives, exceptions, postconditions and observable acceptance criteria.
+Anchor each alternative to its triggering step and show its continuation or termination.
+
+Ask only questions that change the behavior: for example, who supplies department
+membership, how conflicting permissions are resolved, and what may be disclosed when
+access is denied. Keep unsettled behavior and unspecified quality targets open.
+
+Preserve any existing IDs; mark new IDs provisional when no registry is supplied.
+Save requirements/read-document.md with rules, acceptance criteria and open questions.
+Run available structural checks and report their language/semantic limits.
+Only specify this use case; leave diagrams, architecture choices and coding for later.
+```
+
+**Expected files:**
+
+```text
+requirements/
+└── read-document.md
+```
+
+</details>
+
+<details>
+<summary><strong>4. Domain model — clarify business concepts</strong> — <code>mkl-uml-domain-modeler</code></summary>
+
+```text
+$mkl-uml-domain-modeler
+
+Create a conceptual domain model for an internal enterprise knowledge base.
+
+Business requirements:
+- Employees upload, search for, and read documents.
+- Access is controlled by department; administrators maintain permissions.
+- Authentication uses the existing single sign-on service.
+
+Identify business concepts, distinguish entities from values and roles, and explain
+the relationships supported by these requirements. Use concepts such as document,
+department and access permission only where their meaning is supported.
+
+Ask only questions that change a concept or constraint, such as whether employees
+can belong to several departments and whether documents can be shared across departments.
+Record unknown cardinality, ownership and policy rather than guessing.
+
+Save domain.puml and glossary.md under analysis/domain/.
+Use the default conceptual profile; keep implementation services, controllers,
+repositories, database tables and operation signatures for detailed design.
+Render locally if available; report actual checks, assumptions and proposed vocabulary.
+Only produce the domain model and glossary.
+```
+
+**Expected files:**
+
+```text
+analysis/domain/
+├── domain.puml
+└── glossary.md
+```
+
+</details>
+
+<details>
+<summary><strong>5. Robustness analysis — allocate boundary, control and entity responsibilities</strong> — <code>mkl-uml-robustness-diagram</code></summary>
+
+```text
+$mkl-uml-robustness-diagram
+
+Perform robustness analysis for 'Read a department-protected document' in an
+internal enterprise knowledge base.
+
+Scenario:
+- An authenticated employee selects a document.
+- The system evaluates the employee's department access.
+- If permitted, it retrieves and presents the document content.
+- If denied, it returns a refusal without the document content.
+- If the document is unavailable, the employee receives an appropriate failure outcome.
+Administrators maintain permissions; authentication uses existing single sign-on.
+
+Identify boundaries, controls and entities. Map the basic, denied and unavailable
+flows to their responsibilities and links; explain why each object has its BCE role.
+Keep unresolved disclosure/failure behavior explicit and ask only when it changes
+this analysis. Controls are responsibilities, not predetermined implementation classes.
+
+Save robustness.puml and behavior-map.md under analysis/robustness/.
+Use a supplied domain model for entity closure if available; otherwise report that
+comparison as unverified while completing the requested scenario analysis.
+Render locally if available and report checks actually run.
+Stop before sequence timing, method signatures, architecture decomposition or code.
+```
+
+**Expected files:**
+
+```text
+analysis/robustness/
+├── robustness.puml
+└── behavior-map.md
+```
+
+</details>
+
+<details>
+<summary><strong>6. PDR — review a preliminary design</strong> — <code>mkl-pdr-review</code></summary>
+
+```text
+$mkl-pdr-review
+
+Perform a scoped preliminary-design review of an internal enterprise knowledge base.
+
+Known requirements:
+- Employees upload, search for, and read documents.
+- Department permissions control access and are maintained by administrators.
+- Authentication uses the existing single sign-on service.
+
+Review target: analysis/robustness/robustness.puml.
+I will provide or identify this existing diagram; the path is illustrative.
+Compare with any use case specifications, domain model or interface evidence I also
+supply. Ask for an absent review target; do not generate earlier stages to replace it.
+
+Check BCE responsibilities and connections, entity provenance, data flow, permission
+decisions, and basic/alternative/exception coverage within the available evidence.
+Distinguish confirmed defects, heuristic review candidates and unverified comparisons.
+
+Save reviews/pdr.md with the reviewed inputs/versions, located findings, impact,
+recommended corrections, coverage and remaining decisions.
+Run applicable checks; make no claim that missing comparisons were executed.
+Only review the supplied design. Leave source artifacts unchanged and keep this
+scoped technical review separate from formal PDR approval.
+```
+
+**Expected files:**
+
+```text
+reviews/
+└── pdr.md
+```
+
+</details>
+
+<details>
+<summary><strong>7. Sequence diagram — design one interaction</strong> — <code>mkl-uml-sequence-diagram</code></summary>
+
+```text
+$mkl-uml-sequence-diagram
+
+Design the detailed interaction for reading a department-protected document in an
+internal enterprise knowledge base.
+
+Behavior to model:
+- The employee is already authenticated through existing single sign-on.
+- A document-reading boundary receives the request.
+- The system evaluates department access before returning any protected content.
+- Allowed access retrieves and returns the content.
+- Denied access returns a refusal; an unavailable document follows an explicit failure path.
+
+Choose participants and allocate calls to meaningful responsibilities. Distinguish
+operation calls, replies and any asynchronous events. Show justified guards and
+the outcome of every modeled branch. Keep transport/error conventions open unless supplied.
+
+Ask only questions that change this interaction. Use existing interfaces and design
+constraints when available; mark new technical participants as proposed design choices.
+Missing upstream diagrams should limit their comparisons, not require a full workflow.
+
+Save read-document.puml and interaction-notes.md under design/interactions/.
+Explain operation ownership and open contracts in the notes. Render locally if available
+and report actual checks and coverage. Only design this interaction; no code or class model.
+```
+
+**Expected files:**
+
+```text
+design/interactions/
+├── read-document.puml
+└── interaction-notes.md
+```
+
+</details>
+
+<details>
+<summary><strong>8. Design class model — define cohesive contracts</strong> — <code>mkl-uml-design-class-model</code></summary>
+
+```text
+$mkl-uml-design-class-model
+
+Design a class model for the document-reading module of an internal enterprise
+knowledge base.
+
+Requirements:
+- Employees are authenticated by existing single sign-on.
+- Department permissions must be evaluated before document content is returned.
+- Administrators maintain permissions.
+- Prefer existing application, storage and permission interfaces where available.
+- Keep denied access and unavailable content as explicit observable outcomes.
+
+Allocate state, decisions and orchestration to cohesive responsibilities.
+Define the required operations, typed parameters/results, interfaces and dependencies.
+Explain which concepts come from the requirements and which are proposed technical seams.
+Keep storage and permission-provider details replaceable where the requirements justify it;
+avoid introducing patterns or an interface for every class without a reason.
+
+Ask only questions that affect a contract, responsibility or dependency. Use supplied
+architecture/sequences when available and disclose missing provenance comparisons.
+
+Save classes.puml and design-notes.md under design/classes/.
+Explain responsibilities, extension points and dependency ownership, with the evidence
+and limits of any SOLID claims. Render/check locally if available.
+Only produce the design model; leave implementation and runtime verification for later.
+```
+
+**Expected files:**
+
+```text
+design/classes/
+├── classes.puml
+└── design-notes.md
+```
+
+</details>
+
+<details>
+<summary><strong>9. CDR — review detailed-design consistency</strong> — <code>mkl-cdr-review</code></summary>
+
+```text
+$mkl-cdr-review
+
+Perform a scoped detailed-design review of an internal enterprise knowledge base.
+
+Known requirements:
+- Employees upload, search for, and read documents.
+- Department permissions control access; administrators maintain permissions.
+- Authentication uses the existing single sign-on service.
+- Prefer the existing technology stack and databases.
+
+Review inputs (replace with my actual files or attachments):
+- design/classes/classes.puml
+- design/interactions/read-document.puml
+Use any specifications, architecture decisions or test plans I actually provide.
+
+Check operation allocation against calls, signatures, cohesive responsibilities,
+authorization boundaries, failure paths, dependency direction and requirement traceability.
+Assess SOLID claims against available evidence; record absent source/runtime verification.
+Only raise actionable findings supported by the reviewed artifacts.
+
+If only a class model is supplied, complete that scoped review and identify the missing
+interaction checks. The full CDR CLI needs both classes and a sequence; do not invent
+a sequence merely to make it run. Missing materials cannot establish full readiness.
+
+Save reviews/cdr.md with inputs/versions, findings and locations, impact, proposed
+corrections, actual tool results, coverage and remaining questions.
+Only review; do not modify the models, generate implementation code or claim formal approval.
+```
+
+**Expected files:**
+
+```text
+reviews/
+└── cdr.md
+```
+
+</details>
+
+For a complete connected example, continue with the [nine-stage tutorial](docs/EXAMPLES.md).
+For C4 view selection and architecture handoffs, see [the C4 guide](docs/C4_ARCHITECTURE.md).
 
 ## Run the finished example
 

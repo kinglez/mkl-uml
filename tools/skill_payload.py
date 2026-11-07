@@ -7,7 +7,7 @@ import re
 from urllib.parse import unquote, urlsplit
 
 ROOT = Path(__file__).resolve().parents[1]
-DOCS = ("README.md", "BIBLIOGRAPHY.md", "THIRD_PARTY_SOURCES.md", "RELEASE_NOTES.md", "MKL_METHODOLOGY.md", "OPERATING_CONTRACT.md", "INSTALLATION.md", "EXAMPLES.md", "VALIDATION.md", "C4_ARCHITECTURE.md")
+DOCS = ("README.md", "BIBLIOGRAPHY.md", "THIRD_PARTY_SOURCES.md", "RELEASE_NOTES.md", "MKL_METHODOLOGY.md", "OPERATING_CONTRACT.md", "STANDALONE.md", "INSTALLATION.md", "EXAMPLES.md", "VALIDATION.md", "C4_ARCHITECTURE.md", "reference/README.md", "reference/INSTALLATION.md", "reference/VALIDATION_HISTORY.md")
 EXCLUDED = {"__pycache__", ".DS_Store", "Thumbs.db", ".git", ".pytest_cache"}
 LINK = re.compile(r"(?P<label>!?\[[^\]\n]*\])\((?P<target><[^>\n]+>|[^\s)]+)(?P<title>\s+[^)]+)?\)")
 # Also handles the outer destination in nested Markdown badges.

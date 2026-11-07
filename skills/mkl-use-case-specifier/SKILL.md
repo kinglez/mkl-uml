@@ -55,6 +55,11 @@ From this skill directory, this command is executable; the specification path is
 python scripts/validate_use_case_spec.py path/to/specification.md
 ```
 
+The CLI recognizes English, legacy Spanish and Chinese structural field labels,
+line/table identifiers and Markdown identifier headings such as `### FA-01`.
+Writing-risk lexicons cover English/Spanish only; inspect other prose manually.
+Outcome keywords are hints, not proof that an alternative has a correct exit.
+
 The validator checks a supported Markdown/legacy vocabulary profile. Inspect semantic completeness and verify flow references separately; passing syntax or lexical checks does not prove behavior completeness. State which checks actually ran.
 
 ## Focused references

@@ -229,8 +229,8 @@ def main(path: str, dominant_hint: str | None = None) -> int:
             if normalize(term) in lower:
                 add_warning(f"actor '{visible}' looks like an internal component; actors should be external roles/systems/devices")
 
-    include_edges = re.findall(r'^\s*(\w+)\s*\.>\s*(\w+)\s*:\s*<<\s*include\s*>>', text, re.MULTILINE | re.IGNORECASE)
-    extend_edges = re.findall(r'^\s*(\w+)\s*\.>\s*(\w+)\s*:\s*<<\s*extend\s*>>', text, re.MULTILINE | re.IGNORECASE)
+    include_edges = re.findall(r'^\s*(\w+)\s*\.{1,2}>\s*(\w+)\s*:\s*<<\s*include\s*>>', text, re.MULTILINE | re.IGNORECASE)
+    extend_edges = re.findall(r'^\s*(\w+)\s*\.{1,2}>\s*(\w+)\s*:\s*<<\s*extend\s*>>', text, re.MULTILINE | re.IGNORECASE)
     include_count = len(include_edges)
     extend_count = len(extend_edges)
 
@@ -254,7 +254,7 @@ def main(path: str, dominant_hint: str | None = None) -> int:
             add_warning(f"extending use case '{source_name}' looks like an internal validation/error step; review extend semantics")
 
     # Direct actor-to-use-case associations.
-    assoc_pattern = re.compile(r'^\s*(\w+)\s*-+>\s*(\w+)\s*$', re.MULTILINE)
+    assoc_pattern = re.compile(r'^\s*(\w+)\s*(?:--+>?|->|<--+)\s*(\w+)\s*(?::\s*.*)?$', re.MULTILINE)
     direct_actor_links: Counter[str] = Counter()
     actor_targets: defaultdict[str, list[str]] = defaultdict(list)
     for left, right in assoc_pattern.findall(text):
@@ -271,18 +271,8 @@ def main(path: str, dominant_hint: str | None = None) -> int:
                 f"actor '{actor}' has {count} direct use-case associations; verify the actor is not connected to substeps of one dominant use case"
             )
 
-    included_aliases = {target for _source, target in include_edges}
-    extending_aliases = {source for source, _target in extend_edges}
-    for actor, targets in actor_targets.items():
-        for target in targets:
-            if target in included_aliases:
-                add_warning(
-                    f"use case '{alias_to_usecase[target]}' is directly associated with actor '{actor}' and also included; verify it is an independent actor goal"
-                )
-            if target in extending_aliases:
-                add_warning(
-                    f"use case '{alias_to_usecase[target]}' is directly associated with actor '{actor}' and also extends another use case; verify actor initiation"
-                )
+    # An actor association denotes participation, not necessarily initiation.
+    # Included/extension cases may legitimately have their own external actors.
 
     # Dominant use case hint check.
     if dominant_hint:

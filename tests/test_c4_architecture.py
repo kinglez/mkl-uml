@@ -227,6 +227,22 @@ class C4Contracts(unittest.TestCase):
         p.write_text(source)
         self.assertEqual(self.record_check().returncode,0)
 
+    def test_nearest_typed_owner_cannot_be_bypassed_by_outer_scope(self):
+        for level, owner, first, second in (
+                ('container', 'System_Boundary', 'Container(app,', 'ContainerDb(store,'),
+                ('component', 'Container_Boundary', 'Component(entry,', 'Component(core,')):
+            for wrapper, expected in ((owner, 1), ('Boundary', 0)):
+                with self.subTest(level=level, wrapper=wrapper):
+                    source = SOURCES[level].replace(first, wrapper + '(other, "Group") {\n' + first)
+                    source = source.replace(second, '}\n' + second)
+                    (self.root / (level + '.puml')).write_text(source, encoding='utf-8')
+                    result = self.record_check()
+                    self.assertEqual(result.returncode, expected, result.stdout + result.stderr)
+                    if expected:
+                        self.assertIn('OWNERSHIP_MISMATCH', result.stdout)
+                        self.assertFalse(json.loads(result.stdout)['ready'])
+            (self.root / (level + '.puml')).write_text(SOURCES[level], encoding='utf-8')
+
     def test_empty_technology_and_outside_declarations_fail(self):
         p=self.root/'container.puml'
         for source in (SOURCES['container'].replace('"Runtime"','""'), SOURCES['container']+'Container(late, "Late", "Runtime")\n'):

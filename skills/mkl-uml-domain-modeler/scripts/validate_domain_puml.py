@@ -103,7 +103,9 @@ PROCEDURAL_LABEL_TERMS = {
 }
 
 RELATION_RE = re.compile(r"^\s*([A-Za-z_ÁÉÍÓÚÑáéíóúñ][\wÁÉÍÓÚÑáéíóúñ]*)\s+.*?(?:--|\.\.|<\|).+?\s+([A-Za-z_ÁÉÍÓÚÑáéíóúñ][\wÁÉÍÓÚÑáéíóúñ]*)\b")
-CLASS_RE = re.compile(r"^\s*(?:abstract\s+)?(?:class|enum)\s+([A-Za-z_ÁÉÍÓÚÑáéíóúñ][\wÁÉÍÓÚÑáéíóúñ]*)")
+CLASS_RE = re.compile(r'^\s*(?:abstract\s+)?(?:class|enum)\s+'
+                      r'(?:"(?P<q>[^"]+)"|(?P<n>\w+))'
+                      r'(?:\s+as\s+(?P<alias>\w+))?', re.M)
 
 
 def read_model(path: Path) -> str:
@@ -144,9 +146,15 @@ def technical_term_in(name: str) -> str | None:
 
 
 def class_blocks(text: str):
-    pattern = re.compile(r"class\s+([A-Za-z_ÁÉÍÓÚÑáéíóúñ][\wÁÉÍÓÚÑáéíóúñ]*)\s*\{(?P<body>.*?)\}", re.S)
+    pattern = re.compile(
+        r'^\s*(?:abstract\s+)?class\s+(?:"(?P<q>[^"]+)"|(?P<n>\w+))'
+        r'(?:\s+as\s+\w+)?(?:\s*<<[^>]+>>)*\s*\{', re.M)
     for match in pattern.finditer(text):
-        yield match.group(1), match.group("body")
+        depth, end = 1, match.end()
+        while end < len(text) and depth:
+            depth += (text[end] == "{") - (text[end] == "}")
+            end += 1
+        yield match.group("q") or match.group("n"), text[match.end():end - 1 if depth == 0 else end]
 
 
 def detect_classes(text: str) -> list[str]:
@@ -154,45 +162,27 @@ def detect_classes(text: str) -> list[str]:
     for line in text.splitlines():
         match = CLASS_RE.match(line)
         if match:
-            classes.append(match.group(1))
+            classes.append(match.group("q") or match.group("n"))
     return classes
 
 
 
 def relation_pairs(text: str) -> list[tuple[str, str, str]]:
     pairs: list[tuple[str, str, str]] = []
-    relation_op = re.compile(r"(--|-->|<--|--\|>|<\|--|o--|--o|\*--|--\*)")
-    name_re = r"[A-Za-z_ÁÉÍÓÚÑáéíóúñ][\wÁÉÍÓÚÑáéíóúñ]*"
-    for raw in text.splitlines():
-        line = raw.strip()
-        if not line or line.startswith("'") or line.startswith("@") or line.startswith("skinparam"):
-            continue
-        if not relation_op.search(line):
-            continue
-        label = ""
-        body = line
-        if ":" in line:
-            body, label = line.split(":", 1)
-            label = label.strip()
-        names = re.findall(rf"\b({name_re})\b", relation_op.sub(" ", body))
-        if len(names) >= 2:
-            pairs.append((names[0], names[1], label))
+    endpoint = r'("[^"]+"|\w+)'
+    pattern = re.compile(rf'^\s*{endpoint}\s*(?:<\|--|--\|>|<--|-->|[o*]--|--[o*]|--)'
+                         rf'\s*{endpoint}\s*(?::\s*(.*))?$', re.M)
+    for match in pattern.finditer(text):
+        pairs.append((match[1].strip('"'), match[2].strip('"'), match[3] or ""))
     return pairs
 
 
 def generalization_pairs(text: str) -> set[tuple[str, str]]:
     pairs: set[tuple[str, str]] = set()
-    name_re = r"[A-Za-z_ÁÉÍÓÚÑáéíóúñ][\wÁÉÍÓÚÑáéíóúñ]*"
-    for raw in text.splitlines():
-        line = raw.strip()
-        if "--|>" in line:
-            names = re.findall(rf"\b({name_re})\b", line.split(":", 1)[0])
-            if len(names) >= 2:
-                pairs.add((names[0], names[1]))  # child, parent
-        elif "<|--" in line:
-            names = re.findall(rf"\b({name_re})\b", line.split(":", 1)[0])
-            if len(names) >= 2:
-                pairs.add((names[1], names[0]))  # child, parent
+    endpoint = r'("[^"]+"|\w+)'
+    for match in re.finditer(rf'^\s*{endpoint}\s*(--\|>|<\|--)\s*{endpoint}', text, re.M):
+        left, right = match[1].strip('"'), match[3].strip('"')
+        pairs.add((left, right) if match[2] == '--|>' else (right, left))
     return pairs
 
 def model_code(text: str) -> str:
@@ -251,6 +241,8 @@ def validate(text: str) -> tuple[list[str], list[str]]:
                 warnings.append(f"Identifier-like attribute in {class_name}: {line}")
 
     classes = detect_classes(text)
+    aliases = {(m.group("alias") or m.group("n") or m.group("q")):
+               (m.group("q") or m.group("n")) for m in CLASS_RE.finditer(text)}
     if not classes:
         errors.append("The domain model has no usable class declarations.")
     for name in classes:
@@ -274,6 +266,7 @@ def validate(text: str) -> tuple[list[str], list[str]]:
     related_names: set[str] = set()
     relation_counts: Counter[str] = Counter()
     for left, right, label in pairs:
+        left, right = aliases.get(left, left), aliases.get(right, right)
         if left in classes:
             related_names.add(left)
             relation_counts[left] += 1
@@ -294,7 +287,8 @@ def validate(text: str) -> tuple[list[str], list[str]]:
             warnings.append(f"Class with no detected relationship: {name}. Connect it, justify it as a superclass/traceable vocabulary, or remove it.")
 
     # Warn when a base class and lexical specializations coexist without inheritance.
-    gen_pairs = generalization_pairs(text)
+    gen_pairs = {(aliases.get(child, child), aliases.get(parent, parent))
+                 for child, parent in generalization_pairs(text)}
     class_set = set(classes)
     for base in classes:
         if len(base) < 4:

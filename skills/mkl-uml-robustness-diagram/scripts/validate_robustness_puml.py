@@ -232,6 +232,8 @@ def parse_diagram(text: str):
 
         rel = REL_RE.match(line)
         if rel and rel.group("conn"):
+            if re.search(r"\[[^\]]*\bhidden\b[^\]]*\]", rel.group("conn"), re.I):
+                continue  # PlantUML layout constraint, not modeled communication.
             relations.append(
                 (
                     rel.group("left"),

@@ -241,6 +241,7 @@ class Clase:
     kind: str = "class"     # class | interface | enum
     estereotipos: set = field(default_factory=set)
     atributos: list = field(default_factory=list)
+    literales: list = field(default_factory=list)  # enumeration literals, not properties
     operaciones: list = field(default_factory=list)
     recepciones: list = field(default_factory=list)  # Signal receptions, not Operations
     no_parseadas: list = field(default_factory=list)   # (line, text)
@@ -354,6 +355,9 @@ def parse_clases(path: str, text: str) -> Modelo:
                 continue
             ma = ATRIB_RE.match(ln)
             if ma:
+                if c.kind == "enum" and ln == ma.group("nombre"):
+                    c.literales.append(ln)
+                    continue
                 c.atributos.append(Miembro(
                     nombre=ma.group("nombre"), visibilidad=ma.group("vis") or "",
                     linea=n_linea, tipo=(ma.group("tipo") or "").strip(),
@@ -407,7 +411,7 @@ def parse_dominio(text: str) -> dict:
 
 
 def parse_generalizaciones(mod: Modelo) -> dict:
-    """Return {child_key: parent_key} from inheritance relationships.
+    """Return {child_key: {parent_keys}} from inheritance relationships.
 
     A subclass discovered during design (the book's 'opportunity for
     generalization') is absent from the domain but is not solution space:
@@ -418,22 +422,26 @@ def parse_generalizaciones(mod: Modelo) -> dict:
     for izq, der, conn, _n in mod.relaciones:
         ki, kd = clave(izq), clave(der)
         if "<|" in conn:          # Parent <|-- Child
-            padres[kd] = ki
+            padres.setdefault(kd, set()).add(ki)
         elif "|>" in conn:        # Child --|> Parent
-            padres[ki] = kd
+            padres.setdefault(ki, set()).add(kd)
     return padres
 
 
-def traza_al_dominio(k: str, dominio: dict, padres: dict, vistos=None) -> bool:
-    """True if the key is in the domain or transitively inherits from a domain class."""
-    if k in dominio:
-        return True
-    vistos = vistos or set()
-    if k in vistos:
-        return False              # stop inheritance cycles
-    vistos.add(k)
-    padre = padres.get(k)
-    return bool(padre) and traza_al_dominio(padre, dominio, padres, vistos)
+def ascendientes(k: str, padres: dict):
+    pending, seen = list(padres.get(k, ())), {k}
+    while pending:
+        parent = pending.pop()
+        if parent in seen:
+            continue
+        seen.add(parent)
+        yield parent
+        pending.extend(padres.get(parent, ()))
+
+
+def traza_al_dominio(k: str, dominio: dict, padres: dict) -> bool:
+    """Every inherited contract is retained, independent of declaration order."""
+    return k in dominio or any(parent in dominio for parent in ascendientes(k, padres))
 
 
 def parse_relaciones_dominio(text: str) -> set:
@@ -500,6 +508,19 @@ def etiqueta_de_llamada(mm, creaciones: set) -> tuple[str, bool]:
 def codigo_mensajes(text: str) -> str:
     """Keep the same executable-notation rules for every model scan."""
     return codigo_modelo(text)[0]
+
+
+def specification_text(text: str) -> str:
+    """Only actual prose/table behavior can supply specification evidence."""
+    text = re.sub(r"<!--.*?(?:-->|$)", "", text, flags=re.S)
+    text = re.sub(r"^\s*(`{3,}|~{3,})[^\n]*\n.*?(?:^\s*\1\s*$|\Z)",
+                  "", text, flags=re.M | re.S)
+    return codigo_modelo(text)[0]
+
+
+def usable_specification(text: str) -> bool:
+    return bool(re.search(r"^\s*(?:\d+[.)]\s+\S|\|\s*\d+\s*\|\s*[^|]+\|)",
+                          text, re.M))
 
 
 def parse_mensajes(text: str, avisos=None) -> tuple:
@@ -697,14 +718,11 @@ def check_procedencia_operaciones(mod: Modelo, voc_mensajes: set,
     padres = parse_generalizaciones(mod)
     huerfanas = 0
     for c in mod.clases.values():
-        propio = por_receptor.get(clave(c.nombre), set())
+        propio = set(por_receptor.get(clave(c.nombre), set()))
         # A subclass inherits ancestor provenance. Overriding does not require
         # a separate message addressed to the subclass: messages target the
         # general type; specialization is a design decision.
-        k, guard = clave(c.nombre), set()
-        while k in padres and k not in guard:
-            guard.add(k)
-            k = padres[k]
+        for k in ascendientes(clave(c.nombre), padres):
             propio |= por_receptor.get(k, set())
             padre_cls = mod.clases.get(k)
             if padre_cls:
@@ -866,8 +884,6 @@ def check_firmas(mod: Modelo, avisos: list) -> None:
     """CDR guideline #3: complete types, returns, and parameters."""
     tag = f"[{mod.path}]"
     for c in mod.clases.values():
-        if c.kind == 'enum':
-            continue          # enum literals do not declare a type
         for a in c.atributos:
             if not a.tipo:
                 avisos.append(
@@ -1062,25 +1078,41 @@ def main(argv=None) -> int:
     rel_dominio = parse_relaciones_dominio(dom_text) if args.dominio else set()
 
     voc_mensajes, por_receptor, avisos_semanticos = set(), {}, []
+    sequence_evidence = []
     for s in args.secuencia:
         avisos_archivo = []
-        v, pr = parse_mensajes(leer(s), avisos_archivo)
+        source = leer(s)
+        sequence_evidence.append(any(MSG_DIR_RE.match(line)
+                                     for line in codigo_mensajes(source).splitlines()))
+        v, pr = parse_mensajes(source, avisos_archivo)
         avisos_semanticos.extend(f"[{s}] {a}" for a in avisos_archivo)
         voc_mensajes |= v
         for k, vals in pr.items():
             por_receptor.setdefault(k, set()).update(vals)
-    voc_spec = set()
+    voc_spec, specification_evidence = set(), []
     for s in args.spec:
-        t = leer(s)
+        t = specification_text(leer(s))
+        specification_evidence.append(usable_specification(t))
         voc_spec |= palabras(t)
         voc_spec |= {norm(w) for w in re.findall(r"[A-Za-zÁÉÍÓÚÑáéíóúñ_]{3,}", t)}
 
     errores, avisos, infos, metricas, capas, degradadas = validar(
         mod, dominio, rel_dominio, voc_mensajes, por_receptor, voc_spec,
-        hay_dominio=bool(args.dominio), hay_secuencia=bool(args.secuencia),
-        hay_spec=bool(args.spec),
+        hay_dominio=bool(dominio),
+        hay_secuencia=bool(sequence_evidence) and all(sequence_evidence),
+        hay_spec=bool(specification_evidence) and all(specification_evidence),
     )
     avisos.extend(avisos_semanticos)
+    for label, paths, evidence in (("sequence", args.secuencia, sequence_evidence),
+                                   ("specification", args.spec, specification_evidence)):
+        for path, usable in zip(paths, evidence):
+            if not usable:
+                avisos.append(f"[{path}] no usable {label} evidence; dependent checks are not fully verified")
+                if label == "sequence":
+                    errores.append(f"[{path}] supplied sequence has no usable messages; "
+                                   "operation provenance cannot be established")
+    if args.dominio and not dominio:
+        avisos.append(f"[{args.dominio}] no usable domain declarations; dependent checks are not fully verified")
 
     n_ops = sum(len(c.operaciones) for c in mod.clases.values())
     n_recepciones = sum(len(c.recepciones) for c in mod.clases.values())

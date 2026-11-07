@@ -1,5 +1,30 @@
 # Release notes
 
+## 1.1.1 — 2026-11-07
+
+Source tag: [`v1.1.1`](https://github.com/kinglez/mkl-uml/tree/v1.1.1).
+
+- Correct 16 reproduced validator/conversion findings: usable evidence, basic-flow
+  isolation, actual branch behavior, supported declarations/relationships, hidden layout
+  edges, break/parallel execution, enum members, interface inheritance, parameter
+  direction and multiple inherited contracts.
+- Tighten nearest typed C4 ownership while preserving generic nested groups. Recognize
+  Markdown identifier headings and Chinese structural specification fields; disclose
+  English/Spanish-only writing hints.
+- Add independent single-skill CLI and installation coverage plus the
+  [standalone guide](STANDALONE.md). PDR/class commands show their actual minimum targets;
+  class-only CDR requests retain a manual scoped route without invented sequence input.
+- Keep new protocol regressions domain-neutral and task-specific evaluations external.
+  See [the validation record](VALIDATION.md) for executed results and limits.
+- Add nine standalone knowledge-base prompts with output trees to the homepage.
+  Shorten the main documentation around choosing a skill, installing, making a request
+  and inspecting the result; retain advanced installation and validation history in
+  `docs/reference/`, including offline/npm payloads.
+
+This source release retains the frozen example requirements, independent expected
+results and reference implementation. Existing installations are not automatically
+updated. A source tag is separate from an npm registry publication or formal approval.
+
 ## 1.1.0 — 2026-11-07
 
 Source tag: [`v1.1.0`](https://github.com/kinglez/mkl-uml/tree/v1.1.0).

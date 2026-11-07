@@ -102,7 +102,8 @@ REL_RE = re.compile(
     re.MULTILINE,
 )
 CLASS_RE = re.compile(
-    r'^\s*(?:abstract\s+)?class\s+(?:"(?P<q>[^"]+)"|(?P<n>[\w]+))', re.MULTILINE
+    r'^\s*(?:abstract\s+)?class\s+(?:"(?P<q>[^"]+)"|(?P<n>[\w]+))'
+    r'(?:\s+as\s+\w+)?(?:\s*<<[^>]+>>)*', re.MULTILINE
 )
 # The type is OPTIONAL. /mkl-uml-domain-modeler prohibits type annotations in its
 # strict academic mode ("no type annotations"), so a domain model
@@ -278,6 +279,7 @@ class Spec:
     path: str
     text: str
     pasos: list = field(default_factory=list)      # (number, text, section)
+    pasos_basicos: list = field(default_factory=list)
     flujos: dict = field(default_factory=dict)     # FA-01 -> text block
     cu_id: str = ""
     flow_table_actions: dict = field(default_factory=dict)
@@ -530,9 +532,36 @@ def table_flow_actions(text: str) -> dict:
     return out
 
 
+def basic_steps(text: str) -> list:
+    """Keep normal behavior separate from alternative/exception definitions."""
+    basic_heading = re.compile(r"\b(?:basic|normal|basico|principal)\b", re.I)
+    headings = re.findall(r"^\s*#{1,6}\s+(.+)$", text, re.M)
+    active = not any(basic_heading.search(norm(h)) for h in headings)
+    level = None
+    steps = []
+    for line in text.splitlines():
+        heading = re.match(r"^\s*(#{1,6})\s+(.+)", line)
+        if heading:
+            title = norm(heading[2])
+            if basic_heading.search(title):
+                active, level = True, len(heading[1])
+            elif (level is not None and len(heading[1]) <= level) or re.search(
+                    r"\b(?:alternate|alternative|exception|alternos|alternativos|excepcion|"
+                    r"postconditions|postcondiciones|requirements|requisitos|acceptance|"
+                    r"preconditions|precondiciones|rules|reglas|flujos)\b", title):
+                active = False
+        if re.match(r"^\s*(?:#{1,6}\s+|\|\s*)?(?:\*\*|`)?(?:FA|FE)\s*[-_ ]?\s*\d+\b", line, re.I):
+            active = False
+        step = re.match(r"^\s*(?:\|\s*)?(\d+)[.)]?\s*\|?\s*(.+?)\s*\|?\s*$", line)
+        if active and step and len(step[2].strip()) > 8 and not step[2].startswith("-"):
+            steps.append((int(step[1]), step[2].strip()))
+    return steps
+
+
 def parse_spec(path: str, text: str) -> Spec:
     text = specification_text(text)
     s = Spec(path=path, text=text)
+    s.pasos_basicos = basic_steps(text)
     s.flow_table_actions = table_flow_actions(text)
     mid = re.search(r"\bCU-(\d+)\b", text)
     if mid:
@@ -767,17 +796,11 @@ def check_dialogo(spec: Spec, errores: list, avisos: list) -> None:
     long streak is a heuristic clue and is a warning: distinction matters
     because the verdict is derived from the errors.
     """
-    if not spec.pasos:
-        return
-    # Only the basic flow is judged here; alternate courses are checked separately (guideline #7).
-    fin_basico = min((p for p in (spec.text.find("## Flujos"),
-                                  spec.text.find("## Alternative flows"),
-                                  spec.text.find("## Exception flows"),
-                                  spec.text.find("### FA-"),
-                                  spec.text.find("### FE-")) if p > 0), default=len(spec.text))
-    basico = [(n, t) for n, t in spec.pasos if spec.text.find(t) < fin_basico]
+    basico = spec.pasos_basicos
     if not basico:
-        basico = spec.pasos
+        errores.append(f"[{spec.path}] guideline #6 - no usable numbered basic flow; "
+                       "alternate/exception steps cannot establish the basic dialogue")
+        return
 
     racha, peor, inicio = 0, 0, None
     hay_sistema = False

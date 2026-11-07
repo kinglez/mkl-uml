@@ -283,7 +283,11 @@ def assess(record, root):
                 if entry['kind']==child and not entry['boundary'] and not entry['external']:
                     parent, visited = entry['parent'], set()
                     while parent and parent != scope and parent not in visited:
-                        visited.add(parent); parent=parsed['elements'].get(parent,{}).get('parent')
+                        visited.add(parent)
+                        owner = parsed['elements'].get(parent, {})
+                        if owner.get('boundary') and owner.get('kind') == expected:
+                            break  # A different nearest typed owner cannot be crossed.
+                        parent = owner.get('parent')
                     if parent != scope:
                         error('OWNERSHIP_MISMATCH',key,'Internal element is not inside the declared scope: '+alias)
         for alias,entry in parsed['elements'].items():

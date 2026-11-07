@@ -271,13 +271,13 @@ def codigo_secuencia(text: str) -> str:
     for crudo in text.split("\n"):
         ln = crudo.strip()
         if en_nota:
-            if NOTA_CIERRA.match(ln):
+            if re.match(r"^end\s*(?:[hr]?note|legend)\b", ln, re.I):
                 en_nota = False
             lineas.append("")
         elif not ln or ln.startswith("'"):
             lineas.append("")
-        elif re.match(r"^(?:h|r)?note\b", ln, re.IGNORECASE):
-            en_nota = bool(NOTA_ABRE.match(ln))
+        elif re.match(r"^(?:(?:h|r)?note|legend)\b", ln, re.IGNORECASE):
+            en_nota = ln.lower().startswith("legend") or bool(NOTA_ABRE.match(ln))
             lineas.append("")
         else:
             lineas.append(crudo)
@@ -413,26 +413,75 @@ class Caminos(list):
     limitado = False
 
 
+class Camino(list):
+    """A selected break terminates the remaining enclosing interaction."""
+    def __init__(self, items=(), terminado=False):
+        super().__init__(items)
+        self.terminado = terminado
+
+
+def interleavings(left, right):
+    """Preserve each operand's order; a selected break ends the interaction."""
+    pending = [(0, 0, [])]
+    while pending:
+        i, j, prefix = pending.pop()
+        stopped = ((i == len(left) and left.terminado) or
+                   (j == len(right) and right.terminado))
+        if stopped or (i == len(left) and j == len(right)):
+            yield Camino(prefix, stopped)
+            continue
+        if j < len(right):
+            pending.append((i, j + 1, prefix + [right[j]]))
+        if i < len(left):
+            pending.append((i + 1, j, prefix + [left[i]]))
+
+
+def parallel_paths(operands, cap):
+    combined = Caminos([Camino()])
+    for operand in operands:
+        merged = Caminos()
+        merged.limitado = combined.limitado or operand.limitado
+        full = False
+        for left in combined:
+            for right in operand:
+                for path in interleavings(left, right):
+                    if len(merged) == cap:
+                        merged.limitado, full = True, True
+                        break
+                    merged.append(path)
+                if full:
+                    break
+            if full:
+                break
+        combined = merged
+    return combined
+
+
 def enumerar_caminos(items, tope=MAX_CAMINOS):
     """Enumerate execution paths; an N-branch alt multiplies them.
 
     Linear activation/deactivation counts produce false positives: every
     branch closes independently, but only one branch executes.
     """
-    caminos = Caminos([[]])
+    caminos = Caminos([Camino()])
     for it in items:
         if it[0] == "frag":
-            _, _kind, operandos, _n = it
+            _, kind, operandos, _n = it
             alternativas = [enumerar_caminos(op, tope) for op in operandos]
+            if kind == "par":
+                alternativas = [parallel_paths(alternativas, tope)]
             nuevos = Caminos()
             nuevos.limitado = caminos.limitado or any(a.limitado for a in alternativas)
             for c in caminos:
-                for op in alternativas:
+                if c.terminado:
+                    nuevos.append(c)
+                    continue
+                for index, op in enumerate(alternativas):
                     for sub in op:
                         if len(nuevos) == tope:
                             nuevos.limitado = True
                             break
-                        nuevos.append(c + sub)
+                        nuevos.append(Camino(c + sub, sub.terminado or (kind == "break" and index == 0)))
                     if len(nuevos) == tope and nuevos.limitado:
                         break
                 if len(nuevos) == tope and nuevos.limitado:
@@ -441,7 +490,8 @@ def enumerar_caminos(items, tope=MAX_CAMINOS):
         else:
             # Reaching the cap limits alternative prefixes, never the suffix.
             for c in caminos:
-                c.append(it)
+                if not c.terminado:
+                    c.append(it)
     return caminos
 
 
@@ -452,7 +502,7 @@ def enumerar_caminos(items, tope=MAX_CAMINOS):
 def parse_robustez(text: str) -> dict:
     """Return {type: {key: original_name}} from the robustness diagram."""
     out = {t: {} for t in TIPOS_BCE}
-    for m in DECL_RE.finditer(text):
+    for m in DECL_RE.finditer(codigo_secuencia(text)):
         tipo = m.group("tipo").lower()
         if tipo not in TIPOS_BCE:
             continue
@@ -464,10 +514,22 @@ def parse_robustez(text: str) -> dict:
 
 def parse_dominio(text: str) -> dict:
     out = {}
-    for m in CLASS_RE.finditer(text):
+    for m in CLASS_RE.finditer(codigo_secuencia(text)):
         nombre = m.group("q") or m.group("n")
         out[key(nombre)] = nombre
     return out
+
+
+def specification_text(text: str) -> str:
+    text = re.sub(r"<!--.*?(?:-->|$)", "", text, flags=re.S)
+    text = re.sub(r"^\s*(`{3,}|~{3,})[^\n]*\n.*?(?:^\s*\1\s*$|\Z)",
+                  "", text, flags=re.M | re.S)
+    return codigo_secuencia(text)
+
+
+def usable_specification(text: str) -> bool:
+    return bool(re.search(r"^\s*(?:\d+[.)]\s+\S|\|\s*\d+\s*\|\s*[^|]+\|)",
+                          text, re.M))
 
 
 # --------------------------------------------------------------------------
@@ -802,12 +864,30 @@ def check_cobertura_controladores(s: Secuencia, rob: dict, errores: list) -> int
     return sin_cubrir
 
 
+def operand_has_messages(text: str, start_line: int, message_pattern) -> bool:
+    """A guard is a declaration; only messages in its own operand realize it."""
+    depth = 0
+    for line in text.splitlines()[start_line:]:
+        if re.match(r"^\s*(?:alt|opt|loop|par|critical|break|group)\b", line, re.I):
+            depth += 1
+        elif re.match(r"^\s*end\s*$", line, re.I):
+            if depth == 0:
+                break
+            depth -= 1
+        elif re.match(r"^\s*else\b", line, re.I) and depth == 0:
+            break
+        if message_pattern.match(line):
+            return True
+    return False
+
+
 def check_cobertura_flujos(s: Secuencia, spec_text: str, spec_path: str, errores: list) -> int:
     tag = f"[{s.path}]"
     declarados = flujos_declarados(spec_text)
     if not declarados:
         return 0
-    texto_frag = " ".join(f"{k} {g}" for k, g, _n, _p in s.fragmentos)
+    texto_frag = " ".join(f"{k} {g}" for k, g, n, _p in s.fragmentos
+                          if operand_has_messages(s.codigo, n, MSG_RE))
     dibujados = flujos_declarados(texto_frag) | flujos_declarados(
         " ".join(m.etiqueta for m in s.mensajes if m.etiqueta)
     )
@@ -958,13 +1038,17 @@ def main(argv=None) -> int:
     s = parse_secuencia(args.secuencia, leer(args.secuencia))
     rob = parse_robustez(leer(args.robustez)) if args.robustez else {}
     dominio = parse_dominio(leer(args.dominio)) if args.dominio else {}
-    spec_text = leer(args.spec) if args.spec else ""
+    spec_text = specification_text(leer(args.spec)) if args.spec else ""
 
     errores, avisos, infos, capas, metricas = validar(
         s, rob, dominio, spec_text, args.spec or "",
-        hay_rob=bool(args.robustez), hay_dom=bool(args.dominio), hay_spec=bool(args.spec),
+        hay_rob=any(rob.values()), hay_dom=bool(dominio), hay_spec=usable_specification(spec_text),
         pidio_activaciones=args.con_activaciones,
     )
+    for path, usable in ((args.robustez, any(rob.values())), (args.dominio, bool(dominio)),
+                         (args.spec, usable_specification(spec_text))):
+        if path and not usable:
+            avisos.append(f"[{path}] no usable supporting evidence; dependent checks are not fully verified")
 
     print("Sequence diagram validation (detailed design)")
     print("=" * 54)

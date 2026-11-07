@@ -1,6 +1,6 @@
 {
   "name": "mkl-uml",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Install nine MKL UML and C4 architecture skills for Codex or Claude Code.",
   "type": "module",
   "bin": {
@@ -45,6 +45,7 @@
     "skills/*/tests/examples/**/*.puml",
     "skills/*/tests/examples/**/*.md",
     "docs/*.md",
+    "docs/reference/*.md",
     "LICENSE",
     "NOTICE",
     "skills/*/tests/fixtures/**/*.puml",

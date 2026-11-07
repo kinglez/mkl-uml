@@ -28,6 +28,12 @@ Compare generated output with the model:
 - Relationship roles and target multiplicities produce an appropriate reference/collection or an explicit unresolved representation.
 - Unmodeled types and unsupported constructs are reported rather than guessed.
 
+Enumeration literals are distinct from modeled properties and operations; all significant
+members remain visible. Interface generalization uses `extends` in inspection declarations.
+Explicit parameter directions are retained as comments. `out`, `inout` and return-parameter
+mappings require a language-specific decision and remain conversion gaps; a generated
+value parameter does not resolve those semantics.
+
 Inspect the design meaning too: duplicate members, inappropriate dependencies or unclear contracts can become easier to see as signatures. Successful generation alone is not completed header inspection and does not supply human sign-off.
 
 ## Effort and boundary

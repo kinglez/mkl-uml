@@ -10,8 +10,9 @@ This does not judge the domain or replace analyst review: an ERROR is a verifiab
 structural defect; a WARNING is a risk requiring judgment.
 
 Both the lean two-paragraph form and the full template are supported. Sections
-absent from the lean form are not required. English and legacy Spanish input are
-supported; Python names and statistics keys remain stable for compatibility.
+absent from the lean form are not required. Structural fields support English,
+legacy Spanish and Chinese. Writing-risk lexicons cover English/Spanish only;
+Python names and statistics keys remain stable for compatibility.
 
 Usage:
     python validate_use_case_spec.py specification.md
@@ -36,12 +37,12 @@ ID_PREFIXES = ("CU", "RF", "RN", "RE", "PRE", "FA", "FE", "CA", "OBJ", "CP", "DR
 MUST_RESOLVE = ("RN", "FA", "FE", "PRE", "RE", "CA")
 
 CAMPOS_MINIMOS = {
-    "primary actor": r"primary\s+actor|actor\s+(primario|principal)",
-    "trigger": r"disparador|trigger|evento\s+inicial|initial\s+event",
-    "preconditions": r"precondici|preconditions?",
-    "basic flow": r"(flujo|curso)\s+(basico|principal)|escenario\s+soleado|(?:basic|main)\s+(?:flow|course)|sunny.day\s+scenario",
-    "postconditions": r"postcondici|postconditions?",
-    "acceptance criteria": r"criterios?\s+de\s+aceptacion|acceptance\s+criteri(?:a|on)",
+    "primary actor": r"primary\s+actor|actor\s+(primario|principal)|主(?:要)?参与者",
+    "trigger": r"disparador|trigger|evento\s+inicial|initial\s+event|触发",
+    "preconditions": r"precondici|preconditions?|前置条件",
+    "basic flow": r"(flujo|curso)\s+(basico|principal)|escenario\s+soleado|(?:basic|main)\s+(?:flow|course)|sunny.day\s+scenario|基本流程|主流程",
+    "postconditions": r"postcondici|postconditions?|后置条件",
+    "acceptance criteria": r"criterios?\s+de\s+aceptacion|acceptance\s+criteri(?:a|on)|验收(?:标准|条件)",
 }
 
 LEXICO_AMBIGUO = (
@@ -95,7 +96,7 @@ def collect_ids(text: str, prefix: str) -> tuple[dict[str, int], set[str]]:
     # following the template exactly produced false duplicate-identifier errors.
     encontrar = re.compile(rf"\b({prefix}-\d+)(?!\.\d)\b")
     # A definition starts a line or table cell with the identifier.
-    definir = re.compile(rf"^\|?\s*\**\s*({prefix}-\d+)(?!\.\d)\b")
+    definir = re.compile(rf"^(?:#{{1,6}}\s+|\|\s*)?\s*\**\s*({prefix}-\d+)(?!\.\d)\b")
 
     for raw in text.splitlines():
         line = raw.strip()
@@ -204,7 +205,7 @@ def validate(text: str):
             contexto = "\n".join(
                 l for l in text.splitlines() if ident in l
             )
-            if not re.search(r"retorna|vuelve|finaliza|termina|continua|cancela|reanuda|returns?|ends?|terminates?|continues?|cancels?|resumes?", norm(contexto)):
+            if not re.search(r"\b(?:retorna|vuelve|finaliza|termina|continua|cancela|reanuda|returns?|ends?|terminates?|continues?|cancels?|resumes?)\b|返回|结束|终止|继续|取消|恢复", norm(contexto)):
                 avisos.append(
                     f"flow {ident} has no declared outcome (return to step N, termination, or cancellation); "
                     "an alternate flow without an exit is incomplete"
@@ -295,6 +296,8 @@ def main(argv: list[str]) -> int:
         resumen = ", ".join(f"{p}:{n}" for p, n in sorted(stats["ids_definidos"].items()))
         print(f"\nDefined identifiers: {resumen}")
     print(f"Basic-flow steps: {stats.get('pasos_flujo_basico', 0)}")
+    print("Language coverage: fields/IDs/outcome keywords support English, Spanish and Chinese; "
+          "writing-risk hints cover English/Spanish only.")
 
     print("\nERRORS:" if errores else "\nERRORS: none")
     for e in errores:

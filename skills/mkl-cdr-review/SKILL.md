@@ -64,6 +64,10 @@ From this skill directory, this command is executable; paths are placeholders:
 python scripts/validate_cdr.py --clases path/to/classes.puml --secuencia path/to/sequence.puml
 ```
 
+For a class-only request, inspect the supplied model directly and report the scoped
+findings plus unperformed interaction checks. This CLI requires both targets; do not
+create a sequence just to satisfy it. A manual scoped review needs no sibling skill.
+
 Add existing `--spec`, `--dominio`, `--robustez`, `--requisitos` and `--pruebas` inputs only when relevant; inspect `--help` for supported cardinalities. Missing optional CLI files can still be mandatory evidence for the requested formal scope. Declare omitted layers and human checks.
 
 Return a concise scoped review, or a formal record with coverage, located findings, traceability, decisions, disposition and action ownership. No fixed self-audit count or assurance certificate is required.

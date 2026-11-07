@@ -47,7 +47,7 @@ Return readable PlantUML at the requested abstraction level. For MKL handoff, in
 This executable command runs the local MKL cross-artifact profile from this skill directory; paths are placeholders:
 
 ```bash
-python scripts/validate_design_class_puml.py --clases path/to/classes.puml --secuencia path/to/sequence.puml
+python scripts/validate_design_class_puml.py --clases path/to/classes.puml
 ```
 
 Add existing `--dominio` and `--spec` inputs when relevant; inspect `--help` for the supported CLI. Only `--clases` is mandatory for this tool; omitting a sequence leaves interaction provenance unverified. For class-only work, report that limitation and inspect notation with an available renderer. Lexical matches are evidence candidates, not proof of responsibility correctness.

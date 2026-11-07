@@ -1,77 +1,51 @@
 <!-- Copyright 2026 kingle.zhuang. See NOTICE for upstream attribution. -->
-# How the MKL workflow fits together
+# How the workflow fits together
 
-The workflow connects **requirements → behavior → design → tests**. Each stage answers a new question while checking its result against the preceding work. You can use one skill for one artifact or explicitly ask for the full workflow.
+The progression is **understand the behavior → choose the architecture → design the
+collaboration and contracts → review the result**. Use the stages your task needs.
 
-This page explains why the stages exist. To perform them, use the **[order-pricing tutorial](EXAMPLES.md)**. For other documents, see the [reading guide](README.md).
-
-## High-level architecture between analysis and detailed design
-
-For a system architecture task, analysis/PDR supplies confirmed behavior, domain concepts,
-responsibilities and current findings. `mkl-uml-c4-architecture` consumes those outputs and
-relevant functional/quality requirements, then produces selected C4 views, architectural
-decisions, alternatives, costs, data/dependency ownership and verification scenarios.
-Detailed design consumes that handoff when allocating classes, interfaces and interactions.
-
-Ask about relevant quality dimensions as well as successful functions: capacity/latency,
-availability/recovery, consistency, security/privacy, observability, maintainability,
-compatibility, deployment and cost. Turn important qualities into observable scenarios;
-keep unknown targets open rather than assigning plausible numbers. Questions depend on the
-scope, and inputs may come from any supplied medium. No PRD is required.
-
-Context/container normally explain a system; component/deployment add detail when they
-answer a concrete question. A small module can retain an existing host architecture.
-Use the [C4 guide](C4_ARCHITECTURE.md) for the handoff and checks. Missing essential choices
-block dependent detailed design; unrelated work can proceed with explicit limits. At CDR,
-compare the actual detailed design against architecture decisions manually, separately
-from the current UML CLI checks. Recheck affected outputs after an upstream change.
-
-The example below now includes a dated architecture replay. Existing requirements and
-implementation were retained and rechecked; the replay does not rewrite their creation
-history. Nine skills do not imply nine compulsory stages for every request.
+![MKL UML workflow and review feedback](assets/workflow.svg)
 
 ## One problem, nine questions
 
-In the example, a Shopper requests a price quote for a cart with an optional coupon. Two books and a pen cost CNY 255.00; an eligible SAVE30 coupon reduces payable to CNY 225.00. The system creates no Order.
-
-| Stage | Question | What order pricing produces |
+| Stage / skill | Question it answers | Output used next |
 |---|---|---|
-| 1. Domain model | What do the business words mean? | Cart, CartLine, Product, Coupon and PriceQuote, with relationships and a glossary. |
-| 2. Use case diagram | Who wants what from the system? | Shopper asks Order Pricing to perform CU-01 Quote cart. Price lookup is an internal step. |
-| 3. Use case specification | What happens for each input and outcome? | Basic behavior, discount alternatives and explicit refusal paths. |
-| 4. Robustness analysis | Which interface, responsibilities and domain information realize those steps? | Boundary/control/entity analysis and correspondence to the specified flows. |
-| 5. PDR | Does the analysis agree well enough to design from it? | Findings, corrections, reviewed inputs and a detailed-design handoff. |
-| 6. C4 architecture | Which runtime boundary, responsibilities and quality strategies fit? | One local program, six responsibility groups, selected C4/UML views and explicit detailed-design constraints. |
-| 7. Sequence design | Who collaborates, and which operations and tests follow? | Guarded interactions, operation allocation, test plan and design rationale. |
-| 8. Class design | Where do typed state, operations and dependencies belong? | Design classes, justified relationships, member origins and scoped SOLID reasoning. |
-| 9. CDR | Do the detailed models, contracts and test evidence agree? | Findings, coverage, remaining actions and an implementation-handoff recommendation. |
+| Domain model | What do the business terms mean? | Concepts, relationships and glossary |
+| Use case diagram | Who wants what from the system? | Actors, boundary and goals |
+| Use case specification | What happens in success, alternatives and failure? | Rules, flows and acceptance criteria |
+| Robustness analysis | Which interface, responsibility and business state realize each flow? | Boundary/control/entity model |
+| PDR: Preliminary Design Review | Does the analysis agree? | Findings, corrections and remaining constraints |
+| C4 architecture | Which applications, data stores and dependencies fit the requirements? | Views, ownership and design decisions |
+| Sequence design | Who calls whom to realize the behavior? | Interactions, operation allocation and test cases |
+| Class design | Where do state, operations and dependencies belong? | Typed class/interface contracts |
+| CDR: Critical Design Review | Do the detailed models and behavior agree? | Findings and implementation-handoff notes |
 
-See the [completed artifacts](../examples/order-pricing/README.md#nine-stage-artifacts) to inspect the files for each row. The reference adds Python code and executed tests after modeling so that readers can challenge the design; generating implementation code is a subsequent task.
+Robustness is an **analysis** model: boundary means an interaction interface, control
+means a coordinating responsibility, and entity means business information.
+It is not a list of implementation services. Architecture chooses broader boundaries;
+sequence and class design then work out contracts inside them.
 
 ## Why the two reviews matter
 
-**PDR — Preliminary Design Review** catches problems in the analysis before they become detailed design. In this example, it caught an invented rule rejecting a negative coupon minimum. The requirements had not defined that policy. The correction removed the invented rule and kept the unresolved question visible.
+PDR catches missing behavior, terminology conflicts and misplaced responsibilities
+before detailed design. CDR checks the resulting interactions, signatures and contracts
+against the requirements, architecture and available test evidence.
 
-The PDR record tells the next stage which inputs were reviewed, what was corrected, what remains open and whether those issues affect detailed design. Sequence design reads that record first and rechecks changed inputs or unresolved blockers.
+For either review: locate the problem → correct its owning artifact → recheck the
+affected relationships. A technical recommendation is separate from formal approval.
 
-**CDR — Critical Design Review** compares the detailed design with behavior, requirements and tests. The reference reviews caught incorrect sequence termination/frame coverage and a class multiplicity inconsistent with shared immutable CartLine values. These required semantic examination as well as tool execution.
+## How outputs connect
 
-A technical recommendation supports the reviewed scope. Formal acceptance also needs its applicable decision evidence and actual decision maker. In this teaching example, formal human/business acceptance remains **Not fully verified**. A missing formal decision is recorded separately from a useful technical review.
+Each stage reads the current relevant outputs from the preceding work. Keep explicit
+links from a requirement to its behavior, responsible model elements and tests.
+When a requirement or design decision changes, re-examine the affected downstream work.
+Preserve the identity of unchanged items.
 
-## How the files stay connected
+A standalone architecture or diagram can start directly from supplied requirements.
+Unknown policy or quality targets remain questions; do not fill them with invented
+decisions. Full workflow handoffs carry the reviewed scope, findings and constraints.
 
-Consider the SAVE30 rule. Its requirement states the minimum and discount. The specification states when that branch applies and what it returns. Robustness identifies the information and responsibilities involved. The architecture places the discount seam and its quality constraints. The sequence allocates calls, the class model defines the required operations, and a test compares the result with the independently expected **22500 cents** payable.
-
-That chain is **traceability**. Explicit links establish it; matching diagram numbers or similar class names alone do not. The [traceability guide](../examples/order-pricing/TRACEABILITY.md) shows the actual links. When a requirement changes, review and update the affected links while preserving unchanged identities.
-
-Domain concepts and implementation classes serve different purposes. Cart and Coupon describe the problem; a discount strategy or catalog adapter needs a design reason. Replies, signals and lifecycle messages also retain their semantics rather than all becoming ordinary class operations.
-
-## Use only the scope you need
-
-For a single diagram, supply the relevant goal, behavior or target artifact. The agent can complete independent work and report which comparisons lack evidence. A full nine-stage run is an explicit request, not a prerequisite for every task.
-
-Automated validators check supported syntax, local rules and selected heuristics. Rendered diagrams, semantic review, source inspection and executed behavioral tests answer different questions. Use the [operating contract](OPERATING_CONTRACT.md) when you need the exact input, coverage and ID rules. For SOLID claims, consult the example's [evidence record](../examples/order-pricing/07-class-model/SOLID.md); passing validators or drawing interfaces does not prove all five principles.
-
-## Method and sources
-
-MKL is this edition's branding for an adapted use-case-driven modeling workflow. Its methodological sources include Rosenberg and Stephens, *Use Case Driven Object Modeling with UML: Theory and Practice* (2007), and related work identified in the [bibliography](BIBLIOGRAPHY.md). Original sources remain attributed to their authors; the [source notes](THIRD_PARTY_SOURCES.md) distinguish verified references from unverified material.
+Try the **[worked tutorial](EXAMPLES.md)** to see the connections in one scenario.
+For a single task, use the **[skill selector](STANDALONE.md)**.
+Exact handoff rules are in the [operating contract](OPERATING_CONTRACT.md); methodological
+sources remain in the [bibliography](BIBLIOGRAPHY.md).

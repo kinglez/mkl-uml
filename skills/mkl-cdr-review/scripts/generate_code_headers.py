@@ -34,7 +34,7 @@ import tempfile
 
 sys.path.insert(0, __import__("os").path.dirname(__import__("os").path.abspath(__file__)))
 from validate_cdr import (  # Noqa: E402
-    parse_clases, parse_generalizaciones, leer, clave, norm, parametros_de,
+    parse_clases, parse_generalizaciones, leer, clave, norm, parametros_detallados,
     limites_multiplicidad, TIPOS_IMPRECISOS,
 )
 
@@ -58,9 +58,10 @@ def params_de(crudo: str) -> str:
     if not crudo:
         return ""
     partes = []
-    for nombre, tipo, defecto in parametros_de(crudo):
+    for direction, nombre, tipo, defecto in parametros_detallados(crudo):
         valor = f" = {defecto}" if defecto else ""
-        partes.append(f"{tipo_o_hueco(tipo)} {nombre}{valor}")
+        metadata = f"/* {direction} */ " if direction else ""
+        partes.append(f"{metadata}{tipo_o_hueco(tipo)} {nombre}{valor}")
     return ", ".join(partes)
 
 
@@ -90,9 +91,8 @@ def campos_de_relaciones(mod):
        —`Persona --> Direccion : facturacion` and `: envio`— are two fields
        legitimate, and one disappeared in silence. The label enters the
        key and also gives name to the field.
-    3. **enums do not receive fields.** An enum is a set of constants;
-       injecting a reference to the user is an artifact of the generator,
-       not the model.
+    Enumerations can declare properties and operations as well as literals;
+    evidenced association ends follow the same navigation rules.
     """
     out = {}
     for r in mod.relaciones:
@@ -115,7 +115,7 @@ def campos_de_relaciones(mod):
         for origen, destino, multiplicidad, mult_origen in pares:
             k = clave(origen)
             c = mod.clases.get(k)
-            if not c or c.kind == "enum":
+            if not c:
                 continue
             previo = out.setdefault(k, {})
             ident = (destino, etiqueta)
@@ -188,7 +188,10 @@ def generar(mod, identificador: str) -> tuple:
             pc = mod.clases.get(p)
             if not pc:
                 continue
-            (implementa_l if pc.kind == "interface" else extiende_l).append(pc.nombre)
+            if pc.kind == "interface" and decl != "interface":
+                implementa_l.append(pc.nombre)
+            else:
+                extiende_l.append(pc.nombre)
         extiende = ""
         if extiende_l:
             extiende += " extends " + ", ".join(extiende_l)
@@ -210,14 +213,7 @@ def generar(mod, identificador: str) -> tuple:
                 f"language-specific mapping (L{recepcion.linea}); review the preserved signature")
 
         if c.kind == "enum":
-            # The constants of an enum have no type or visibility: they are not
-            # attributes. `validate_cdr.py` already excludes them from rule #3; he
-            # generator should be consistent with that or both scripts
-            # brothers contradict the same model.
-            L.append("    " + ", ".join(a.nombre for a in c.atributos) + ";")
-            L.append("}")
-            L.append("")
-            continue
+            L.append("    " + ", ".join(c.literales) + ";")
 
         for a in c.atributos:
             t = tipo_o_hueco(a.tipo)
@@ -286,6 +282,11 @@ def generar(mod, identificador: str) -> tuple:
             elif norm(ret) in TIPOS_IMPRECISOS:
                 huecos.append(f"{c.nombre}.{o.nombre}(): imprecise return '{ret}' (L{o.linea})")
             ps = params_de(o.params)
+            for direction, name, _type, _default in parametros_detallados(o.params):
+                if direction in ("out", "inout", "return"):
+                    huecos.append(f"{c.nombre}.{o.nombre}(): UML direction '{direction}' for "
+                                  f"parameter '{name}' requires a language-specific mapping; "
+                                  f"direction preserved in the declaration comment (L{o.linea})")
             if HUECO in ps:
                 huecos.append(f"{c.nombre}.{o.nombre}(): untyped parameters (L{o.linea})")
             v = visibilidad(o.visibilidad)

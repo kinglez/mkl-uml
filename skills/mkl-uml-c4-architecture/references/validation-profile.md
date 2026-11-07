@@ -58,7 +58,10 @@ and no artifact. Artifacts are existing relative files under the record director
 Container/component record views identify their corresponding system/container boundary
 through scope. The scoped managed profile checks ownership of internal children; use
 System_Ext/Container_Ext for collaborators beyond that scope. Deployment uses physical
-placement without replacing logical ownership. Shared aliases are compared across views
+placement without replacing logical ownership. Generic Boundary groups may be nested;
+the nearest System_Boundary (container view) or Container_Boundary (component view)
+must match scope. A different typed owner cannot be bypassed by an outer ancestor.
+Shared aliases are compared across views
 for type, label and technology; preserve aliases when an element is actually the same.
 
 The checker does not authenticate sources, detect unannounced changes, prove inputs were

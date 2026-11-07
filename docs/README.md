@@ -1,51 +1,32 @@
 <!-- Copyright 2026 kingle.zhuang. See NOTICE for upstream attribution. -->
-# Documentation guide
+# Start here
 
-MKL UML has nine skills covering analysis, C4 architecture and detailed-design review. Inputs can be any external evidence. The nine-stage tutorial uses **order pricing**, including C4 architecture; the C4 method guide is business-independent and starts from your own sources.
+MKL UML helps an agent turn your requirements into architecture, UML diagrams and
+design reviews. You can request one result or connect several skills.
 
-You do not need to read every document before starting. Use this order:
+## Get your first result
 
-1. **[Project README](../README.md#quick-start)** — install the skills and create your first model.
-2. **[Step-by-step tutorial](EXAMPLES.md)** — follow nine short prompts, each with inputs, outputs and a checkpoint.
-3. **[Completed example tour](../examples/order-pricing/README.md)** — compare your work with the committed diagrams, reviews, code and test results.
+1. **[Choose the skill](STANDALONE.md#choose-a-skill)** for the result you need.
+2. **[Install that skill](INSTALLATION.md)** in your project.
+3. Copy its prompt from the **[nine examples](../README.md#examples)** into agent chat,
+   supply your requirements or existing files, and name an output folder.
 
-## Choose the document for your question
+You can provide a conversation, document, ticket, image or existing system evidence.
+Ask the agent to explain important assumptions and identify questions that change the
+result. A diagram task can end with an editable `.puml` file, a preview when available,
+and brief design notes.
 
-| Your question | Document | What it gives you |
-|---|---|---|
-| How do I install or select skills? | [Installation](INSTALLATION.md) | One recommended method, then alternatives for local/offline installs and Claude web. |
-| How do I create a high-level architecture? | [C4 architecture](C4_ARCHITECTURE.md) | Functional and quality questions, view selection, deliverables and detailed-design handoff. |
-| What do I send to the agent at each stage? | [Tutorial](EXAMPLES.md) | Nine copyable order-pricing prompts and concrete completion checks. |
-| How do analysis, architecture, detailed design and PDR/CDR connect? | [Workflow guide](MKL_METHODOLOGY.md) | The purpose of each stage and how findings lead to corrections. |
-| Which files does a skill need, and how do I preserve IDs? | [Operating contract](OPERATING_CONTRACT.md) | Reference rules for inputs, coverage, handoffs and identifiers. Consult it when those details matter. |
-| What has actually been tested? | [Validation record](VALIDATION.md) | Recorded executions and their limits. This is evidence, not the getting-started procedure. |
-| What changed in a version? | [Release notes](RELEASE_NOTES.md) | Version history and distribution details. |
-| Where do the modeling rules come from? | [Bibliography](BIBLIOGRAPHY.md) · [Third-party sources](THIRD_PARTY_SOURCES.md) | Original sources, attribution and what was or was not verified. |
+## Choose your next page
 
-## Find your way around the example
-
-| What you want to inspect | Start here |
+| Your goal | Read |
 |---|---|
-| Business problem and literal expected amounts | [Requirements](../examples/order-pricing/00-input/requirements.md) · [Acceptance oracle](../examples/order-pricing/00-input/ACCEPTANCE_ORACLE.md) |
-| A specific stage's finished output | [Nine-stage artifact table](../examples/order-pricing/README.md#nine-stage-artifacts) |
-| One rule followed through the whole design | [Traceability](../examples/order-pricing/TRACEABILITY.md) |
-| Corrections found by the reviews | [Example tour](../examples/order-pricing/README.md#what-the-reviews-actually-caught) · [Change history](../examples/order-pricing/CHANGE_IMPACT.md) |
-| SOLID reasoning and its actual evidence | [Scoped SOLID review](../examples/order-pricing/07-class-model/SOLID.md) |
-| Maintenance of the published review baselines | [Advanced replay procedure](../examples/order-pricing/HOW_TO_REPLAY.md) |
+| Use one skill for my own task | [Single-skill guide](STANDALONE.md) |
+| Learn how the stages connect | [Workflow overview](MKL_METHODOLOGY.md) |
+| Follow a complete worked exercise | [Order-pricing tutorial](EXAMPLES.md) |
+| Focus on high-level architecture | [C4 guide](C4_ARCHITECTURE.md) |
 
-The repository contains the complete example. Installing skills into another project copies the skills, not these project artifacts. From an offline skill package, [open the example on GitHub](https://github.com/kinglez/mkl-uml/tree/main/examples/order-pricing) or clone the repository to follow the tutorial.
+Installation copies the skills, not the worked example's project files.
+The [completed example](../examples/order-pricing/README.md) is available in the repository.
 
-Older implementation plans under `docs/superpowers/plans/` record development work. They are not steps that a skill user needs to execute.
-
-## A few terms used in the tutorial
-
-| Term | Meaning in this example |
-|---|---|
-| Artifact | A file produced or reviewed at a stage: a diagram, specification, test plan or review record. |
-| Use case | A user goal. `CU-01 Quote cart` describes the Shopper's request and the system's response. |
-| Robustness / BCE | Analysis using boundary (interaction interface), control (behavior responsibility), and entity (domain concept) objects. |
-| PDR | Preliminary Design Review: check the analysis before detailed design. |
-| CDR | Critical Design Review: check detailed design before implementation handoff. |
-| Traceability | Explicit links that let you follow a requirement into behavior, design and tests. |
-
-Passing automated checks gives evidence about the checks performed. The review record also explains semantic findings, missing evidence and any outstanding decisions.
+Advanced installation, exact review/ID rules, validation history and source attribution
+are in the **[reference section](reference/README.md)**. Consult them when needed.

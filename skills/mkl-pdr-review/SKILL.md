@@ -61,7 +61,7 @@ With missing applicable evidence, withhold final acceptance and label the record
 From this skill directory, the following is executable; paths are placeholders:
 
 ```bash
-python scripts/validate_pdr.py --robustez path/to/robustness.puml --spec path/to/spec.md --dominio path/to/domain.puml
+python scripts/validate_pdr.py --robustez path/to/robustness.puml
 ```
 
 Use only available inputs accepted by `--help`. State execution, findings and omitted layers. Return a concise review for scoped work; a formal gate adds coverage, traceability, decisions and action tracking. No fixed self-audit count or assurance certificate is required.
