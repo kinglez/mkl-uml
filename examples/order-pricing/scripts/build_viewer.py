@@ -10,9 +10,10 @@ STAGES = [
     ("03-spec", "3 · Specification", "Define basic, alternative and exception behavior with observable outcomes.", ["CU01-quote-cart.md", "interface-contract.md", "pdr-corrections.md"]),
     ("04-robustness", "4 · Robustness", "Connect behavior to boundaries, control responsibilities and domain entities. Analysis controls do not prescribe implementation classes.", ["robustness.puml", "correspondence.md"]),
     ("05-pdr", "5 · PDR", "Review analysis independently, resolve findings and record the technical basis for detailed design.", ["PDR-01.md"]),
-    ("06-interactions", "6 · Interactions and tests", "Read the PDR outcome, allocate behavior to collaborators and derive tests from observable results.", ["operation-delta.md", "test-plan.md", "DESIGN_DECISIONS.md"]),
-    ("07-class-model", "7 · Design classes", "Inspect types, operation allocation, source dependencies and concrete SOLID evidence.", ["classes.puml", "provenance.md", "SOLID.md"]),
-    ("08-cdr", "8 · CDR", "Review static and dynamic design, requirements, test evidence and generated declarations.", ["CDR-01.md", "headers.java", "header-inspection.md"]),
+    ("architecture", "6 · C4 architecture", "Zoom from the system to its local container, components and a scoped code view. Decisions and quality scenarios constrain detailed design; L4 is refined with the class design.", ["context.puml", "container.puml", "component.puml", "code.puml", "architecture-brief.md", "architecture.json", "component-code-map.json", "REVIEW.md"]),
+    ("06-interactions", "7 · Interactions and tests", "Read the current architecture and PDR outcomes, allocate behavior to collaborators and derive tests from observable results.", ["operation-delta.md", "test-plan.md", "DESIGN_DECISIONS.md"]),
+    ("07-class-model", "8 · Design classes", "Inspect types, operation allocation, source dependencies and concrete SOLID evidence.", ["classes.puml", "provenance.md", "SOLID.md"]),
+    ("08-cdr", "9 · CDR", "Review static and dynamic design, requirements, test evidence and generated declarations.", ["CDR-01.md", "headers.java", "header-inspection.md"]),
 ]
 
 
@@ -28,11 +29,12 @@ def main():
     result = json.loads(result_path.read_text(encoding="utf-8")) if result_path.exists() else {}
     verdict = "Verification passed" if result.get("passed") else "Verification pending; see the review records"
     counts = (str(result.get("reference_unittest_methods", "pending")) + " test methods · "
-              + str(result.get("diagrams", "pending")) + " UML diagrams")
+              + str(result.get("diagrams", "pending")) + " UML / C4 diagrams")
     nav = []
     panels = []
     for index, (directory, title, purpose, resources) in enumerate(STAGES):
-        ident = "stage-" + str(index + 1)
+        # Keep existing deep links stable when inserting the architecture tab.
+        ident = "stage-architecture" if directory == "architecture" else "stage-" + str(index + 1 if index < 5 else index)
         nav.append('<button data-target="' + ident + '" aria-selected="false">' + escape(title) + '</button>')
         files = [link(Path(directory) / name) for name in resources if (ROOT / directory / name).is_file()]
         images = []
@@ -70,13 +72,14 @@ figure{margin:24px 0 0}figcaption{font-size:14px;color:var(--muted);margin-botto
 table{border-collapse:collapse;width:100%;margin-top:14px}th,td{text-align:left;border-bottom:1px solid var(--line);padding:9px}code,pre{font:14px/1.6 ui-monospace,monospace}pre{overflow:auto;background:var(--bg);padding:16px;border-radius:6px}.note{border-left:4px solid var(--accent);padding-left:14px}
 @media(max-width:640px){main{padding:24px 14px}.panel,.intro,.execution{padding:18px}h1{font-size:27px}button{padding:8px 10px}}
 </style><main>
-<h1>MKL UML · Order pricing</h1><p>A complete reference example: business rules, eight UML workflow stages, independent review findings, executable code and literal acceptance expectations.</p>
+<h1>MKL UML · Order pricing</h1><p>A complete reference example: business rules, nine architecture/UML workflow stages, independent review findings, executable code and literal acceptance expectations.</p>
 <div class="meta"><span class="badge">Validator baseline v__VERSION__</span><span class="badge">__VERDICT__</span><span class="badge">__COUNTS__</span></div>
 <div class="intro"><h2>The problem</h2><p>A Shopper submits product codes, quantities and an optional coupon. The system reads trusted catalog prices and returns the subtotal, discount and payable item amount, or an explicit refusal. The example is read-only and requires no external service.</p>
 <table><thead><tr><th>Subtotal</th><th>Coupon rule</th><th>Payable</th></tr></thead><tbody><tr><td>CNY 255.00</td><td>No coupon</td><td>CNY 255.00</td></tr><tr><td>CNY 255.00</td><td>SAVE30: CNY 30 off orders of CNY 200 or more</td><td>CNY 225.00</td></tr><tr><td>CNY 255.00</td><td>TENOFF: 10% off orders of CNY 100 or more</td><td>CNY 229.50</td></tr><tr><td>CNY 255.00</td><td>BIGSAVE: CNY 500 off, capped at the subtotal</td><td>CNY 0.00</td></tr></tbody></table>
 <p class="note">Money uses integer cents. Policies are teaching assumptions. AI technical reviews and passing tests provide bounded evidence; formal human/business acceptance remains Not fully verified.</p>
 <div class="files">__TOP_LINKS__</div></div>
-<nav aria-label="Eight workflow stages">__NAV__</nav>__PANELS__
+<div class="intro"><h2>How the outputs connect</h2><p>Requirements and analysis feed architecture; architecture constrains interactions/classes; CDR and executed code evidence challenge that chain. Existing directory prefixes remain stable.</p><img src="../../docs/assets/workflow.svg" alt="Analysis to architecture, detailed design, review and feedback" style="width:100%;height:auto"></div>
+<nav aria-label="Nine workflow stages">__NAV__</nav>__PANELS__
 <section class="execution"><h2>Run it locally</h2><p>From the repository root, Python's standard library runs the validators and reference tests. Add --render to regenerate SVG/PNG using PlantUML installed locally.</p>
 <pre>python3 examples/order-pricing/09-reference-implementation/run_example.py
 python3 examples/order-pricing/scripts/verify.py

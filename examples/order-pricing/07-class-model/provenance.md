@@ -44,3 +44,13 @@ Generated Java headers are inspection aids for an implementation-neutral model. 
 ## Remaining source-profile warnings
 
 Data-only CartLine/Product are deliberate immutable values; Cart uses their state for cart rules. PriceQuote has constructor invariants implemented in `__post_init__`, rather than a fabricated domain operation. The heuristic's anemia warning is therefore not accepted without a demonstrated misplaced responsibility. The Cart→Product dependency is M05/AD-01 technical use. Field-name mismatches such as expiresAt/config are supported by actual interface semantics and AD-04/06; a lack of literal spelling in the CU is not missing state provenance. Independent CDR must confirm these adjudications against actual code.
+
+## C4 component allocation replay - 2026-11-07
+
+[component-code-map.json](../architecture/component-code-map.json) allocates all 17
+MC-01 classifiers to six responsibility groups and actual Python declarations. This
+retains classifier identity and member provenance; no new business class is added.
+The application-wide MC-01 spans several components. The separate
+[scoped code view](../architecture/code.puml) refines only discount_engine, showing
+DiscountPolicy and the three pure implementations. Registry resolution is intentionally
+omitted from that focused projection; DS-01 and MC-01 retain its operations.

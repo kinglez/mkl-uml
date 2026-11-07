@@ -94,3 +94,19 @@ This compact handoff applies the current workflow guidance to the maintained exa
 Stage 6 may proceed for this fictional technical example. Carry forward the trusted catalog boundary, separate configuration/eligibility from pure discount calculation, justify the extension point and preserve the independent expected values. Wiring changes remain allowed; universal zero-change extension is not promised.
 
 The subsequent [CDR](../08-cdr/CDR-01.md) and [code audit](../08-cdr/CODE-AUDIT-01.md) provide the later implementation evidence. Negative-minimum policy, simultaneous-fault precedence and production capabilities remain outside the verified business scope. This technical readiness result supplies no formal human/business acceptance or production release authority.
+
+## Architecture replay handoff - 2026-11-07
+
+The historical stage-6 recommendation above meant sequence design in the original
+eight-stage path. The current nine-skill replay first consumes this reviewed analysis
+in [architecture/](../architecture/README.md), including RF/RN/RNF drivers, then checks
+the architecture-to-detailed-design handoff. This adds no business rule or formal approval.
+The actual source versions are carried in the analysis and architecture handoff records.
+
+### Replay correction PDR-01-F02 - refusal-summary precision
+
+The independent replay reviewer found that the FE-02 summary promised a refusal
+naming the unknown Product code, beyond RF-09, the interface contract, CP-18 and
+actual category-only output. The summary now promises an unknown-Product reason
+and no successful quote. No requirement, expected value, code behavior or ID changes.
+This dated correction does not rewrite the earlier PDR-01-F01 history.

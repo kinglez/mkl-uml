@@ -1,0 +1,14 @@
+@startuml
+!include <C4/C4_Context>
+title L1 - Order Pricing system context (bounded teaching example)
+LAYOUT_LEFT_RIGHT()
+Person(shopper, "Shopper", "Requests an item price quote")
+System(order_pricing, "Order Pricing", "Returns a quote or refusal; never creates an order")
+Rel(shopper, order_pricing, "Requests quote / receives result", "Local demonstration request boundary")
+note bottom of order_pricing
+  Trusted setup supplies Product and Coupon snapshots.
+  These data values are not external software systems.
+  Tax, shipping, payment and production authentication are out of scope.
+end note
+SHOW_LEGEND()
+@enduml

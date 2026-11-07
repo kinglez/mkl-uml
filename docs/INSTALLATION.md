@@ -3,7 +3,7 @@
 
 Install the nine skills into the project where you use your agent. Installation makes the skills available; you then invoke them in chat. To learn with the order-pricing files, first [clone this repository](../README.md#quick-start).
 
-[Documentation guide](README.md) · [Eight-stage tutorial](EXAMPLES.md)
+[Documentation guide](README.md) · [Nine-stage tutorial](EXAMPLES.md)
 
 ## Recommended: Skills CLI
 
@@ -17,7 +17,8 @@ npx skills add kinglez/mkl-uml -a codex --skill '*' -y
 npx skills add kinglez/mkl-uml -a claude-code --skill '*' -y
 ```
 
-These commands read the current GitHub repository. They do not require an MKL package on the npm registry. Python **3.9+** is needed when you run the bundled validators, not just to copy the skills.
+These commands read the published GitHub revision. Version 1.1.0 includes nine skills.
+For a local checkout, use `npx skills add . -a codex --skill '*' -y`, or the local Python installer. They do not require an MKL package on the npm registry. Python **3.9+** is needed when you run the bundled validators, not just to copy the skills.
 
 | If you want… | Change the command |
 |---|---|
@@ -43,23 +44,23 @@ Save the conceptual model to uml/domain.puml and explain unresolved assumptions.
 
 In Claude Code, replace the first line with `/mkl-uml-domain-modeler`. If the skill is not listed, reopen the agent session in the project where you installed it and check the selected installation scope.
 
-For the complete order-pricing requirements and all eight prompts, continue with the **[tutorial](EXAMPLES.md)**. Skill installation does not copy `examples/order-pricing/` into another project; that folder belongs to the repository checkout.
+For the complete order-pricing requirements and all nine prompts, continue with the **[tutorial](EXAMPLES.md)**. Skill installation does not copy `examples/order-pricing/` into another project; that folder belongs to the repository checkout.
 
 ## Other installation methods
 
-Use these only when you need a pinned source, offline files or a host-specific upload. The latest previously published source tag documented here is **[v1.0.4](https://github.com/kinglez/mkl-uml/tree/v1.0.4)**. Historical release evidence remains in the [release notes](RELEASE_NOTES.md).
+Use these only when you need a pinned source, offline files or a host-specific upload. The source tag for this release is **[v1.1.0](https://github.com/kinglez/mkl-uml/tree/v1.1.0)**. Historical release evidence remains in the [release notes](RELEASE_NOTES.md).
 
 ### Pinned source or bundled npx installer
 
-This checkout is a local **1.1.0 candidate** with nine skills. The pinned `v1.0.4` commands below install the previous eight-skill release, without C4. Use a local checkout for the new skill until publication.
+The pinned commands below install **v1.1.0** with all nine skills, including C4 architecture.
 
 The bundled installer adds self-contained documentation and legal notices. It requires Node.js **20+**, Python **3.9+** and Git for the GitHub source. It installs all nine skills by default and refuses to overwrite existing target skill directories.
 
 Run from any directory, choosing your agent:
 
 ```bash
-npx --yes --allow-git=all --package "git+https://github.com/kinglez/mkl-uml.git#v1.0.4" mkl-uml install --agent codex
-npx --yes --allow-git=all --package "git+https://github.com/kinglez/mkl-uml.git#v1.0.4" mkl-uml install --agent claude-code
+npx --yes --allow-git=all --package "git+https://github.com/kinglez/mkl-uml.git#v1.1.0" mkl-uml install --agent codex
+npx --yes --allow-git=all --package "git+https://github.com/kinglez/mkl-uml.git#v1.1.0" mkl-uml install --agent claude-code
 ```
 
 `--allow-git=all` permits this Git dependency with npm 12. npm 11 and earlier can omit it. This option applies to that command. See [npm configuration](https://docs.npmjs.com/cli/using-npm/config/).

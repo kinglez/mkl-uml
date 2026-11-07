@@ -1,12 +1,12 @@
 <!-- Copyright 2026 kingle.zhuang. See NOTICE for upstream attribution. -->
 # Documentation guide
 
-MKL UML has nine skills covering analysis, C4 architecture and detailed-design review. Inputs can be any external evidence. The original eight-stage tutorial uses **order pricing**; the separate C4 guide is business-independent and starts from your own sources.
+MKL UML has nine skills covering analysis, C4 architecture and detailed-design review. Inputs can be any external evidence. The nine-stage tutorial uses **order pricing**, including C4 architecture; the C4 method guide is business-independent and starts from your own sources.
 
 You do not need to read every document before starting. Use this order:
 
 1. **[Project README](../README.md#quick-start)** — install the skills and create your first model.
-2. **[Step-by-step tutorial](EXAMPLES.md)** — follow eight short prompts, each with inputs, outputs and a checkpoint.
+2. **[Step-by-step tutorial](EXAMPLES.md)** — follow nine short prompts, each with inputs, outputs and a checkpoint.
 3. **[Completed example tour](../examples/order-pricing/README.md)** — compare your work with the committed diagrams, reviews, code and test results.
 
 ## Choose the document for your question
@@ -15,7 +15,7 @@ You do not need to read every document before starting. Use this order:
 |---|---|---|
 | How do I install or select skills? | [Installation](INSTALLATION.md) | One recommended method, then alternatives for local/offline installs and Claude web. |
 | How do I create a high-level architecture? | [C4 architecture](C4_ARCHITECTURE.md) | Functional and quality questions, view selection, deliverables and detailed-design handoff. |
-| What do I send to the agent at each stage? | [Tutorial](EXAMPLES.md) | Eight copyable order-pricing prompts and concrete completion checks. |
+| What do I send to the agent at each stage? | [Tutorial](EXAMPLES.md) | Nine copyable order-pricing prompts and concrete completion checks. |
 | How do analysis, architecture, detailed design and PDR/CDR connect? | [Workflow guide](MKL_METHODOLOGY.md) | The purpose of each stage and how findings lead to corrections. |
 | Which files does a skill need, and how do I preserve IDs? | [Operating contract](OPERATING_CONTRACT.md) | Reference rules for inputs, coverage, handoffs and identifiers. Consult it when those details matter. |
 | What has actually been tested? | [Validation record](VALIDATION.md) | Recorded executions and their limits. This is evidence, not the getting-started procedure. |
@@ -27,7 +27,7 @@ You do not need to read every document before starting. Use this order:
 | What you want to inspect | Start here |
 |---|---|
 | Business problem and literal expected amounts | [Requirements](../examples/order-pricing/00-input/requirements.md) · [Acceptance oracle](../examples/order-pricing/00-input/ACCEPTANCE_ORACLE.md) |
-| A specific stage's finished output | [Eight-stage artifact table](../examples/order-pricing/README.md#eight-stage-artifacts) |
+| A specific stage's finished output | [Nine-stage artifact table](../examples/order-pricing/README.md#nine-stage-artifacts) |
 | One rule followed through the whole design | [Traceability](../examples/order-pricing/TRACEABILITY.md) |
 | Corrections found by the reviews | [Example tour](../examples/order-pricing/README.md#what-the-reviews-actually-caught) · [Change history](../examples/order-pricing/CHANGE_IMPACT.md) |
 | SOLID reasoning and its actual evidence | [Scoped SOLID review](../examples/order-pricing/07-class-model/SOLID.md) |

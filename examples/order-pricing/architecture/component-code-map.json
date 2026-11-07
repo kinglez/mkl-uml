@@ -1,0 +1,141 @@
+{
+  "schema_version": 1,
+  "system": "order_pricing",
+  "container": "pricing_app",
+  "components": [
+    {
+      "id": "request_boundary",
+      "members": [
+        {
+          "path": "09-reference-implementation/pricing/adapters.py",
+          "symbols": [
+            "QuoteRequestPort"
+          ]
+        }
+      ],
+      "model_classes": [
+        "QuoteRequestPort"
+      ]
+    },
+    {
+      "id": "quote_workflow",
+      "members": [
+        {
+          "path": "09-reference-implementation/pricing/service.py",
+          "symbols": [
+            "QuoteService",
+            "ProductCatalog",
+            "CouponCatalog",
+            "PolicyResolver"
+          ]
+        }
+      ],
+      "model_classes": [
+        "QuoteService",
+        "ProductCatalog",
+        "CouponCatalog",
+        "PolicyResolver"
+      ]
+    },
+    {
+      "id": "domain_rules",
+      "members": [
+        {
+          "path": "09-reference-implementation/pricing/core.py",
+          "symbols": [
+            "Cart",
+            "CartLine",
+            "Product",
+            "Coupon",
+            "PriceQuote",
+            "Refusal",
+            "utc_instant"
+          ]
+        }
+      ],
+      "model_classes": [
+        "Cart",
+        "CartLine",
+        "Product",
+        "Coupon",
+        "PriceQuote",
+        "Refusal"
+      ]
+    },
+    {
+      "id": "discount_engine",
+      "members": [
+        {
+          "path": "09-reference-implementation/pricing/policies.py",
+          "symbols": [
+            "DiscountPolicy",
+            "NoDiscount",
+            "FixedDiscount",
+            "PercentageDiscount",
+            "RegistryPolicyResolver",
+            "require_subtotal"
+          ]
+        }
+      ],
+      "model_classes": [
+        "DiscountPolicy",
+        "NoDiscount",
+        "FixedDiscount",
+        "PercentageDiscount",
+        "RegistryPolicyResolver"
+      ]
+    },
+    {
+      "id": "catalog_snapshot",
+      "members": [
+        {
+          "path": "09-reference-implementation/pricing/adapters.py",
+          "symbols": [
+            "InMemoryCatalog"
+          ]
+        }
+      ],
+      "model_classes": [
+        "InMemoryCatalog"
+      ]
+    },
+    {
+      "id": "composition",
+      "members": [
+        {
+          "path": "09-reference-implementation/pricing/adapters.py",
+          "symbols": [
+            "build_port",
+            "default_registrations"
+          ]
+        }
+      ],
+      "model_classes": []
+    }
+  ],
+  "code_view": {
+    "parent_component": "discount_engine",
+    "artifact": "architecture/code.puml",
+    "classifiers": [
+      "DiscountPolicy",
+      "NoDiscount",
+      "FixedDiscount",
+      "PercentageDiscount"
+    ],
+    "origin": "Scoped static projection of MC-01 and current pricing/policies.py; not a complete component inventory"
+  },
+  "limits": "AST symbol/name allocation establishes declared correspondence, not correct behavior or complete architecture semantics. Runtime/quality evidence is separate.",
+  "shared_helpers": [
+    {
+      "path": "09-reference-implementation/pricing/adapters.py",
+      "symbols": [
+        "parse_utc"
+      ],
+      "used_by": [
+        "request_boundary",
+        "catalog_snapshot"
+      ],
+      "responsibility": "Shared adapter-level UTC text decoding; each caller supplies its appropriate refusal category. Not a separate C4 component."
+    }
+  ]
+}

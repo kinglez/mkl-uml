@@ -1,11 +1,11 @@
 <!-- Copyright 2026 kingle.zhuang. See NOTICE for upstream attribution. -->
 # Tutorial: design an order-pricing feature
 
-Use the eight MKL skills to take **CU-01 Quote cart** from requirements to a reviewed design. Every step uses the same order-pricing scenario and links to a completed artifact you can compare with your result.
+Use the nine MKL skills to take **CU-01 Quote cart** from requirements to a reviewed design. Every step uses the same order-pricing scenario and links to a completed artifact you can compare with your result.
 
 If you only want to read or run the finished example, start with the [example guide](../examples/order-pricing/README.md). This tutorial is for generating your own version alongside it. See the [documentation guide](README.md) for the reading order.
 
-[Setup](#before-you-start) · [Scenario](#the-scenario) · [Eight steps](#1-name-the-business-concepts) · [Verify](#check-your-results) · [Your own project](#apply-this-to-your-project)
+[Setup](#before-you-start) · [Scenario](#the-scenario) · [Nine steps](#1-name-the-business-concepts) · [Verify](#check-your-results) · [Your own project](#apply-this-to-your-project)
 
 ## Before you start
 
@@ -22,7 +22,7 @@ cd mkl-uml
 
 Prompts use Codex's `$skill-name` syntax. In Claude Code, replace it with `/skill-name`, for example `/mkl-uml-domain-modeler`.
 
-**Path convention:** `examples/order-pricing/` is the completed, read-only reference. Your new outputs go under `uml/order-pricing/`, with one numbered folder per stage. Keep those outputs separate so you can compare them with the reference without changing its reviewed baselines. If that output folder already contains work, select another new folder and replace the prefix consistently in every prompt.
+**Path convention:** `examples/order-pricing/` is the completed, read-only reference. Your new outputs go under `uml/order-pricing/`, with a named folder per stage. Keep those outputs separate so you can compare them with the reference without changing its reviewed baselines. If that output folder already contains work, select another new folder and replace the prefix consistently in every prompt.
 
 At each step, ask the agent to run the applicable bundled validator and report the command, result and missing checks. PlantUML source (`.puml`) is editable text; the reference includes PNG/SVG previews. Rendering your new diagrams additionally needs a renderer available to your agent.
 
@@ -159,17 +159,56 @@ the technical basis for proceeding. Record only actual reviewer participation.
 
 Compare: [PDR findings and handoff](../examples/order-pricing/05-pdr/PDR-01.md). The reference PDR caught an invented negative-minimum business rule; the requirements had not authorized that rule.
 
+<a id="6-c4-architecture"></a>
+
+## 6. Choose the high-level architecture
+
+**Purpose:** decide the runtime boundary, responsibilities, ownership and extension seams
+before allocating detailed operations. Use functional requirements and relevant quality
+scenarios together.
+
+**Input:** reviewed requirements, domain/behavior/BCE analysis and PDR. **Output:** an
+`architecture/` folder containing selected C4 views, `architecture-brief.md` for
+detailed-design constraints, and `architecture.json` for decisions/quality links. Existing numbered folders are retained for compatibility.
+
+```text
+$mkl-uml-c4-architecture
+Read the frozen requirements and oracle in examples/order-pricing/00-input, then
+my reviewed domain/specification/robustness/PDR files under uml/order-pricing.
+Work only under uml/order-pricing/architecture. Explain the system context,
+local runtime container and responsibility groups with C4-PlantUML. Refine the
+important discount component at the later class-design step with a scoped UML
+code view; the final architecture gallery can display all four levels together. Keep identity mappings across zoom levels.
+Write architecture-brief.md with sources, scope, constraints and next consumer.
+Write architecture.json with requirement-to-decision-to-view links, alternatives,
+costs and observable quality scenarios. Hand these exact files to sequence/class design.
+Do not invent remote services, databases, deployment or numeric quality targets.
+Run actual profile/render checks, inspect meaning, and disclose their limits.
+```
+
+**Check before continuing:** the catalog is an in-process object, not a separate
+runtime container; the existing local runner supplies the host. RNF-01..RNF-05 lead to
+concrete extension/repetition/substitution/local-execution/collaborator checks. A state
+or deployment diagram is justified by a question, not required to fill a template.
+
+Compare: [architecture brief](../examples/order-pricing/architecture/architecture-brief.md) ·
+[L1](../examples/order-pricing/architecture/context.png) ·
+[L2](../examples/order-pricing/architecture/container.png) ·
+[L3](../examples/order-pricing/architecture/component.png) ·
+[L4](../examples/order-pricing/architecture/code.png).
+
 <a id="6-sequence-diagram-and-tests"></a>
 
-## 6. Allocate calls and derive tests
+## 7. Allocate calls and derive tests
 
 **Purpose:** decide how participants collaborate and what observable tests that behavior needs.
 
-**Input:** the PDR handoff and the reviewed analysis. **Output:** `06-interactions/sequence.puml`, `operation-delta.md`, `test-plan.md` and `DESIGN_DECISIONS.md` in that folder.
+**Input:** the current architecture handoff, PDR and reviewed analysis. **Output:** `06-interactions/sequence.puml`, `operation-delta.md`, `test-plan.md` and `DESIGN_DECISIONS.md` in that folder.
 
 ```text
 $mkl-uml-sequence-diagram
-First read uml/order-pricing/05-pdr/PDR-01.md. Match its CU-01/DR-01 scope
+First read uml/order-pricing/architecture/architecture-brief.md and its views,
+quality scenarios and decisions, then uml/order-pricing/05-pdr/PDR-01.md. Match its CU-01/DR-01 scope
 and reviewed versions to current working files; recheck changed inputs or
 blocking findings before relying on that handoff. Read requirements.md and
 ACCEPTANCE_ORACLE.md in examples/order-pricing/00-input, plus the generated
@@ -178,7 +217,7 @@ Create DS-01 for CU-01 in uml/order-pricing/06-interactions/sequence.puml,
 covering the basic flow and all FA/FE paths. Use explicit guards and terminating
 refusals. In that same folder save receiver/operation/source mappings to
 operation-delta.md, observable cases to test-plan.md, and rationale plus carried
-PDR constraints to DESIGN_DECISIONS.md. Distinguish calls from replies and
+PDR and architecture constraints to DESIGN_DECISIONS.md. Distinguish calls from replies and
 lifecycle messages. Run applicable checks against these generated files.
 ```
 
@@ -188,21 +227,27 @@ Compare: [DS-01 preview](../examples/order-pricing/06-interactions/sequence.png)
 
 <a id="7-design-class-model"></a>
 
-## 7. Build the design class model
+## 8. Build the design class model
 
 **Purpose:** place typed state, operations and dependencies with justified responsibilities.
 
-**Input:** domain, interactions, operation allocation, contracts and design constraints. **Output:** `07-class-model/classes.puml`, `provenance.md` and `SOLID.md` in that folder.
+**Input:** domain, interactions, operation allocation, contracts and design constraints. **Output:** `07-class-model/classes.puml`, `provenance.md` and `SOLID.md`, plus
+`architecture/code.puml` and `architecture/component-code-map.json`. If code does not
+yet exist, label paths/declarations in the mapping as proposed; do not claim an executed
+AST correspondence check.
 
 ```text
 $mkl-uml-design-class-model
 Read examples/order-pricing/00-input/requirements.md and the generated
-01-domain, 03-spec and 06-interactions artifacts under uml/order-pricing.
+01-domain, 03-spec, architecture and 06-interactions artifacts under uml/order-pricing.
 Create MC-01 in
 uml/order-pricing/07-class-model/classes.puml with typed state, complete
 operation signatures and justified relationships. In provenance.md, trace each
 added member or software class to behavior, a contract or a design decision.
-In SOLID.md, examine responsibility, discount extension, policy
+Also refine the selected discount component into architecture/code.puml and
+write architecture/component-code-map.json with parent identities, components and
+class/source allocation. Mark source paths proposed if no implementation exists. L4 is this scoped code view, while MC-01
+can span the application. In SOLID.md, examine responsibility, discount extension, policy
 substitution, client needs and dependency ownership. Separate diagram-supported
 claims from claims needing source or execution. Run cross-artifact checks.
 ```
@@ -213,7 +258,7 @@ Compare: [class preview](../examples/order-pricing/07-class-model/classes.png) �
 
 <a id="8-cdr-preparation"></a>
 
-## 8. Review the detailed design: CDR
+## 9. Review the detailed design: CDR
 
 **CDR means Critical Design Review.** It asks whether the design, behavior and tests agree well enough for the requested implementation handoff.
 
@@ -222,7 +267,8 @@ Compare: [class preview](../examples/order-pricing/07-class-model/classes.png) �
 ```text
 $mkl-cdr-review
 Review the generated 07-class-model and 06-interactions artifacts under
-uml/order-pricing against its 01-domain through 05-pdr artifacts and the source
+uml/order-pricing against its current architecture/ brief, decisions, views and
+architecture/component-code-map.json, plus 01-domain through 05-pdr artifacts and the source
 requirements/expectations in examples/order-pricing/00-input. Include the SOLID
 evidence record. Save uml/order-pricing/08-cdr/CDR-01.md. Check flow coverage,
 signatures, responsibility allocation and test expectations. Correct affected
@@ -233,7 +279,7 @@ Keep formal acceptance separate; do not call a self-check independent review.
 
 **Check before finishing:** the record says which checks ran and what remains unverified. A clean validator result does not establish full business correctness, SOLID conformance or formal approval.
 
-Compare: [CDR record](../examples/order-pricing/08-cdr/CDR-01.md) · [code inspection](../examples/order-pricing/08-cdr/CODE-AUDIT-01.md). The reference adds a small Python implementation and executed tests as further evidence; generating that implementation is a separate task from these eight modeling/review steps.
+Compare: [CDR record](../examples/order-pricing/08-cdr/CDR-01.md) · [code inspection](../examples/order-pricing/08-cdr/CODE-AUDIT-01.md). The reference adds a small Python implementation and executed tests as further evidence; generating that implementation is a separate task from these nine modeling/review steps.
 
 ## Check your results
 
@@ -252,9 +298,9 @@ For the reference's additional technical-observation sequence, hash baselines an
 
 ## Apply this to your project
 
-Replace the source requirements and expected outcomes with your own, choose one output folder, and retain your existing IDs. Run only the stages your task needs; a standalone diagram does not require all eight stages.
+Replace the source requirements and expected outcomes with your own, choose one output folder, and retain your existing IDs. Run only the stages your task needs; a standalone diagram does not require all nine stages.
 
-For example, after completing step 6 you can request a focused correction:
+For example, after completing step 7 you can request a focused correction:
 
 ```text
 $mkl-uml-sequence-diagram

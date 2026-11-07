@@ -1,0 +1,16 @@
+@startuml
+!include <C4/C4_Container>
+title L2 - Order Pricing runtime boundary
+LAYOUT_TOP_DOWN()
+Person(shopper, "Shopper", "Requests an item price quote")
+System_Boundary(order_pricing, "Order Pricing") {
+  Container(pricing_app, "Local quoting program", "Python 3.9+", "Request adapter, domain rules, policies and trusted in-memory snapshot; one local execution")
+}
+Rel(shopper, pricing_app, "Quotes product codes and quantities", "In-process request / response mapping")
+note bottom of pricing_app
+  RNF-03: standard library; no live service or installation.
+  The catalog is an object in this process, not a separate container/database.
+  The host is the existing demo runner, not an invented web deployment.
+end note
+SHOW_LEGEND()
+@enduml

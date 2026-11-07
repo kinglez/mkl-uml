@@ -5,7 +5,7 @@
 
 Nine independently usable skills cover analysis, C4 high-level architecture, detailed design and reviews. Use the skill needed for your question or connect their outputs into a workflow. Requirements can come from any supplied evidence: conversations, tickets, documents, images, contracts or an existing system. No PRD or input filename is required. Diagrams use PlantUML; specifications and review records use Markdown.
 
-The existing eight-stage UML tutorial follows one example: **quote a shopping cart with an optional coupon**. The completed [order-pricing example](examples/order-pricing/README.md) includes requirements, diagrams, review findings, Python code and tests.
+The nine-skill tutorial follows one example: **quote a shopping cart with an optional coupon**. The completed [order-pricing example](examples/order-pricing/README.md) includes requirements, diagrams, review findings, Python code and tests.
 
 [Quick start](#quick-start) · [Run the finished example](#run-the-finished-example) · [Workflow](#workflow) · [Stage outputs](#stage-outputs) · [Documentation](#documentation)
 
@@ -32,7 +32,8 @@ git clone https://github.com/kinglez/mkl-uml.git
 cd mkl-uml
 ```
 
-Choose your agent; either command installs all nine skills into this project:
+Choose your agent. These commands install the skills available in the published
+GitHub revision into this project. Version 1.1.0 includes all nine skills:
 
 ```bash
 # Codex
@@ -40,6 +41,12 @@ npx skills@latest add kinglez/mkl-uml -a codex --skill '*' -y
 
 # Claude Code
 npx skills@latest add kinglez/mkl-uml -a claude-code --skill '*' -y
+```
+
+To install directly from a local checkout:
+
+```bash
+npx skills add . -a codex --skill '*' -y
 ```
 
 The Skills CLI needs Node.js 22.20+ and Git. Python 3.9+ runs the validators and executable example. To install into your own project, run the installation command there instead; the example files come from this checkout. See [installation options](docs/INSTALLATION.md).
@@ -66,7 +73,7 @@ For Claude Code, replace the first line with `/mkl-uml-domain-modeler`.
 
 ### 3. Continue one stage at a time
 
-Follow the **[eight-stage tutorial](docs/EXAMPLES.md)**. Each stage explains its purpose, names its inputs, gives a copyable prompt, and links to a completed result. It uses `uml/order-pricing/` for your work and leaves the published example available for comparison.
+Follow the **[nine-stage tutorial](docs/EXAMPLES.md)**. Each stage explains its purpose, names its inputs, gives a copyable prompt, and links to a completed result. It uses `uml/order-pricing/` for your work and leaves the published example available for comparison.
 
 You can stop after the artifact you need. For your own project, replace the teaching requirements with your requirements and use your existing IDs.
 
@@ -92,7 +99,7 @@ hand the decisions, quality scenarios and constraints to detailed design.
 Do not invent missing targets or a system around a bounded module.
 ```
 
-Use **[the C4 guide](docs/C4_ARCHITECTURE.md)** for view selection, stage inputs/outputs and verification. A request for one diagram does not require the complete workflow. The command above discovers published GitHub content; this 1.1.0 candidate must be published before that command can install its new skill. Use the [local installer](docs/INSTALLATION.md#python-installer-and-windows) to try the current checkout.
+Use **[the C4 guide](docs/C4_ARCHITECTURE.md)** for view selection, stage inputs/outputs and verification. A request for one diagram does not require the complete workflow. The command above discovers the published GitHub revision. Use the [local installer](docs/INSTALLATION.md#python-installer-and-windows) for a checkout or the [pinned installation](docs/INSTALLATION.md#pinned-source-or-bundled-npx-installer) for v1.1.0.
 
 ## Run the finished example
 
@@ -120,6 +127,8 @@ Read the **[guided example tour](examples/order-pricing/README.md)** to follow t
 
 ## Workflow
 
+![MKL UML workflow: analysis and PDR, C4 architecture, detailed design, review and feedback](docs/assets/workflow.svg)
+
 Connect the stages through their outputs:
 
 | Stage | Reads | Produces for the next stage |
@@ -133,7 +142,7 @@ Connect the stages through their outputs:
 
 The [official C4](https://c4model.com/) zoom is **system context → containers → components → code**. The code view uses a scoped UML class model of a component; sequence diagrams complement it with behavior. Context and container views normally explain a system-level design. Component and deployment views answer additional questions when needed. C4-PlantUML is the drawing library; it does not choose an architecture or prove quality targets. Rendering, semantic review and formal approval are separate evidence.
 
-The maintained order-pricing tutorial still demonstrates its original eight-stage UML path. It does not claim a newly executed C4 architecture stage. Formal review remains an explicit scope; automated checks alone establish neither formal approval nor SOLID conformance. See the [workflow guide](docs/MKL_METHODOLOGY.md).
+The maintained order-pricing example now includes a dated C4 architecture replay between PDR and detailed design. It retains the frozen business requirements and runnable implementation, then checks the new architecture against them. Formal review remains an explicit scope; automated checks alone establish neither formal approval nor SOLID conformance. See the [workflow guide](docs/MKL_METHODOLOGY.md).
 
 <a id="what-each-stage-produces"></a>
 
@@ -155,20 +164,32 @@ examples/order-pricing/
 │   ├── robustness.puml          4. Boundary, control and entity analysis
 │   └── correspondence.md
 ├── 05-pdr/PDR-01.md             5. Analysis findings and design handoff
+├── architecture/               6. C4 views, decisions and quality scenarios
+│   ├── context.puml
+│   ├── container.puml
+│   ├── component.puml
+│   ├── code.puml                   Scoped UML code view
+│   ├── architecture-brief.md       Constraints consumed by detailed design
+│   ├── architecture.json           Requirement / decision / view links
+│   └── component-code-map.json     Actual component-to-code allocation
 ├── 06-interactions/
-│   ├── sequence.puml            6. Collaborations and guarded branches
+│   ├── sequence.puml            7. Collaborations and guarded branches
 │   ├── operation-delta.md          Operations allocated to their receivers
 │   ├── test-plan.md                Observable expected behavior
 │   └── DESIGN_DECISIONS.md
 ├── 07-class-model/
-│   ├── classes.puml             7. Typed state, operations and relationships
+│   ├── classes.puml             8. Typed state, operations and relationships
 │   ├── provenance.md               Why each member belongs in the design
 │   └── SOLID.md                    Evidence and limits for design principles
-├── 08-cdr/CDR-01.md             8. Detailed-design findings and readiness
+├── 08-cdr/CDR-01.md             9. Detailed-design findings and readiness
+├── handoffs/                   Reviewed snapshots used by the next stage
+│   ├── analysis.json               Analysis -> architecture input
+│   ├── architecture.json           Architecture -> detailed-design input
+│   └── design.json                 Reviewed design/code source set
 └── 09-reference-implementation/ Additional executable code and tests
 ```
 
-Implementation is a subsequent task; it is included here to make the teaching design testable. The [traceability guide](examples/order-pricing/TRACEABILITY.md) connects requirement IDs to behavior, design members and tests.
+Existing numbered paths are retained for link compatibility; `architecture/` is consumed after `05-pdr/` and before `06-interactions/`. Implementation is a subsequent task; this example includes it as executable evidence. The [traceability guide](examples/order-pricing/TRACEABILITY.md) connects requirement IDs to behavior, design members and tests.
 
 ## Documentation
 
@@ -177,7 +198,7 @@ Start with the **[documentation reading guide](docs/README.md)**. Read only the 
 | Your next task | Read |
 |---|---|
 | Design architecture from your own sources | [C4 architecture guide](docs/C4_ARCHITECTURE.md) |
-| Follow the original eight skills using order pricing | [Step-by-step tutorial](docs/EXAMPLES.md) |
+| Follow all nine skills using order pricing | [Step-by-step tutorial](docs/EXAMPLES.md) |
 | Inspect the already completed result | [Example tour](examples/order-pricing/README.md) |
 | Choose another installation method | [Installation](docs/INSTALLATION.md) |
 | Understand the workflow and review stages | [Workflow guide](docs/MKL_METHODOLOGY.md) |

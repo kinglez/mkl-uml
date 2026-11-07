@@ -1,3 +1,43 @@
+# Nine-skill architecture replay - 2026-11-07
+
+This replay retains the frozen business/oracle and reference implementation, adds the
+missing high-level architecture, and rereads the dependent design/code. It is not blind
+regeneration and does not rewrite the earlier eight-stage review history below.
+
+| Skill actually used | Input examined | Current output / check |
+|---|---|---|
+| mkl-uml-domain-modeler | Frozen RF/RN and concepts | Retained domain/glossary; conceptual-profile check and source comparison |
+| mkl-uml-use-case-diagram | Goal, actor and boundary | Retained Shopper/CU-01; no invented catalog actor |
+| mkl-use-case-specifier | Required behavior/oracle and existing flows | Reread success/refusals; corrected FE-02 summary to category-only contract |
+| mkl-uml-robustness-diagram | CU-01/domain and data authority | Retained BCE responsibilities and flow correspondence |
+| mkl-pdr-review | Current analysis and corrected specification | Dated replay findings and analysis-to-architecture handoff |
+| mkl-uml-c4-architecture | Reviewed analysis, quality drivers and actual local host evidence | L1-L3, six decisions, five quality scenarios and explicit constraints; scoped L4 refined with class/code comparison |
+| mkl-uml-sequence-diagram | Architecture/PDR and behavior | DS-01/DS-02 reinspection; runtime call order kept distinct from source imports |
+| mkl-uml-design-class-model | Components, operations, source and contracts | MC-01 retained; scoped discount L4, all 17 classifier allocations and 22 actual declarations |
+| mkl-cdr-review | Architecture, static/dynamic design, code and tests | Explicit semantic correspondence review plus bounded mechanical/executed evidence |
+
+Document-authoring helpers: skill-creator and writing-for-agents. The homepage workflow
+SVG uses fireworks-tech-graph; actual C4 views use C4-PlantUML, and L4 uses ordinary UML.
+The example's scripts test declared allocation and reviewed-baseline dependencies, not
+a generic business architecture or universal SOLID conformance.
+
+## What is new and what was retained
+
+- New: architecture views/brief/record, component/code/shared-helper map, reviewed
+  architecture handoff and example-only blocking/revalidation probes.
+- Reinspected: existing domain, specification, BCE, PDR, DS/MC and CDR/code evidence.
+- Corrected: shared adapter UTC-helper ownership and an overstated FE-02 response.
+- Frozen: requirements, independent literal oracle and all reference Python code/tests.
+- Out of scope: deployment, persistence/write lifecycle, production authentication,
+  remote catalog integration, new latency/availability targets and formal business approval.
+
+The current verification record supplies actual counts/results. Review baselines are
+updated only after affected source inspection; a matching hash is not approval.
+
+---
+
+## Historical eight-stage assessment
+
 # MKL UML workflow assessment
 
 This is an English publication adaptation of the workflow assessment performed on **MKL UML v1.0.2**, commit `fb519f3bb2c0aff48dc655be4a15ddeb56ec60d4`, on 2026-10-29. It evaluates the workflow definition; the example's execution and technical review have their own evidence in [VALIDATION.json](VALIDATION.json), [PDR](05-pdr/PDR-01.md) and [CDR](08-cdr/CDR-01.md).

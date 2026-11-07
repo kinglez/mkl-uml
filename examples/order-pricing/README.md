@@ -2,9 +2,9 @@
 
 This example follows one request, **CU-01 Quote cart**, from business rules to UML diagrams, design reviews and runnable Python code. Use it to see what each skill produces and how the outputs connect.
 
-**New to the skills?** Read this guide, run the example, then follow the [eight-stage tutorial](../../docs/EXAMPLES.md) to create your own files. The completed files here are a reference you can compare with your work.
+**New to the skills?** Read this guide, run the example, then follow the [nine-stage tutorial](../../docs/EXAMPLES.md) to create your own files. The completed files here are a reference you can compare with your work.
 
-[Business scenario](#business-scenario-and-expected-results) · [Run it](#run-the-example) · [Follow the stages](#eight-stage-artifacts) · [Review findings](#what-the-reviews-actually-caught) · [Further reading](#further-reading)
+[Business scenario](#business-scenario-and-expected-results) · [Run it](#run-the-example) · [Follow the stages](#nine-stage-artifacts) · [Review findings](#what-the-reviews-actually-caught) · [Further reading](#further-reading)
 
 ## Business scenario and expected results
 
@@ -49,11 +49,13 @@ Then run the combined checks:
 python3 examples/order-pricing/scripts/verify.py
 ```
 
-A successful run ends with `Result: PASS`. Logs and the current result are written under `examples/order-pricing/validation/latest/`. The verifier checks the reviewed source baseline, runs the skill validators, compares generated inspection headers, and executes the implementation tests and examples.
+A successful run ends with `Result: PASS`. Logs and the current result are written under `examples/order-pricing/validation/latest/`. The verifier checks analysis/architecture/design snapshots, runs all nine skill validators, verifies actual component allocation and blocking/revalidation behavior, compares inspection headers, and executes implementation tests/examples.
 
 It also reports `Formal gate: NOT FULLY VERIFIED; no human approval is claimed.` That is the declared review boundary: the technical example can pass while formal human/business acceptance is still absent. If the verifier reports a stale baseline, review the changed artifact before recording a replacement baseline.
 
-## Eight-stage artifacts
+<a id="eight-stage-artifacts"></a>
+
+## Nine-stage artifacts
 
 Read the rows in order. Each stage answers a different question about the same pricing request. **PlantUML** (`.puml`) files are editable diagram source; PNG and SVG files are rendered previews.
 
@@ -65,14 +67,22 @@ Read the rows in order. Each stage answers a different question about the same p
 | 3. Specification | What happens on success and refusal? | [CU-01 Quote cart](03-spec/CU01-quote-cart.md) | — |
 | 4. Robustness analysis | Which interface, coordination responsibilities and business concepts realize the behavior? | [DR-01](04-robustness/robustness.puml) and [step correspondence](04-robustness/correspondence.md) | [PNG](04-robustness/robustness.png) · [SVG](04-robustness/robustness.svg) |
 | 5. PDR | Is the analysis consistent enough for detailed design? | [PDR findings and handoff](05-pdr/PDR-01.md) | — |
-| 6. Sequence design | Which participants collaborate, in which order? | [DS-01](06-interactions/sequence.puml), [operation allocation](06-interactions/operation-delta.md) and [test plan](06-interactions/test-plan.md) | [PNG](06-interactions/sequence.png) · [SVG](06-interactions/sequence.svg) |
-| 7. Class design | Which class owns each typed value and operation? | [MC-01](07-class-model/classes.puml) and [member origins](07-class-model/provenance.md) | [PNG](07-class-model/classes.png) · [SVG](07-class-model/classes.svg) |
-| 8. CDR | Do the detailed models, contracts and tests agree? | [CDR findings and conclusions](08-cdr/CDR-01.md) | — |
+| 6. C4 architecture | Which runtime boundary, responsibilities and quality strategies fit? | [Architecture brief](architecture/architecture-brief.md), [decisions/scenarios](architecture/architecture.json) and [component allocation](architecture/component-code-map.json) | [L1](architecture/context.png) · [L2](architecture/container.png) · [L3](architecture/component.png) · [L4](architecture/code.png) |
+| 7. Sequence design | Which participants collaborate, in which order? | [DS-01](06-interactions/sequence.puml), [operation allocation](06-interactions/operation-delta.md) and [test plan](06-interactions/test-plan.md) | [PNG](06-interactions/sequence.png) · [SVG](06-interactions/sequence.svg) |
+| 8. Class design | Which class owns each typed value and operation? | [MC-01](07-class-model/classes.puml) and [member origins](07-class-model/provenance.md) | [PNG](07-class-model/classes.png) · [SVG](07-class-model/classes.svg) |
+| 9. CDR | Do the detailed models, contracts and tests agree? | [CDR findings and conclusions](08-cdr/CDR-01.md) | — |
 | Additional code evidence | Does the proposed design work for the tested cases? | [Runnable implementation](09-reference-implementation/README.md) | — |
 
 **PDR** means Preliminary Design Review. It checks the analysis before detailed design. **CDR** means Critical Design Review. It checks the detailed design before implementation handoff. This example also supplies executable code as additional evidence for CDR.
 
 For a concrete reading exercise, follow **SAVE30** through [TRACEABILITY.md](TRACEABILITY.md): the requirement becomes a use case branch, then responsibilities, calls, class operations and a test expecting `22500` cents payable.
+
+### From global architecture to code
+
+[Open the four zoom levels](architecture/README.md): context establishes the system,
+containers show one local program, components expose six responsibility groups, and
+the code view focuses on the discount contract. The catalog stays in process.
+Deployment and persistent state are outside this read-only teaching scope.
 
 ### Conceptual domain
 
@@ -90,10 +100,12 @@ examples/order-pricing/
 ├── 03-spec/                     Success/refusal flows and interface contract
 ├── 04-robustness/               Interface, coordination and entity analysis
 ├── 05-pdr/                      Analysis findings, corrections and handoff
+├── architecture/                C4 zoom levels, decisions, qualities and design handoff
 ├── 06-interactions/             Sequences, operation allocation and test plan
 ├── 07-class-model/              Typed classes, member origins and SOLID evidence
 ├── 08-cdr/                      Detailed-design review and inspection headers
 ├── 09-reference-implementation/ Runnable Python code, tests and extension
+├── handoffs/                   Reviewed analysis / architecture / design inputs
 ├── scripts/verify.py            Combined verification entry point
 └── index.html                   Local offline reader
 ```
@@ -115,13 +127,15 @@ The example retains real corrections so you can see why the reviews matter:
 |---|---|---|
 | PDR | The analysis invented a rule rejecting a negative Coupon minimum. The requirements had left that policy unspecified. | Remove the invented rule and keep the policy outside the verified scope. |
 | Interaction review and CDR | Refusal `break` fragments had incorrect enclosing scope or did not span all affected lifelines. | Correct their placement and frame coverage, then inspect the rendered diagrams. |
+| Architecture replay | Shared parse_utc was assigned only to the request boundary, although the catalog adapter also uses it. | Record both consumers and check actual calls. |
+| Replay specification review | FE-02 promised an extra returned Product-code detail absent from the oracle and implementation. | Correct the summary without changing business rules or code. |
 | CDR | A class-model multiplicity contradicted shared immutable CartLine values. | Correct the multiplicity and check the resulting declarations. |
 
 Read [CHANGE_IMPACT.md](CHANGE_IMPACT.md) for the before/after artifacts and reinspection. A clean validator result did not establish that these semantic issues were absent.
 
 ## Continue with your own work
 
-Use the [step-by-step tutorial](../../docs/EXAMPLES.md) to generate your own outputs under `uml/order-pricing/` while keeping this completed example available for comparison. You can use one skill on its own or follow all eight stages.
+Use the [step-by-step tutorial](../../docs/EXAMPLES.md) to generate your own outputs under `uml/order-pricing/` while keeping this completed example available for comparison. You can use one skill on its own or follow all nine stages.
 
 After that, try the [discount extension](09-reference-implementation/README.md#expected-evidence). It adds a half-off algorithm capped at CNY 20.00; the main cart's payable becomes CNY 235.00. The [SOLID record](07-class-model/SOLID.md) examines the responsibility, extension, substitution, client and dependency evidence behind this design. Finite tests support scoped conclusions; they do not prove universal SOLID conformance.
 
@@ -131,10 +145,10 @@ After that, try the [discount extension](09-reference-implementation/README.md#e
 |---|---|
 | Exact request/result fields and refusal categories | [Interface contract](03-spec/interface-contract.md) |
 | Why a design class, state or operation was added | [Design decisions](06-interactions/DESIGN_DECISIONS.md) and [member origins](07-class-model/provenance.md) |
-| Which checks were executed for the published example | [Validation record](VALIDATION.json) and [workflow assessment](WORKFLOW_REVIEW.md) |
+| Which checks were executed for the maintained example | [Validation record](VALIDATION.json) and [workflow assessment](WORKFLOW_REVIEW.md) |
 | How to intentionally revise the reviewed reference example | [Advanced replay and maintenance](HOW_TO_REPLAY.md) |
 | Original review and publication history | [Publication review](PUBLICATION_REVIEW.md), [origin notes](ORIGIN.json) and [source snapshot](SKILL_SOURCE.json) |
 
-The current validator baseline is **1.0.3**. Historical review sections retain their original context; a local verification run supplies current execution evidence. Requirements, expected results and source baselines are recorded separately from formal acceptance.
+The current validator baseline is **1.1.0**, source runtime `d247203`. The 2026-11-07 architecture replay retains the original business inputs and Python implementation; it does not claim blind regeneration or retroactively change the October review history. Historical review sections retain their original context; a local verification run supplies current execution evidence. Requirements, expected results and source baselines are recorded separately from formal acceptance.
 
 This is a bounded teaching example. Tax, shipping, payment, authentication, persistence, concurrency, fault recovery and production time authority need additional design and verification in a real system. The technical review supports this example; formal human/customer/business acceptance remains **Not fully verified**. Inspection headers are review aids rather than executable Java implementations.

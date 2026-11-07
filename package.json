@@ -47,6 +47,9 @@
     "docs/*.md",
     "LICENSE",
     "NOTICE",
-    "skills/*/tests/fixtures/**/*.puml"
+    "skills/*/tests/fixtures/**/*.puml",
+    "docs/assets/*.svg",
+    "docs/assets/*.json",
+    "docs/assets/*.png"
   ]
 }

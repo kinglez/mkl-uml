@@ -102,3 +102,17 @@ This demonstrates one supported extension point and finite substitution evidence
 The original fictional technical example was ready for handoff after independent closure of both findings and all ten warning dispositions. The repository edition is a publication adaptation with its own rerunnable verification record; replacing old hashes alone would not recreate the original review.
 
 Formal human/business acceptance remains **Not fully verified**. Negative-minimum acceptance/refusal, simultaneous-fault precedence, production time authority and excluded production capabilities remain outside the verified policy scope. Changed inputs require impact analysis and actual affected-scope review before a replacement handoff baseline.
+
+## Architecture correspondence replay - 2026-11-07
+
+The current replay adds the explicitly modeled high-level layer and rechecks it against
+DS-01/DS-02, MC-01 and the unchanged Python implementation. Read the
+[architecture review](../architecture/REVIEW.md) for actual primary-author and independent
+AI roles, two closed minor findings, compared sources and execution limits. Existing
+CDR CLI results do not parse C4 and are not used as architecture-semantic evidence.
+
+The architecture reviewed snapshot now pins the examined DS/MC/code inputs of this
+retrospective exercise. The design snapshot consumes the architecture handoff and
+current sources. This preserves upstream invalidation without a self-referential hash
+cycle. A new project's high-level design does not require pre-existing implementation.
+Historical CDR findings and absent formal human/business approval remain unchanged.

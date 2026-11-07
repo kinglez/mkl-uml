@@ -18,6 +18,26 @@ def text_sha256(path):
     return hashlib.sha256(path.read_text(encoding="utf-8").encode("utf-8")).hexdigest()
 
 
+def verify_review_baselines(demo, stages=("analysis", "architecture", "design")):
+    """Check declared reviewed inputs and the mandatory edges in this example's chain."""
+    required = {
+        "architecture": {"handoffs/analysis.json", "architecture/architecture.json",
+                         "architecture/architecture-brief.md", "architecture/component-code-map.json"},
+        "design": {"handoffs/architecture.json", "architecture/architecture-brief.md",
+                   "architecture/component-code-map.json", "architecture/code.puml"},
+    }
+    for stage in stages:
+        record = json.loads((demo / "handoffs" / (stage + ".json")).read_text(encoding="utf-8"))
+        missing = required.get(stage, set()) - record["inputs_sha256"].keys()
+        if missing:
+            raise ValueError(stage + " handoff input is missing: " + ", ".join(sorted(missing)))
+        for path, expected in record["inputs_sha256"].items():
+            if text_sha256(demo / path) != expected:
+                raise ValueError(stage + " review is stale after artifact change: " + path)
+        if record["human_approval"] is not False:
+            raise ValueError("This teaching example does not claim formal human approval")
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--skill-root", type=Path, default=DEMO.parents[1],
@@ -62,14 +82,7 @@ def main():
         actual = text_sha256(source / path)
         if actual != expected:
             raise ValueError("Skill runtime differs from the reviewed baseline: " + path)
-    for stage in ("analysis", "design"):
-        record = json.loads((DEMO / "handoffs" / (stage + ".json")).read_text(encoding="utf-8"))
-        for path, expected in record["inputs_sha256"].items():
-            actual = text_sha256(DEMO / path)
-            if actual != expected:
-                raise ValueError(stage + " review is stale after artifact change: " + path)
-        if record["human_approval"] is not False:
-            raise ValueError("This teaching example does not claim formal human approval")
+    verify_review_baselines(DEMO)
 
     domain = DEMO / "01-domain/domain.puml"
     use_cases = DEMO / "02-use-cases/use-cases.puml"
@@ -96,6 +109,14 @@ def main():
         [robustness, "--domain", domain])
     cli("05-pdr", "mkl-pdr-review", "validate_pdr.py",
         ["--robustez", robustness, "--spec", spec, "--dominio", domain, "--casos-uso", use_cases])
+    cli("05-architecture", "mkl-uml-c4-architecture", "validate_c4.py",
+        ["--record", DEMO / "architecture/architecture.json", "--project-root", DEMO, "--require-ready"])
+    run("05-architecture-map", [sys.executable, "-B", DEMO / "scripts/check_architecture.py",
+                               "--skill-root", source])
+    gate_result = run("05-architecture-gates", [sys.executable, "-B", DEMO / "scripts/test_workflow_gates.py", "-v"],
+                      extra_env={"MKL_SKILL_ROOT": str(source)})
+    cli("07-code-view", "mkl-uml-design-class-model", "validate_design_class_puml.py",
+        ["--clases", DEMO / "architecture/code.puml"])
     for index, sequence in enumerate(sequences, start=1):
         scope = scopes[sequence.name]
         support = ["--dominio", domain]
@@ -124,9 +145,10 @@ def main():
         DEMO / "09-reference-implementation")
     run("09-extension", [sys.executable, "-B", "extension_demo.py"],
         DEMO / "09-reference-implementation")
+    run("09-code-probes", [sys.executable, "-I", "-B", DEMO / "08-cdr/independent_code_probes.py"])
     test_count = re.search(r"Ran (\d+) tests?", test_result.stderr)
     # Review snapshots are evidence, not maintained current diagrams.
-    rendered = [domain, use_cases, robustness, *sequences, classes]
+    rendered = [domain, use_cases, robustness, *sorted((DEMO / "architecture").glob("*.puml")), *sequences, classes]
     if args.render:
         plantuml = shutil.which("plantuml")
         if plantuml is None:
@@ -143,6 +165,8 @@ def main():
     report = {"checked_at": datetime.now(timezone.utc).isoformat(), "passed": passed,
               "status": "PASS" if passed else "FAIL",
               "source_skill_version": source_record["version"], "checks": results,
+              "workflow_stages": 9, "architecture_views": 4,
+              "workflow_gate_tests": int(re.search(r"Ran (\d+) tests?", gate_result.stderr).group(1)) if re.search(r"Ran (\d+) tests?", gate_result.stderr) else None,
               "reference_unittest_methods": int(test_count.group(1)) if test_count else None,
               "oracle_defined_cases": len(json.loads((DEMO / "00-input/acceptance-oracle.json")
                                            .read_text(encoding="utf-8"))["cases"]),

@@ -43,3 +43,16 @@ CP-01–30 come from the independent oracle. Additional tests have disclosed int
 - Name/marker coverage does not establish semantic correspondence. The review must inspect actual data, guards, responsibilities and outcomes across artifacts.
 
 This publication adapts editorial text and paths from the local exercise. Its handoff hashes describe the publication's reviewed source, rather than claiming byte identity with historical local review files.
+
+## Architecture hop added in the 2026-11-07 replay
+
+Follow SAVE30 through the newly explicit architecture: RF-04 / RN-03 / RN-08 -> ARC-04
+and discount_engine in L3 -> FixedDiscount in the scoped L4 -> DS-01 policy.discount
+call after eligibility -> MC-01 / pricing.policies.FixedDiscount -> CP-02 literal
+payable 22500 cents. The architecture does not change the independent expected result.
+
+RNF-01..RNF-05 -> QS-01..QS-05 -> ARC-01..ARC-06 -> views/components -> the existing
+extension, repetition, substitution and collaborator tests. Exact declared links are in
+[architecture.json](architecture/architecture.json) and the
+[component map](architecture/component-code-map.json). The reviewed architecture
+handoff becomes an input of the detailed-design handoff.

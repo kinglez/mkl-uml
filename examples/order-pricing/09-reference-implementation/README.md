@@ -50,3 +50,10 @@ The original local review actually ran Python **3.9.6** and **3.14.7** successfu
 Negative Coupon-minimum acceptance/refusal, simultaneous-failure precedence, production time authority, authentication, integrations, tax/shipping and persistence remain outside the verified business scope. No test pretends to settle the negative-minimum policy.
 
 The [CDR](../08-cdr/CDR-01.md) is the separate independent design review. This reference implementation provides technical evidence; it does not approve formal human/business acceptance or production deployment.
+
+## Architecture replay
+
+The [C4 architecture](../architecture/README.md) now maps this unchanged local program
+into six responsibility groups and a scoped discount-component code view. The combined
+verifier checks architecture decisions, component allocation, blocking/revalidation and
+existing behavior. No production host, remote catalog or persistence is introduced.

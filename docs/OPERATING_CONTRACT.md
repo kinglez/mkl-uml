@@ -74,6 +74,12 @@ artifacts, findings and omissions; existing CDR CLI checks do not parse C4. The 
 C4 record checks a declared local profile, references and view consistency, not design
 adequacy or actual quality achievement. See the C4 skill's validation profile for exact limits.
 
+The maintained order-pricing example demonstrates this path with an architecture
+brief, declared links, component allocation and a separate reviewed architecture
+handoff. Its example verifier enforces analysis -> architecture -> design input edges,
+checks current hashes and exercises blocking/revalidation. These example-specific
+records are not mandatory input formats for other projects.
+
 ## Vocabulary and semantics
 
 | Origin | Closure requirement |

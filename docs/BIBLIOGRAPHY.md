@@ -58,3 +58,8 @@ Each skill's source record explicitly distinguishes citations checked against pr
 MKL names the adapted skill suite; it does not rename the original publications. Cite published titles for identification. The 2026-10-29 remediation replaces unnecessary book, standard and course transcriptions with independently worded operational guidance. Short technical terms and original local examples remain. This does not relicense external publications or establish permissions for old releases.
 
 The publisher DOI links identify the two principal books. The 2005 book title/authors were checked against the [publisher record](https://link.springer.com/book/10.1007/978-1-4302-0009-3) on 2026-10-29. Historical private-corpus line numbers remain provenance notes, not independently resolvable public citations. The design source record separately identifies the limited 2026-10-29 primary UML check; no full re-verification of every inherited source claim is implied.
+
+## C4 architecture extension
+
+- Simon Brown, [C4 model](https://c4model.com/): primary abstraction/diagram method; code zoom is scoped to a component, with supporting deployment views selected by need.
+- [C4-PlantUML](https://github.com/plantuml-stdlib/C4-PlantUML): notation macros supplied through the local PlantUML standard library. No upstream diagram/library is redistributed by this extension.

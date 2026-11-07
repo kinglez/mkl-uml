@@ -91,7 +91,7 @@ def build_payload(name, root=ROOT):
         selected[path] = Path(filename)
     # C4 has a self-contained, domain-independent guide; retain legacy tutorial
     # bundling for the original eight independently installed skills.
-    shared_docs = [] if name == "mkl-uml-c4-architecture" else [root / "README.md", *(root / "docs" / name for name in DOCS)]
+    shared_docs = [] if name == "mkl-uml-c4-architecture" else [root / "README.md", *(root / "docs" / name for name in DOCS), root / "docs/assets/workflow.svg"]
     for path in shared_docs:
         if path.is_symlink() or not path.resolve().is_relative_to(root):
             raise ValueError(f"Symlink documentation or escaped path is not allowed: {path}")

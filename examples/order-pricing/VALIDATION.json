@@ -1,146 +1,178 @@
 {
-  "checked_at": "2026-10-30T02:38:25.382511+00:00",
-  "edition": "English repository publication of the order-pricing reference example",
+  "checked_at": "2026-11-07T03:39:03.508706+00:00",
   "passed": true,
   "status": "PASS",
-  "source_skill_version": "1.0.3",
-  "reference_unittest_methods": 15,
-  "oracle_defined_cases": 30,
-  "diagrams": 6,
-  "workflow_stages": 8,
-  "design_classifiers": 17,
+  "source_skill_version": "1.1.0",
   "checks": [
     {
       "name": "01-domain",
       "exit_code": 0,
-      "passed": true
+      "passed": true,
+      "log": "validation/latest/01-domain.log"
     },
     {
       "name": "02-use-cases",
       "exit_code": 0,
-      "passed": true
+      "passed": true,
+      "log": "validation/latest/02-use-cases.log"
     },
     {
       "name": "03-specification",
       "exit_code": 0,
-      "passed": true
+      "passed": true,
+      "log": "validation/latest/03-specification.log"
     },
     {
       "name": "04-robustness",
       "exit_code": 0,
-      "passed": true
+      "passed": true,
+      "log": "validation/latest/04-robustness.log"
     },
     {
       "name": "05-pdr",
       "exit_code": 0,
-      "passed": true
+      "passed": true,
+      "log": "validation/latest/05-pdr.log"
+    },
+    {
+      "name": "05-architecture",
+      "exit_code": 0,
+      "passed": true,
+      "log": "validation/latest/05-architecture.log"
+    },
+    {
+      "name": "05-architecture-map",
+      "exit_code": 0,
+      "passed": true,
+      "log": "validation/latest/05-architecture-map.log"
+    },
+    {
+      "name": "05-architecture-gates",
+      "exit_code": 0,
+      "passed": true,
+      "log": "validation/latest/05-architecture-gates.log"
+    },
+    {
+      "name": "07-code-view",
+      "exit_code": 0,
+      "passed": true,
+      "log": "validation/latest/07-code-view.log"
     },
     {
       "name": "06-sequence-1",
       "exit_code": 0,
-      "passed": true
+      "passed": true,
+      "log": "validation/latest/06-sequence-1.log"
     },
     {
       "name": "06-sequence-2",
       "exit_code": 0,
-      "passed": true
+      "passed": true,
+      "log": "validation/latest/06-sequence-2.log"
     },
     {
       "name": "07-classes",
       "exit_code": 0,
-      "passed": true
+      "passed": true,
+      "log": "validation/latest/07-classes.log"
     },
     {
       "name": "08-cdr",
       "exit_code": 0,
-      "passed": true
+      "passed": true,
+      "log": "validation/latest/08-cdr.log"
     },
     {
       "name": "08-headers",
       "exit_code": 0,
-      "passed": true
+      "passed": true,
+      "log": "validation/latest/08-headers.log"
     },
     {
       "name": "09-reference-tests",
       "exit_code": 0,
-      "passed": true
+      "passed": true,
+      "log": "validation/latest/09-reference-tests.log"
     },
     {
       "name": "09-visible-examples",
       "exit_code": 0,
-      "passed": true
+      "passed": true,
+      "log": "validation/latest/09-visible-examples.log"
     },
     {
       "name": "09-extension",
       "exit_code": 0,
-      "passed": true
+      "passed": true,
+      "log": "validation/latest/09-extension.log"
+    },
+    {
+      "name": "09-code-probes",
+      "exit_code": 0,
+      "passed": true,
+      "log": "validation/latest/09-code-probes.log"
     },
     {
       "name": "10-plantuml-syntax",
       "exit_code": 0,
-      "passed": true
+      "passed": true,
+      "log": "validation/latest/10-plantuml-syntax.log"
     },
     {
       "name": "10-plantuml-svg",
       "exit_code": 0,
-      "passed": true
+      "passed": true,
+      "log": "validation/latest/10-plantuml-svg.log"
     },
     {
       "name": "10-plantuml-png",
       "exit_code": 0,
-      "passed": true
+      "passed": true,
+      "log": "validation/latest/10-plantuml-png.log"
     }
   ],
-  "rendering_requested": true,
+  "workflow_stages": 9,
+  "architecture_views": 4,
+  "workflow_gate_tests": 8,
+  "reference_unittest_methods": 15,
+  "oracle_defined_cases": 30,
+  "diagrams": 10,
   "review_baselines_match": true,
+  "rendering_requested": true,
   "reviewed_headers_match": true,
-  "current_publication_runtimes": [
-    {
-      "python": "3.14.7",
-      "checks": 16,
-      "reference_unittest_methods": 15,
-      "passed": true
-    },
+  "formal_gate_disposition": "NOT FULLY VERIFIED",
+  "human_approval": false,
+  "interpretation": "Mechanical results and scoped demo review do not create formal business approval.",
+  "edition": "Local nine-stage architecture replay of the maintained Order Pricing example; not a release or formal approval",
+  "source_runtime_commit": "d247203c535701199866abf954036e48d5cbe433",
+  "design_classifiers": 17,
+  "architecture_components": 6,
+  "source_declarations": 22,
+  "frozen_requirement_oracle_and_reference_python_files": 11,
+  "runtimes": [
     {
       "python": "3.9.6",
-      "checks": 13,
-      "reference_unittest_methods": 15,
-      "passed": true
+      "passed": true,
+      "checks": 21,
+      "rendering_requested": true
+    },
+    {
+      "python": "3.12.14",
+      "passed": true,
+      "checks": 18,
+      "rendering_requested": false
     }
   ],
-  "repository_regression_suite": {
-    "unittest_methods": 240,
-    "passed": true
+  "independent_review": {
+    "reviewer": "order_pricing_c4_review (AI)",
+    "record": "architecture/REVIEW.md",
+    "semantic_findings_closed": 2,
+    "editorial_findings_closed": 4,
+    "formal_human_approval": false
   },
-  "checkout_portability_probe": {
-    "passed": true,
-    "scope": "Current 1.0.3 snapshot in an isolated LF-to-CRLF text checkout, path containing spaces and Unicode, verifier invoked from unrelated working directory with inferred repository root. This simulates checkout conditions, not the Windows operating system.",
-    "text_files_converted": 471,
-    "exit_code": 0,
-    "checks": 13,
-    "reference_unittest_methods": 15
-  },
-  "extension_result": {
-    "ok": true,
-    "subtotal": 25500,
-    "discount": 2000,
-    "payable": 23500,
-    "currency": "CNY"
-  },
-  "core_source_unchanged_during_extension": true,
-  "independent_publication_review": "PUBLICATION_REVIEW.md",
-  "origin_and_portability_edits": "ORIGIN.json",
-  "human_approval": false,
-  "formal_gate_disposition": "NOT FULLY VERIFIED",
-  "evidence_policy": "This is an executed publication summary, not the original local review record. Exact commands and diagnostic logs are regenerated under validation/latest/ and are excluded from Git. OS-specific CI results are published in GitHub Actions; the CRLF/path probe does not claim Windows OS execution.",
-  "interpretation": "Mechanical results and scoped demo review do not create formal business approval.",
-  "source_runtime_commit": "24170e513586012a22c55d76b38544d8e3e61abb",
-  "enhancement_regressions": {
-    "pdr_table_methods": 31,
-    "cdr_display_label_methods": 3,
-    "independent_instruction_consumption_scenarios": 4,
-    "instruction_review_limit": "Scoped AI review of actual responses; not executable or universal SOLID proof.",
-    "independent_parser_reinspection": "Reference-only/annotated-placeholder and nested-reference false greens were reproduced, corrected and independently rechecked."
-  },
-  "retained_code_probes_passed": true
+  "browser_preview": {
+    "static_checks": "passed",
+    "interaction_check": "not_run",
+    "reason": "Browser URL policy blocked the local file protocol"
+  }
 }

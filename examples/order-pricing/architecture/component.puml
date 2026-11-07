@@ -1,0 +1,28 @@
+@startuml
+!include <C4/C4_Component>
+title L3 - Responsibilities inside the local quoting program
+LAYOUT_LEFT_RIGHT()
+Container_Boundary(pricing_app, "Local quoting program") {
+  Component(request_boundary, "Quote request boundary", "Python adapters.py", "Decodes allowed fields and explicit UTC; maps quote/refusal")
+  Component(quote_workflow, "Quote workflow and ports", "Python service.py", "Coordinates CU-01 through application-owned lookup/resolution contracts")
+  Component(domain_rules, "Domain values and rules", "Python core.py", "Owns cart validation, cents arithmetic, eligibility and result invariants")
+  Component(discount_engine, "Discount calculation seam", "Python policies.py", "Resolves a configured policy and calculates under the shared pure contract")
+  Component(catalog_snapshot, "Trusted catalog snapshot", "Python adapters.py", "Owns detached setup data and returns validated domain values")
+  Component(composition, "Composition and registrations", "Python setup functions", "Wires collaborators and policy factories; setup only")
+}
+Rel(request_boundary, quote_workflow, "Invokes quote", "In-process call")
+Rel(request_boundary, domain_rules, "Builds Cart and maps Refusal", "In-process values")
+Rel(quote_workflow, catalog_snapshot, "Looks up Product / Coupon through owned ports", "In-process call")
+Rel(quote_workflow, discount_engine, "Resolves policy then requests discount", "In-process call")
+Rel(quote_workflow, domain_rules, "Validates, checks eligibility and constructs result", "In-process call")
+Rel(catalog_snapshot, domain_rules, "Returns typed trusted values", "In-process construction")
+Rel(discount_engine, domain_rules, "Reads Coupon; propagates configuration refusal", "In-process values")
+Rel(composition, request_boundary, "Assembles runnable object graph", "Setup only")
+note bottom of composition
+  Logical responsibility groups can share a Python file.
+  Wires catalog, service, resolver and request boundary before quoting.
+  UTC text decoding is shared by the request and catalog adapters.
+  Runtime arrows name interactions, not source import direction.
+end note
+SHOW_LEGEND()
+@enduml

@@ -1,0 +1,31 @@
+@startuml
+title L4 - discount_engine component: pure calculation contract\nScoped projection of MC-01; not the entire application
+skinparam shadowing false
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+interface DiscountPolicy <<solution>> {
+  +discount(subtotal : int, currency : String) : int
+}
+class NoDiscount <<solution>> {
+  +discount(subtotal : int, currency : String) : int
+}
+class FixedDiscount <<solution>> {
+  +amount : int {readOnly}
+  +discount(subtotal : int, currency : String) : int
+}
+class PercentageDiscount <<solution>> {
+  +basisPoints : int {readOnly}
+  +discount(subtotal : int, currency : String) : int
+}
+NoDiscount ..|> DiscountPolicy
+FixedDiscount ..|> DiscountPolicy
+PercentageDiscount ..|> DiscountPolicy
+note bottom of DiscountPolicy
+  Parent: order_pricing -> pricing_app -> discount_engine.
+  Accepted input: nonnegative integer CNY subtotal after validation/eligibility.
+  Output: integer cents in 0..subtotal; deterministic; no mutation.
+  Fixed discounts cap; percentages floor. Shared finite vectors are not universal proof.
+  RegistryPolicyResolver is in this component but omitted from this contract-focused view.
+  The complete MC-01 and DS-01 carry allocation, eligibility and call-order evidence.
+end note
+@enduml

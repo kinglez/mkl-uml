@@ -37,3 +37,23 @@ The Python reference implementation uses `datetime.datetime` with zero UTC offse
 ## Author verification boundary
 
 See the exact source-CLI and local PlantUML logs delivered beside the artifacts. Author results do not provide independent review or formal acceptance. CDR must compare actual code and test behavior, operation allocation, headers and this rationale; absence of a modeled operation from one interaction may be justified by a real contract (for example snapshot()).
+
+## Architecture consumption replay - 2026-11-07
+
+This replay rereads the unchanged requirements and reviewed PDR, then the new
+[architecture brief](../architecture/architecture-brief.md), ARC-01..ARC-06, quality
+scenarios and [component map](../architecture/component-code-map.json). Existing
+AD-01..AD-09 and DS-01/DS-02 are retained after comparison; they were not regenerated
+blindly and no new code behavior is claimed.
+
+- ARC-01/06 preserve one local read-only goal: no service, database or Order lifeline.
+- ARC-02 preserves B_Quote / QuoteRequestPort, trusted catalog values and refusal exits.
+- ARC-03 preserves Cart arithmetic, Coupon eligibility and PriceQuote invariants.
+- ARC-04 maps the calculation seam to DiscountPolicy and its common subtotal domain;
+  policy selection can occur before eligibility, but discount invocation cannot.
+- ARC-05 maps small application-owned ports to the actual request/call receivers.
+- QS-01..QS-05 map to the existing test plan, shared vectors, DS-02 and extension exercise.
+
+The architecture-to-design comparison is semantic review; existing sequence/CDR CLIs
+do not parse C4. [Architecture review](../architecture/REVIEW.md) records actual findings.
+A changed architecture baseline reopens the dependent design handoff.

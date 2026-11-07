@@ -3,7 +3,37 @@
 
 **Evidence reference:** this page records checks that were actually executed and their limits. To run the example yourself, use the [example guide](../examples/order-pricing/README.md#run-the-example). To learn the skills, follow the [tutorial](EXAMPLES.md). See the [documentation guide](README.md) for the reading order.
 
-## C4 architecture extension — local 1.1.0 candidate, 2026-11-07
+## Source release v1.1.0 - 2026-11-07
+
+The v1.1.0 source tag includes the C4 skill and the reviewed nine-stage Order Pricing
+replay. The local checks below apply to that release preparation. Hosted CI status is
+recorded separately; a source tag is not an npm registry publication or formal approval.
+
+## Order-pricing nine-stage replay - 2026-11-07
+
+The maintained example now adds C4 high-level architecture between PDR and detailed
+design. Requirements, the independent oracle and all reference Python sources/tests
+remain byte-unchanged across **11** frozen files. Existing models/code were retained
+and reexamined; this is a retrospective replay, not an independently regenerated build.
+
+| Executed check | Result |
+|---|---|
+| Whole reference, Python 3.9.6 with local rendering | **21 checks passed**, **10 diagrams**, **8 blocking/revalidation test methods**, **15 reference test methods / 30 oracle cases**. |
+| Whole reference, Python 3.12.14 without rendering | **18 checks passed** on the same sources; rendering is a separate recorded invocation. |
+| Core repository regression suite | **263 passed** on Python 3.9.6 and 3.12.14. Application-specific acceptance stays under examples/order-pricing/scripts, outside the business-independent skill tests. |
+| Architecture allocation | Six responsibility groups, 17 modeled classifiers, 22 actual declarations and four scoped L4 classifiers. Shared adapter helper consumers are compared with actual calls. |
+| Semantic/wording reinspection | Independent AI review closed two allocation/specification findings and four editorial findings; architecture/design snapshots include actual inspected inputs and mandatory upstream edges. |
+| Distribution | 13 distribution tests and 7 npm-install tests passed, including standalone links and packed/offline payload equality. Homepage workflow SVG is carried in legacy offline documentation; the C4 skill remains self-contained. |
+| Visual/static checks | Ten diagram previews inspected; homepage Fireworks geometry/composition/text checks pass. HTML has nine unique tab targets, valid assets and valid embedded JS syntax. Browser file:// preview was blocked by URL policy, so interaction testing is not claimed. |
+
+The current [example result](../examples/order-pricing/VALIDATION.json) records actual
+invocations; logs and role/scope limits are separate from formal approval. Historical
+pre-C4 result/source/handoff records remain under review-history/. No new deployment,
+state lifecycle, performance/SLA target, business policy, hosted CI result or release tag
+is inferred from these local results. The current [architecture review](../examples/order-pricing/architecture/REVIEW.md)
+records the actual primary-author and independent AI roles and the closed findings.
+
+## Initial C4 capability validation - 2026-11-07 (before order-pricing replay)
 
 This candidate adds the ninth skill and a high-level architecture handoff. Its primary
 method reference is the official C4 model: context, containers, components and code;

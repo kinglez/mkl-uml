@@ -1,0 +1,503 @@
+{
+  "schema_version": 1,
+  "scope": "CU-01 bounded Order Pricing replay. Confirmed means frozen fictional teaching baseline, not human business approval. The current host is the existing local reference program.",
+  "required_levels": [
+    "context",
+    "container",
+    "component"
+  ],
+  "sources": [
+    {
+      "id": "SRC-REQ",
+      "reference": "00-input/requirements.md; baseline 1; SHA-256 1f140f71892a5be3fa7d6d30e798cdf18d847046cb235295b8fc90456522f8b7"
+    },
+    {
+      "id": "SRC-ORACLE",
+      "reference": "00-input/ACCEPTANCE_ORACLE.md and acceptance-oracle.json; unchanged independent expected values"
+    },
+    {
+      "id": "SRC-ANALYSIS",
+      "reference": "05-pdr/PDR-01.md and handoffs/analysis.json; current reviewed analysis"
+    },
+    {
+      "id": "SRC-CODE",
+      "reference": "09-reference-implementation/pricing/*.py; current implementation evidence, not independent requirement authority"
+    }
+  ],
+  "requirements": [
+    {
+      "id": "RF-01",
+      "kind": "functional",
+      "text": "A Shopper quotes a nonempty cart whose lines identify catalog Products and a quantity from 1 through 99. The authoritative unit price is a trusted Product price; it may be zero but cannot be negative.",
+      "source_ids": [
+        "SRC-REQ"
+      ],
+      "status": "confirmed",
+      "priority": "required within the frozen teaching scope"
+    },
+    {
+      "id": "RF-02",
+      "kind": "functional",
+      "text": "The system computes subtotal as the sum of each unit price multiplied by its quantity.",
+      "source_ids": [
+        "SRC-REQ"
+      ],
+      "status": "confirmed",
+      "priority": "required within the frozen teaching scope"
+    },
+    {
+      "id": "RF-03",
+      "kind": "functional",
+      "text": "With no coupon, discount is zero and payable equals subtotal.",
+      "source_ids": [
+        "SRC-REQ"
+      ],
+      "status": "confirmed",
+      "priority": "required within the frozen teaching scope"
+    },
+    {
+      "id": "RF-04",
+      "kind": "functional",
+      "text": "A fixed-amount Coupon discounts its configured cents when the subtotal reaches its minimum. The discount is capped at the subtotal.",
+      "source_ids": [
+        "SRC-REQ"
+      ],
+      "status": "confirmed",
+      "priority": "required within the frozen teaching scope"
+    },
+    {
+      "id": "RF-05",
+      "kind": "functional",
+      "text": "A percentage Coupon discounts `subtotal * basisPoints // 10000`, rounded down to a cent. Its configured rate is between 0 and 10000 inclusive and its minimum must be reached.",
+      "source_ids": [
+        "SRC-REQ"
+      ],
+      "status": "confirmed",
+      "priority": "required within the frozen teaching scope"
+    },
+    {
+      "id": "RF-06",
+      "kind": "functional",
+      "text": "An unknown or expired coupon refuses the quote with a reason; it is not silently ignored. A coupon is expired when evaluation time is equal to or later than its expiry instant.",
+      "source_ids": [
+        "SRC-REQ"
+      ],
+      "status": "confirmed",
+      "priority": "required within the frozen teaching scope"
+    },
+    {
+      "id": "RF-07",
+      "kind": "functional",
+      "text": "A known unexpired coupon whose minimum is not reached refuses the quote without producing a successful quote.",
+      "source_ids": [
+        "SRC-REQ"
+      ],
+      "status": "confirmed",
+      "priority": "required within the frozen teaching scope"
+    },
+    {
+      "id": "RF-08",
+      "kind": "functional",
+      "text": "A successful PriceQuote reports subtotal, discount, payable and currency. Always `0 <= discount <= subtotal` and `payable = subtotal - discount`.",
+      "source_ids": [
+        "SRC-REQ"
+      ],
+      "status": "confirmed",
+      "priority": "required within the frozen teaching scope"
+    },
+    {
+      "id": "RF-09",
+      "kind": "functional",
+      "text": "An empty cart, unknown Product, invalid quantity, unsupported currency or invalid coupon configuration yields an explicit failure with no successful PriceQuote.",
+      "source_ids": [
+        "SRC-REQ"
+      ],
+      "status": "confirmed",
+      "priority": "required within the frozen teaching scope"
+    },
+    {
+      "id": "RF-10",
+      "kind": "functional",
+      "text": "Quoting is read-only: it does not change cart lines, catalog data or coupon state and does not create an order. At most one coupon code is accepted.",
+      "source_ids": [
+        "SRC-REQ"
+      ],
+      "status": "confirmed",
+      "priority": "required within the frozen teaching scope"
+    },
+    {
+      "id": "RN-01",
+      "kind": "constraint",
+      "text": "CNY integer cents are the sole monetary unit; binary floating point is not used.",
+      "source_ids": [
+        "SRC-REQ"
+      ],
+      "status": "confirmed",
+      "priority": "required within the frozen teaching scope"
+    },
+    {
+      "id": "RN-02",
+      "kind": "constraint",
+      "text": "Quantity is an integer in `[1, 99]`; booleans are not quantities.",
+      "source_ids": [
+        "SRC-REQ"
+      ],
+      "status": "confirmed",
+      "priority": "required within the frozen teaching scope"
+    },
+    {
+      "id": "RN-03",
+      "kind": "constraint",
+      "text": "Fixed discounts are capped; payable is never negative.",
+      "source_ids": [
+        "SRC-REQ"
+      ],
+      "status": "confirmed",
+      "priority": "required within the frozen teaching scope"
+    },
+    {
+      "id": "RN-04",
+      "kind": "constraint",
+      "text": "Percentage discounts round down after the integer calculation.",
+      "source_ids": [
+        "SRC-REQ"
+      ],
+      "status": "confirmed",
+      "priority": "required within the frozen teaching scope"
+    },
+    {
+      "id": "RN-05",
+      "kind": "constraint",
+      "text": "Evaluation time must be explicit and timezone-aware UTC for deterministic expiry checks.",
+      "source_ids": [
+        "SRC-REQ"
+      ],
+      "status": "confirmed",
+      "priority": "required within the frozen teaching scope"
+    },
+    {
+      "id": "RN-06",
+      "kind": "constraint",
+      "text": "Coupon conditions are checked before applying the selected discount rule.",
+      "source_ids": [
+        "SRC-REQ"
+      ],
+      "status": "confirmed",
+      "priority": "required within the frozen teaching scope"
+    },
+    {
+      "id": "RN-07",
+      "kind": "constraint",
+      "text": "Failure produces no successful quote and does not fall back to the full price automatically.",
+      "source_ids": [
+        "SRC-REQ"
+      ],
+      "status": "confirmed",
+      "priority": "required within the frozen teaching scope"
+    },
+    {
+      "id": "RN-08",
+      "kind": "constraint",
+      "text": "Input/coupon validation is separate from the discount calculation contract; adding a discount algorithm must preserve the common contract.",
+      "source_ids": [
+        "SRC-REQ"
+      ],
+      "status": "confirmed",
+      "priority": "required within the frozen teaching scope"
+    },
+    {
+      "id": "RNF-01",
+      "kind": "quality",
+      "text": "The pricing calculation supports adding another discount algorithm without editing the core quote workflow or monetary arithmetic. Registration/wiring may change; zero-change integration everywhere is not promised.",
+      "source_ids": [
+        "SRC-REQ"
+      ],
+      "status": "confirmed",
+      "priority": "required within the frozen teaching scope"
+    },
+    {
+      "id": "RNF-02",
+      "kind": "quality",
+      "text": "Repeated calls with the same cart, catalog, coupon and evaluation instant give the same result and preserve inputs.",
+      "source_ids": [
+        "SRC-REQ"
+      ],
+      "status": "confirmed",
+      "priority": "required within the frozen teaching scope"
+    },
+    {
+      "id": "RNF-03",
+      "kind": "quality",
+      "text": "The local reference implementation and tests use only Python's standard library and support Python 3.9+. No live service, installation or external account is needed.",
+      "source_ids": [
+        "SRC-REQ"
+      ],
+      "status": "confirmed",
+      "priority": "required within the frozen teaching scope"
+    },
+    {
+      "id": "RNF-04",
+      "kind": "quality",
+      "text": "Replacing a supported DiscountPolicy preserves its accepted subtotal domain, result bounds, currency, determinism and absence of input mutation. Demonstrate this with shared contract tests rather than inheritance arrows alone.",
+      "source_ids": [
+        "SRC-REQ"
+      ],
+      "status": "confirmed",
+      "priority": "required within the frozen teaching scope"
+    },
+    {
+      "id": "RNF-05",
+      "kind": "quality",
+      "text": "Demo collaborators should be replaceable in tests through small contracts. Do not introduce a pattern, service, repository or interface without naming the responsibility/constraint that requires it.",
+      "source_ids": [
+        "SRC-REQ"
+      ],
+      "status": "confirmed",
+      "priority": "required within the frozen teaching scope"
+    }
+  ],
+  "quality_scenarios": [
+    {
+      "id": "QS-01",
+      "requirement_ids": [
+        "RNF-01"
+      ],
+      "context": "The supplied demo workflow and trusted configuration",
+      "stimulus": "Add the independent capped-half algorithm and register its factory",
+      "response": "Return the independently expected quote through the unchanged core workflow",
+      "measure": "Extension returns payable 23500 cents; service.py and core.py SHA-256 remain unchanged",
+      "verification": "Run extension_demo.py and test_extension_shared_contract_and_workflow_stability",
+      "source_ids": [
+        "SRC-REQ",
+        "SRC-ORACLE"
+      ],
+      "priority": "required in bounded demo",
+      "status": "confirmed"
+    },
+    {
+      "id": "QS-02",
+      "requirement_ids": [
+        "RNF-02"
+      ],
+      "context": "Every one of the 30 literal oracle cases, same UTC evaluation instant",
+      "stimulus": "Quote twice against fresh detached fixtures",
+      "response": "Return identical expected results and preserve request/catalog state",
+      "measure": "All 30 expectations match on both calls; every available state snapshot is unchanged",
+      "verification": "Run test_independent_30_case_oracle_repeated_read_only and DS-02 observation",
+      "source_ids": [
+        "SRC-REQ",
+        "SRC-ORACLE"
+      ],
+      "priority": "required in bounded demo",
+      "status": "confirmed"
+    },
+    {
+      "id": "QS-03",
+      "requirement_ids": [
+        "RNF-03"
+      ],
+      "context": "A local Python 3.9+ checkout without third-party Python packages or live service",
+      "stimulus": "Run the reference tests and demonstrations",
+      "response": "Execute successfully using the standard library",
+      "measure": "Tests, run_example.py and extension_demo.py exit 0 on supported locally executed runtimes",
+      "verification": "Run verify.py using Python 3.9.6 and 3.12.14; inspect imports and setup dependencies",
+      "source_ids": [
+        "SRC-REQ",
+        "SRC-ORACLE"
+      ],
+      "priority": "required in bounded demo",
+      "status": "confirmed"
+    },
+    {
+      "id": "QS-04",
+      "requirement_ids": [
+        "RNF-04"
+      ],
+      "context": "Every supported policy configuration with the shared accepted-input contract",
+      "stimulus": "Substitute policies on the three independent subtotal vectors and invalid-input probes",
+      "response": "Preserve result bounds, cents, determinism and mutation/precondition contract",
+      "measure": "All shared literal vectors and common precondition checks pass; broken injected result cannot yield a quote",
+      "verification": "Run shared-policy, invalid-input and injected-policy tests; finite scope only",
+      "source_ids": [
+        "SRC-REQ",
+        "SRC-ORACLE"
+      ],
+      "priority": "required in bounded demo",
+      "status": "confirmed"
+    },
+    {
+      "id": "QS-05",
+      "requirement_ids": [
+        "RNF-05"
+      ],
+      "context": "ProductCatalog, CouponCatalog, PolicyResolver and DiscountPolicy contracts",
+      "stimulus": "Replace catalog/resolver/policy collaborators in tests",
+      "response": "Observe eligibility-before-calculation and fail-closed result checking through small ports",
+      "measure": "Spy policy not called after eligibility refusal; malformed policy output yields no successful quote",
+      "verification": "Run eligibility-refusal, policy-contract-violation and untrusted-presented-price tests; inspect source dependency ownership",
+      "source_ids": [
+        "SRC-REQ",
+        "SRC-ORACLE"
+      ],
+      "priority": "required in bounded demo",
+      "status": "confirmed"
+    }
+  ],
+  "decisions": [
+    {
+      "id": "ARC-01",
+      "requirement_ids": [
+        "RF-01",
+        "RF-02",
+        "RF-03",
+        "RF-04",
+        "RF-05",
+        "RF-06",
+        "RF-07",
+        "RF-08",
+        "RF-09",
+        "RF-10",
+        "RNF-03"
+      ],
+      "view_ids": [
+        "V-CTX",
+        "V-CONT",
+        "V-COMP"
+      ],
+      "decision": "Retain one local quoting program containing the current library and runner.",
+      "rationale": "The baseline permits an in-memory adapter and requires no live service.",
+      "tradeoffs": "No production web, remote catalog, database or resilience topology is specified; revisit if the boundary expands.",
+      "status": "settled"
+    },
+    {
+      "id": "ARC-02",
+      "requirement_ids": [
+        "RF-01",
+        "RF-09",
+        "RF-10",
+        "RN-02",
+        "RN-05",
+        "RN-07",
+        "RNF-02"
+      ],
+      "view_ids": [
+        "V-CTX",
+        "V-COMP"
+      ],
+      "decision": "Keep untrusted request decoding separate from trusted catalog snapshot data.",
+      "rationale": "Only catalog Product prices are authoritative; evaluation time is explicit; failures have no successful quote.",
+      "tradeoffs": "Local wiring models authority for the demo; it is not a production authentication/security boundary.",
+      "status": "settled"
+    },
+    {
+      "id": "ARC-03",
+      "requirement_ids": [
+        "RF-02",
+        "RF-04",
+        "RF-05",
+        "RF-08",
+        "RN-01",
+        "RN-03",
+        "RN-04",
+        "RNF-02"
+      ],
+      "view_ids": [
+        "V-COMP"
+      ],
+      "decision": "Keep monetary arithmetic and result invariants in immutable domain values.",
+      "rationale": "Integer cents, capping and flooring are baseline rules, independent of transport or persistence.",
+      "tradeoffs": "No floating-point arithmetic or mutable price result; the declared invalid-input scope is bounded.",
+      "status": "settled"
+    },
+    {
+      "id": "ARC-04",
+      "requirement_ids": [
+        "RF-03",
+        "RF-04",
+        "RF-05",
+        "RF-06",
+        "RF-07",
+        "RN-06",
+        "RN-08",
+        "RNF-01",
+        "RNF-04"
+      ],
+      "view_ids": [
+        "V-COMP"
+      ],
+      "decision": "Retain a registered DiscountPolicy calculation seam; eligibility remains separate.",
+      "rationale": "RNF-01/04 and RN-08 require extension and a shared accepted subtotal contract.",
+      "tradeoffs": "Registration/wiring may change; avoid a kind switch inside QuoteService. Finite tests do not prove universal OCP/LSP.",
+      "status": "settled"
+    },
+    {
+      "id": "ARC-05",
+      "requirement_ids": [
+        "RNF-05",
+        "RNF-02",
+        "RNF-04"
+      ],
+      "view_ids": [
+        "V-COMP"
+      ],
+      "decision": "Retain application-owned catalog/resolver ports and replaceable collaborators.",
+      "rationale": "Small Protocol capabilities support test replacement and keep coordination away from concrete adapters.",
+      "tradeoffs": "Logical components may share files; C4 runtime arrows are not source-import proof. Inspect the actual modules.",
+      "status": "settled"
+    },
+    {
+      "id": "ARC-06",
+      "requirement_ids": [
+        "RF-10",
+        "RNF-02",
+        "RNF-03"
+      ],
+      "view_ids": [
+        "V-CONT",
+        "V-COMP"
+      ],
+      "decision": "Keep quoting read-only over a detached, configured in-memory snapshot.",
+      "rationale": "No order, coupon redemption, persistence or asynchronous side effect is in the goal.",
+      "tradeoffs": "No state machine, database, distributed consistency or deployment view is warranted by this bounded example.",
+      "status": "settled"
+    }
+  ],
+  "views": [
+    {
+      "id": "V-CTX",
+      "level": "context",
+      "status": "ready",
+      "scope": "order_pricing",
+      "reason": "Explain the user goal and actual system boundary",
+      "artifact": "architecture/context.puml"
+    },
+    {
+      "id": "V-CONT",
+      "level": "container",
+      "status": "ready",
+      "scope": "order_pricing",
+      "reason": "Show that local program is the only runtime boundary; no fictitious separate catalog",
+      "artifact": "architecture/container.puml"
+    },
+    {
+      "id": "V-COMP",
+      "level": "component",
+      "status": "ready",
+      "scope": "pricing_app",
+      "reason": "Expose extension, trust, ownership and substitution seams before detailed design",
+      "artifact": "architecture/component.puml"
+    },
+    {
+      "id": "V-DEP",
+      "level": "deployment",
+      "status": "not_applicable",
+      "scope": "order_pricing",
+      "reason": "No deployment/infrastructure question is in scope; the baseline requires only local Python execution. No production nodes are invented."
+    }
+  ],
+  "handoff": {
+    "status": "ready",
+    "consumer": "06-interactions and 07-class-model authors; 08-cdr reviewer",
+    "notes": "Scoped technical handoff only. Read architecture-brief.md, component-code-map.json and the reviewed architecture baseline. Code view is UML outside this literal checker; human acceptance remains unverified."
+  }
+}

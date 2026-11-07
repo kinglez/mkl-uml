@@ -1,4 +1,4 @@
-# Advanced replay: maintain the eight-stage reference example
+# Advanced replay: maintain the nine-stage reference example
 
 **For a first run, use the [step-by-step tutorial](../../docs/EXAMPLES.md).** It writes your own outputs under `uml/order-pricing/` and leaves the completed reference example available for comparison.
 
@@ -88,13 +88,31 @@ human_approval:false and inputs_sha256 for reviewed relative source paths and
 the PDR record. Updating hashes alone is not a replacement for review.
 ```
 
-## 6. Interactions, operation allocation and test design
+## 6. High-level architecture and quality handoff
+
+```text
+$mkl-uml-c4-architecture
+Read the frozen 00-input sources and current analysis/PDR under examples/order-pricing.
+Create or review architecture/ views, architecture-brief.md, architecture.json and
+component-code-map.json. Establish the actual host/runtime scope; keep the trusted
+snapshot internal. Link functional/quality inputs to decisions, views and executable
+verification strategies. Refine a selected component with scoped UML when useful.
+Compare current classes, interactions and code without rewriting history or inventing
+quality targets. Record semantic review separately from mechanical/render results.
+After actual inspection, maintain handoffs/architecture.json including the analysis
+handoff and reviewed architecture sources; the design handoff must consume it.
+```
+
+<a id="6-interactions-operation-allocation-and-test-design"></a>
+
+## 7. Interactions, operation allocation and test design
 
 ```text
 $mkl-uml-sequence-diagram
 Follow skills/mkl-uml-sequence-diagram/SKILL.md; keep the skill source unchanged.
 Example root: examples/order-pricing. All following artifact paths use that root.
-FIRST read 05-pdr/PDR-01.md and its reinspection decision. Check findings and
+FIRST read architecture/architecture-brief.md, its decisions/views and the
+reviewed architecture handoff, then 05-pdr/PDR-01.md and its reinspection decision. Check findings and
 conditions affecting detailed design. Read 00-input requirements/expectations,
 the 01-domain and 03-spec artifacts, and 04-robustness/robustness.puml plus
 correspondence.md. Resolve blocking analysis issues before detailed design.
@@ -112,14 +130,17 @@ checks and inspect the actual render. Record meaningful limits and findings.
 
 The explicit PDR input preserves the analysis decision when stages run in different chats. Test design specifies expected behavior; executed tests supply a separate evidence layer.
 
-## 7. Detailed design class model
+<a id="7-detailed-design-class-model"></a>
+
+## 8. Detailed design class model
 
 ```text
 $mkl-uml-design-class-model
 Follow skills/mkl-uml-design-class-model/SKILL.md; keep the skill source unchanged.
 Example root: examples/order-pricing. All following artifact paths use that root.
 Read the 00-input requirements, 01-domain and 03-spec artifacts, and all scoped
-06-interactions sources, operation-delta.md, test-plan.md and DESIGN_DECISIONS.md.
+06-interactions sources, operation-delta.md, test-plan.md and DESIGN_DECISIONS.md,
+plus architecture/architecture-brief.md, views, decisions and component-code map.
 Complete 07-class-model/classes.puml, provenance.md and SOLID.md. Allocate typed
 state and operations through the collaboration; give added technical classes,
 ports and strategies an explicit responsibility or constraint origin. Check
@@ -130,7 +151,9 @@ interface notation. Run cross-artifact checks, inspect rendering, and synchroniz
 affected interactions and provenance when correcting the design.
 ```
 
-## 8. CDR preparation and independent review
+<a id="8-cdr-preparation-and-independent-review"></a>
+
+## 9. CDR preparation and independent review
 
 ```text
 $mkl-cdr-review
@@ -138,7 +161,7 @@ Follow skills/mkl-cdr-review/SKILL.md; keep the skill source unchanged.
 Example root: examples/order-pricing. All following artifact paths use that root.
 Review the 07-class-model artifacts and all 06-interactions sources/decisions/
 operation/test documents against 00-input, 01-domain, 03-spec, 04-robustness and
-05-pdr/PDR-01.md. In 08-cdr/CDR-01.md record reviewed versions, scenario/branch/
+05-pdr/PDR-01.md and architecture/ artifacts. In 08-cdr/CDR-01.md record reviewed versions, scenario/branch/
 operation/signature/test evidence, findings and dispositions. If the reference
 implementation exists, inspect and execute it; keep unexecuted behavior unverified.
 Generate 08-cdr/headers.java as a review aid and compare it with the model and

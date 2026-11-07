@@ -1,0 +1,150 @@
+{
+  "schema_version": 1,
+  "mode": "architecture",
+  "template_type": "architecture",
+  "style": 1,
+  "quality_profile": "showcase",
+  "text_policy": "strict",
+  "width": 1580,
+  "height": 480,
+  "title": "MKL UML - connect every stage through its outputs",
+  "subtitle": "Nine skills, one traceable example; use only the scope your task needs",
+  "nodes": [
+    {
+      "id": "sources",
+      "kind": "rect",
+      "x": 50,
+      "y": 160,
+      "width": 240,
+      "height": 90,
+      "label": "Requirement sources",
+      "sublabel": "Any supplied evidence",
+      "fill": "#eff6ff",
+      "stroke": "#2563eb",
+      "flat": true
+    },
+    {
+      "id": "analysis",
+      "kind": "rect",
+      "x": 360,
+      "y": 160,
+      "width": 240,
+      "height": 90,
+      "label": "Analysis + PDR",
+      "sublabel": "Concepts / behavior / BCE",
+      "fill": "#eff6ff",
+      "stroke": "#2563eb",
+      "flat": true
+    },
+    {
+      "id": "architecture",
+      "kind": "rect",
+      "x": 670,
+      "y": 160,
+      "width": 240,
+      "height": 90,
+      "label": "C4 architecture",
+      "sublabel": "Views / decisions / qualities",
+      "fill": "#f0fdf4",
+      "stroke": "#16a34a",
+      "flat": true
+    },
+    {
+      "id": "detail",
+      "kind": "rect",
+      "x": 980,
+      "y": 160,
+      "width": 240,
+      "height": 90,
+      "label": "Detailed design",
+      "sublabel": "Sequences / classes / tests",
+      "fill": "#eff6ff",
+      "stroke": "#2563eb",
+      "flat": true
+    },
+    {
+      "id": "review",
+      "kind": "rect",
+      "x": 1290,
+      "y": 160,
+      "width": 240,
+      "height": 90,
+      "label": "CDR + code evidence",
+      "sublabel": "Findings / verified behavior",
+      "fill": "#eff6ff",
+      "stroke": "#2563eb",
+      "flat": true
+    }
+  ],
+  "arrows": [
+    {
+      "id": "flow-0",
+      "source": "sources",
+      "target": "analysis",
+      "source_port": "right",
+      "target_port": "left",
+      "flow": "control"
+    },
+    {
+      "id": "flow-1",
+      "source": "analysis",
+      "target": "architecture",
+      "source_port": "right",
+      "target_port": "left",
+      "flow": "control"
+    },
+    {
+      "id": "flow-2",
+      "source": "architecture",
+      "target": "detail",
+      "source_port": "right",
+      "target_port": "left",
+      "flow": "control"
+    },
+    {
+      "id": "flow-3",
+      "source": "detail",
+      "target": "review",
+      "source_port": "right",
+      "target_port": "left",
+      "flow": "control"
+    },
+    {
+      "id": "rework",
+      "source": "review",
+      "target": "analysis",
+      "source_port": "bottom",
+      "target_port": "bottom",
+      "flow": "feedback",
+      "label": "Rework affected inputs",
+      "dashed": true,
+      "route_points": [
+        [
+          1410,
+          350
+        ],
+        [
+          480,
+          350
+        ]
+      ]
+    }
+  ],
+  "legend_orientation": "horizontal",
+  "legend_x": 50,
+  "legend_y": 410,
+  "legend_locked": true,
+  "legend": [
+    {
+      "flow": "control",
+      "label": "Inputs become outputs"
+    },
+    {
+      "flow": "feedback",
+      "label": "Reinspect after changes"
+    }
+  ],
+  "footer": "C4: context > containers > components > code. Deployment is supporting.",
+  "footer_x": 50,
+  "footer_y": 460
+}

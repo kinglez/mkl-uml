@@ -15,13 +15,14 @@
     "01-domain/glossary.md": "bfe16312381165f70e9953d25a38163c0fe756d2d9ba0c763c9ad7bbfb2354c7",
     "02-use-cases/actor-goal-map.md": "c714337ba7af0d9cbf9353ffce3df1fdbbd4331bbc352400b8e81616e2151973",
     "02-use-cases/use-cases.puml": "0a8e231d6e1c4353d0276ead5342cd9d31e10c53dddb9728f1dbcb9c91925a66",
-    "03-spec/CU01-quote-cart.md": "9c09da139a7f64adb3fe21a3d73074493248cf31a87ca9a1a45430506e701f5a",
+    "03-spec/CU01-quote-cart.md": "e3333c6d6e1f5012858d0e76815532fe2a38563c53f5dd5b57c3bc793ec816fe",
     "03-spec/interface-contract.md": "8a1126744dc8cf83ffb148c0b837c0e35f6f0fb34210e509acce0fcb5c9d8b72",
     "03-spec/pdr-corrections.md": "aa78ff362ba624708137a99227efb9099929269be5e70ffb9c6e05a0e6b43b14",
     "04-robustness/correspondence.md": "11106dae7849d4c50eee56939a5e205aa043a45307bce9978c2cca16336f686b",
     "04-robustness/robustness.puml": "6465a204c6dfdcbebd5c2136e4134b05278a059d259588a4a99067a065bb21ff",
     "04-robustness/semantic-check.md": "8d560166ca2ec45d346511583b67050bd71c3dd5f5662844bf06ef6a6263b183",
-    "05-pdr/PDR-01.md": "8d25a1734eaa2a199bb56522c780ce5e0fde757705deb703f787fca0d1fbd03a"
+    "05-pdr/PDR-01.md": "934e4195d8122495652baa2ab695228b6a653b6551e5af39ce7b523037065b98"
   },
-  "maintenance_version": "1.0.3"
+  "maintenance_version": "1.1.0",
+  "replay_note": "Current author reinspection preserves the historical PDR finding and consumes its analysis into architecture."
 }

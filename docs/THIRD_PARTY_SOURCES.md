@@ -65,3 +65,7 @@ This revision removes unnecessary external expression instead of relying on an u
 If distribution requires a legal rights conclusion, the remaining source-inspired adaptations, course provenance, source-dependent figure descriptions and inherited asset authorship need assessment under the actual distribution terms/jurisdictions. No ownership or legal-exception conclusion is inferred from a word count, an Apache notice or a source being publicly readable.
 
 Keep `LICENSE`/`NOTICE` attribution and any source-specific conditions with distributed artifacts. Before adding source expression or artwork, record its exact location, rights holder, applicable grant/basis and required notices. When only an operational principle is needed, write a concise task-specific instruction and cite the source rather than reconstructing its prose/table.
+
+## C4 extension source check - 2026-11-07
+
+The official [C4 model](https://c4model.com/), [code view](https://c4model.com/diagrams/code) and [container definition](https://c4model.com/abstractions/container) were consulted for abstraction meaning, scope and selective view use. [C4-PlantUML](https://github.com/plantuml-stdlib/C4-PlantUML) supplies the bundled notation used by the local renderer. New example diagrams and guidance are authored for this project; no upstream figures, library sources or publication passages are bundled. Runtime dependencies retain their own licenses.

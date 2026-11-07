@@ -56,7 +56,8 @@ library task; reuse a checked host architecture or explain the limited scope.
 
 ## Drawing and checking
 
-Each view uses its matching bundled include, for example:
+Each C4 macro view uses its matching bundled include, for example. The code view
+uses ordinary UML and has no required C4_Code include:
 
 ```plantuml
 @startuml
@@ -118,5 +119,8 @@ map declared communications to sequences and relevant failure behavior; map qual
 strategies to constraints and verifiable tests. A C4 component does not imply a class of
 the same name. Keep missing evidence and architecture-changing choices visible.
 
-The existing [order-pricing tutorial](EXAMPLES.md) remains its original eight-stage UML
-example. It has not been retroactively extended or presented as new C4 acceptance evidence.
+The [order-pricing tutorial](EXAMPLES.md#6-c4-architecture) now includes a dated
+[architecture replay](../examples/order-pricing/architecture/README.md). Its frozen
+requirements and current code are compared with all four C4 zoom levels. No new
+deployment, SLA or write lifecycle is invented. The replay records executed checks
+and reinspection separately from historical reviews and formal acceptance.

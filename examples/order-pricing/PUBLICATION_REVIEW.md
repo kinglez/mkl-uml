@@ -56,3 +56,11 @@ The project README, documentation guide and introductory tutorial now use this o
 An independent AI editorial reviewer compared the guides with the unchanged requirements, specification and executable example. The review checked the no-Coupon, fixed/percentage, zero-subtotal and refusal behavior, source/output paths, earlier-stage inputs, retained tutorial anchors, installation boundaries and review-evidence claims. No unresolved concrete documentation finding remained. The actual example run produced the six documented JSON results. All eight standalone payloads included the new documentation navigation and retained valid local links.
 
 Only the changed reader-facing guides and this maintenance note receive refreshed entries in `handoffs/design.json`, after that affected-scope review. Requirements, independent oracle, models, pricing code, validator runtime and historical review conclusions are unchanged. This editorial review does not repeat the original semantic PDR/CDR or supply formal human/business acceptance. Fresh local aggregate results are written to `validation/latest/`; the earlier VALIDATION.json remains the historical publication execution record.
+
+## Local architecture replay maintenance - 2026-11-07
+
+The historical publication review above remains evidence for its original edition.
+The current nine-skill replay adds architecture and reinspects affected relationships;
+see architecture/REVIEW.md and VALIDATION.json for actual current scope and execution.
+No new tag, hosted CI result, customer acceptance or signed review is implied. The
+previous source/validation/handoff snapshots are retained under review-history/.

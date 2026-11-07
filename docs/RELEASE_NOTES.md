@@ -1,12 +1,14 @@
 # Release notes
 
-## 1.1.0 — local candidate, 2026-11-07
+## 1.1.0 — 2026-11-07
+
+Source tag: [`v1.1.0`](https://github.com/kinglez/mkl-uml/tree/v1.1.0).
 
 Adds the ninth independently usable skill, `mkl-uml-c4-architecture`, for C4-PlantUML context/container/component views, a routed UML code-level zoom, and supporting deployment views. It connects source-neutral functional/quality inputs to high-level decisions and detailed-design constraints. Inputs remain arbitrary supplied evidence; no PRD is required.
 
 The new skill includes domain-independent guidance, templates, neutral protocol fixtures and an optional read-only literal-profile/record checker. Unsupported syntax is disclosed; rendering and architecture semantics remain separate checks. Use-case instructions preserve source-neutral functional/quality inputs; PDR hands analysis to architecture when requested. Sequence, class and CDR instructions consume an architecture handoff when in scope; existing CDR tools do not automatically parse C4.
 
-Installers, archive/npm payloads, plugin metadata and CI include nine skills. The original eight skills and order-pricing reference retain their existing validator behavior. A test-only extraction change keeps the packed-install test safe on Python 3.9. This candidate has no release tag or hosted CI result yet; see the validation record for executed local evidence.
+Installers, archive/npm payloads, plugin metadata and CI include nine skills. The original eight validator runtimes retain their behavior. The order-pricing reference now adds a dated architecture replay, component allocation, mandatory reviewed-handoff edges and blocking/revalidation probes; frozen business inputs and pricing implementation remain unchanged. A test-only extraction change keeps the packed-install test safe on Python 3.9. The validation record identifies executed local evidence; hosted CI is a separate run. Publishing this source tag does not publish an npm registry package or supply formal human/business approval.
 
 ## 1.0.4 — 2026-10-30
 
