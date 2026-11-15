@@ -1,0 +1,67 @@
+{
+  "mkl-uml-domain-modeler": {
+    "display_name": "MKL UML 领域建模",
+    "display_name_en": "MKL UML Domain Modeler",
+    "description_zh": "从业务描述、需求和用户故事创建、审查或重构 PlantUML 概念领域模型，明确领域术语、属性、关联及多重性。适用于实现设计前的领域分析；附带 Python 校验脚本，图形渲染需另备 PlantUML。",
+    "description_en": "Create, review, or refactor conceptual UML domain models in PlantUML from business requirements. Clarify concepts, attributes, relationships, and multiplicities before implementation design. Python validation scripts are included; diagram rendering requires PlantUML separately.",
+    "examples_zh": [
+      "根据以下订单业务需求建立概念领域模型，输出 PlantUML，并列出需要确认的多重性。",
+      "审查这份领域模型中的组合、继承和关联是否符合业务语义，区分领域概念与实现类。",
+      "重构这份领域模型，保留现有追踪标识，并使用附带脚本校验。"
+    ],
+    "examples_en": [
+      "Create a conceptual domain model in PlantUML from these order requirements and identify uncertain multiplicities.",
+      "Review composition, inheritance, and associations in this domain model against the business rules.",
+      "Refactor this domain model while preserving traceability identifiers, then run the bundled validator."
+    ]
+  },
+  "mkl-uml-use-case-diagram": {
+    "display_name": "MKL UML 用例图",
+    "display_name_en": "MKL UML Use Case Diagram",
+    "description_zh": "从系统范围和用户目标创建、审查或重构 PlantUML 用例图，识别系统边界、参与者及用例，检查 include、extend 和泛化关系。适用于需求分析与目标范围梳理；附带 Python 校验脚本，图形渲染需另备 PlantUML。",
+    "description_en": "Create, review, or refactor UML use case diagrams in PlantUML. Identify system boundaries, actors, goals, and justified include, extend, or generalization relationships. Python validation scripts are included; rendering requires PlantUML separately.",
+    "examples_zh": [
+      "根据这份系统需求画出用例图，明确系统边界、主要参与者和支持参与者。",
+      "检查这份用例图中的 include 和 extend 方向、条件及使用理由。",
+      "整理这份用例图，保留已有 CU 标识，并运行附带的校验脚本。"
+    ],
+    "examples_en": [
+      "Create a use case diagram from these requirements with an explicit system boundary and participating actors.",
+      "Review the directions, conditions, and justification of include and extend relationships in this diagram.",
+      "Refactor this use case diagram while retaining existing CU identifiers and run the bundled validator."
+    ]
+  },
+  "mkl-use-case-specifier": {
+    "display_name": "MKL 用例规格编写",
+    "display_name_en": "MKL Use Case Specifier",
+    "description_zh": "将业务目标、需求讨论或用例草稿整理为 Markdown 用例规格，编写参与者与系统交互、基本流程、替代流程、异常流程及验收条件，维护与图表和测试的追踪关系。适用于需求细化与规格审查；附带 Python 结构校验脚本。",
+    "description_en": "Write, complete, review, or refactor textual use case specifications in Markdown. Define actor/system interactions, basic, alternative, and exception flows, acceptance criteria, and traceability to diagrams and tests. Python structural validation is included.",
+    "examples_zh": [
+      "把这段需求讨论整理为下单用例规格，写出基本流程、异常流程和成功后置条件。",
+      "审查这份用例规格中的前置条件、分支触发条件和流程恢复点，指出缺失证据。",
+      "补全这份 Markdown 用例规格，保留 CU、FA、FE 标识，并运行附带校验脚本。"
+    ],
+    "examples_en": [
+      "Turn this requirements discussion into an order use case specification with basic and exception flows.",
+      "Review the preconditions, branch triggers, and flow resumption points in this specification.",
+      "Complete this Markdown specification while preserving CU, FA, and FE identifiers, then run the bundled validator."
+    ]
+  },
+  "mkl-uml-robustness-diagram": {
+    "version": "1.1.2",
+    "display_name": "MKL UML 鲁棒分析图",
+    "display_name_en": "MKL UML Robustness Diagram",
+    "description_zh": "根据用例行为创建、审查或重构 PlantUML 鲁棒分析图，划分边界、控制和实体责任，检查流程覆盖与领域概念闭合。适用于详细设计前的分析设计；附带 Python BCE 规则校验脚本，图形渲染需另备 PlantUML。",
+    "description_en": "Create, review, or refactor boundary/control/entity robustness diagrams in PlantUML. Map use case behavior to responsibilities, check flow coverage, and identify missing domain concepts before detailed design. Python BCE profile validation is included; rendering requires PlantUML separately.",
+    "examples_zh": [
+      "根据这份下单用例规格建立鲁棒分析图，标出边界、控制和实体。",
+      "审查这份鲁棒分析图是否覆盖基本、替代和异常流程，并核对实体与领域模型的对应关系。",
+      "重构这份 API 用例鲁棒分析图，保留 CU 和 DR 标识，并运行附带的 BCE 校验脚本。"
+    ],
+    "examples_en": [
+      "Build a robustness diagram from this order use case specification with boundary, control, and entity responsibilities.",
+      "Review basic, alternative, and exception flow coverage and map entities to the supplied domain model.",
+      "Refactor this API use case robustness diagram while retaining CU and DR identifiers, then run the BCE validator."
+    ]
+  }
+}
