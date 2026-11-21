@@ -21,7 +21,10 @@ Exit codes: `0` no errors · `1` there are errors, the package does not pass · 
 | Check | Guideline | Level | Metric that feeds | Deterministic |
 |---|---|---|---|---|
 | Forbidden links between stereotypes | #5 | Error | syntax violations | Yes |
+| Unresolved BCE endpoint or recognized unsupported notation | #5 | Warning, partial coverage | — | Yes |
 | Diagram without Controllers | #5 | Error | syntax violations | Yes |
+| Isolated control in a complete parsed diagram | #5 | Warning | — | Yes, structure only |
+| Explicitly mapped required control absent or unreachable from its step entry | #5 / #10 | Error | — | Yes, within the declared connectivity profile |
 | Robustness disguised as sequence | #2 | Error | — | Yes |
 | Robustness entity absent from domain | #9 | Error | entities without domain | Yes |
 | `FA`/`FE` flow of text without branch in diagram | #7 | Error | alternates without behavior | Yes |
@@ -46,7 +49,30 @@ Exit codes: `0` no errors · `1` there are errors, the package does not pass · 
 
 Consumes the nine connection rules defined by `/mkl-uml-robustness-diagram`; They are not redefined here. Count each arc that joins a forbidden pair: Actor↔Controller, Actor↔Entity, Boundary↔Entity, Entity↔Entity, Boundary↔Boundary, Actor↔Actor.
 
-**Limit:** You only see relationships whose two ends are declared in the same file. A misspelled alias does not produce a syntax error, it produces a relationship that is silently ignored. If the relationship count seems low, suspect aliasing.
+The checker reads native one-line BCE declarations, including optional
+`<<stereotype>>` annotations, and recognizes
+[PlantUML layout directions](https://plantuml.com/class-diagram) in connectors.
+It checks links whose endpoints resolve to two typed declarations in the
+same file. It reports unresolved endpoints, recognized unsupported declarations
+or links, and unverified preprocessing with a file and line number. The
+diagnostic distinguishes a missing literal declaration from incomplete
+declaration coverage. Review those lines manually and verify any included or
+generated declarations with a renderer. The validator reports partial
+coverage for the affected checks and withholds acceptance based on it.
+
+### Control connectivity and located behavior
+
+A complete BCE diagram permits a located warning for a control with no communication
+relationships. Hidden layout edges and note links do not establish communication.
+When any BCE declaration or relationship remains unchecked, isolation is not inferred
+from the incomplete graph. Existing partial-coverage diagnostics remain applicable.
+
+Use optional [behavior-map.md](behavior-map.md) when a source explicitly supports a
+required responsibility. It binds a step, entry boundary and control by exact aliases
+and a checked source excerpt. Only that declared structural relationship is enforced;
+English authorization words, noun overlap and approximate highlighter coverage do not
+establish mandatory behavior. Connectivity does not prove execution order, absence
+of bypass paths, coverage of unlisted steps or authority of the source.
 
 ### Robustness disguised as sequence (#2)
 

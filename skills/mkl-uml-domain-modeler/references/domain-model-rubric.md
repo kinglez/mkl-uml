@@ -86,7 +86,7 @@ When the domain model will feed use cases:
 
 Rosenberg & Stephens (2007) present domain modeling by walking through the mistakes people make and correcting them. Check every model for these:
 
-1. **Multiplicity too early.** Cardinalities on a first-pass conceptual model. Correction: remove them; defer multiplicity to later modeling.
+1. **Unsupported multiplicity.** Cardinalities guessed on a first-pass conceptual model. Correction: defer unknown cardinalities; preserve evidenced ones when the requested model includes them. The academic strict profile deliberately defers all multiplicities, which is a local convention rather than a UML restriction.
 2. **Mapping database tables to domain classes.** Classes copied from a relational schema, full of IDs/foreign keys, or with attributes placed on the wrong class (e.g., customer fields sitting on `Order`). Correction: establish each class from business meaning rather than copying database structure.
 3. **Operations / abstract classes too early.** Assigning behavior or introducing abstract machinery is a design activity. Correction: keep the model structural and conceptual.
 4. **Premature patternization.** Design-pattern machinery (e.g., a `SessionFactory`) appearing as domain classes. Correction: remove it — it is solution space, not problem space.
@@ -95,8 +95,8 @@ Rosenberg & Stephens (2007) present domain modeling by walking through the mista
 
 ### Multiplicities too early
 
-Problem: `Customer "1" -- "*" Reservation`.
-Correction: `Customer -- Reservation : undertakes`.
+Problem: `Customer "1" -- "*" Reservation` when those constraints are not known, or the assignment selects the strict academic profile.
+Correction: `Customer -- Reservation : undertakes`. Preserve supported multiplicities for an enriched conceptual model and run `validate_domain_puml.py --profile enriched`; do not delete business constraints solely to make the strict profile pass.
 
 ### Operations in conceptual classes
 
@@ -205,7 +205,7 @@ Do not force these packages when the project domain suggests better groupings. D
 - Are all classes stable domain concepts?
 - Are any classes really actions, UI, database, design patterns, or implementation?
 - Are attributes allowed by the user's prompt?
-- Are multiplicities absent (unless explicitly required)?
+- Are multiplicities evidenced, or deferred where unknown? For a strict academic assignment, are they omitted as requested?
 - Are operations absent?
 - Are relationships short, conceptual, and non-redundant?
 - Were procedural labels rewritten into conceptual relationship labels?
@@ -224,6 +224,10 @@ Do not force these packages when the project domain suggests better groupings. D
 - Is the result readable when rendered?
 
 ## Key References for Justification
+
+For parser notation, consult the [PlantUML class reference](https://plantuml.com/class-diagram): aliases, stereotypes and colors decorate a class without changing its members. The bundled checks support these declarations and ordinary quoted endpoint cardinalities; they are not a full PlantUML parser. UML relationship meaning remains governed by the OMG source below, rather than by the academic profile.
+
+The strict profile recognizes a type token after `:` in non-ASCII alphabets as well as English. A translated type annotation is still a type annotation; choose the enriched profile for requested typed conceptual attributes.
 
 Use these sources as conceptual support when the user requests documentation or academic justification. Keep citations concise in the answer; do not overload normal modeling output with references.
 

@@ -55,6 +55,12 @@ means the scenario is agreed, not that its runtime quality has been achieved.
 A required level needs a ready checked source. Non-applicable optional views have reasons
 and no artifact. Artifacts are existing relative files under the record directory, or
 --project-root when supplied; absolute/traversing/symlink-escaping paths are rejected.
+For a context record view, `scope` is the alias of the focal `System(...)`. The
+[C4 system context](https://c4model.com/diagrams/system-context) focuses on one
+system, with people and external systems as supporting elements. In this
+literal record profile, a person, an external system, or a grouping boundary
+cannot supply the focal alias. A plain `--level context` source check does not
+select the focal alias itself.
 Container/component record views identify their corresponding system/container boundary
 through scope. The scoped managed profile checks ownership of internal children; use
 System_Ext/Container_Ext for collaborators beyond that scope. Deployment uses physical
@@ -63,6 +69,12 @@ the nearest System_Boundary (container view) or Container_Boundary (component vi
 must match scope. A different typed owner cannot be bypassed by an outer ancestor.
 Shared aliases are compared across views
 for type, label and technology; preserve aliases when an element is actually the same.
+
+When both levels are supplied in the record, a container view's system must be
+the focal system of a context view. A component view's scope must be one of the
+internal containers in a supplied container view. This checks the explicit zoom
+described by the [C4 container view](https://c4model.com/diagrams/container).
+The check does not require adding a parent level to a scoped record.
 
 The checker does not authenticate sources, detect unannounced changes, prove inputs were
 read, infer required views, execute checks, validate decisions against reality, or grant

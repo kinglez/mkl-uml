@@ -31,6 +31,12 @@ For example, `Order.version` may trace to an optimistic-concurrency design decis
 
 A provenance report names the element, available rationale, missing evidence and affected artifact. Apply supported corrections within the user's authorization. A declaration without substantive rationale cannot resolve a provenance gap.
 
+When running the CLI with a selected interaction, supply located non-message origins
+through optional `--operation-evidence`; see [operation-evidence.md](operation-evidence.md).
+The tool checks the referenced source line and exact declaration, including overload
+parameters where needed. The reviewer checks whether that evidence actually justifies
+the operation; the record does not certify semantic correctness.
+
 ## Vocabulary and scope
 
 Preserve domain names or document intentional changes with aliases and affected links. Lexical similarity can suggest drift but cannot establish that `Order` and `Purchase` are the same concept. Solution classes may be newly introduced during detailed design; new problem-domain concepts still need domain reconciliation.

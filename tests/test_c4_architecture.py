@@ -62,6 +62,41 @@ class C4Contracts(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stderr + result.stdout)
         self.assertTrue(json.loads(result.stdout)['ready'])
 
+    def test_context_record_scope_must_name_the_focal_system(self):
+        path = self.root / 'context.puml'
+        path.write_text(SOURCES['context'].replace('@enduml',
+            'System_Ext(peer, "Peer")\nSystem_Boundary(group, "Group") {\n}\n@enduml'),
+            encoding='utf-8')
+        self.assertEqual(self.record_check().returncode, 0)
+        for alias in ('user', 'peer', 'group'):
+            with self.subTest(alias=alias):
+                self.record['views'][0]['scope'] = alias
+                result = self.record_check()
+                self.assertEqual(result.returncode, 1)
+                report = json.loads(result.stdout)
+                self.assertFalse(report['ready'])
+                self.assertIn('VIEW_SCOPE_TYPE', [item['code'] for item in report['errors']])
+
+    def test_record_zoom_resolves_the_focal_parent_without_requiring_all_levels(self):
+        for level, index, old, new in (
+                ('container', 1, 'target', 'another_system'),
+                ('component', 2, 'app', 'another_container')):
+            with self.subTest(level=level):
+                source = self.root / (level + '.puml')
+                source.write_text(SOURCES[level].replace(old + ',', new + ',', 1), encoding='utf-8')
+                self.record['views'][index]['scope'] = new
+                result = self.record_check()
+                self.assertEqual(result.returncode, 1, result.stdout)
+                self.assertIn('ZOOM_SCOPE_MISMATCH', result.stdout)
+                source.write_text(SOURCES[level], encoding='utf-8')
+                self.record['views'][index]['scope'] = old
+        self.record['views'].reverse()
+        self.assertEqual(self.record_check().returncode, 0)
+        self.record['views'] = [v for v in self.record['views'] if v['level'] != 'context']
+        self.record['required_levels'] = ['container']
+        self.record['decisions'][0]['view_ids'] = ['V1']
+        self.assertEqual(self.record_check().returncode, 0)
+
     def test_selected_unconfirmed_requirement_blocks_until_corrected(self):
         for state in ('open', 'proposed'):
             self.record['requirements'][0]['status'] = state

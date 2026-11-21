@@ -9,6 +9,23 @@ Use **boundary**, **entity**, and **control** objects, following the Jacobson te
 
 PlantUML keywords (`boundary`, `control`, `entity`) and alias prefixes (`B_`, `C_`, `E_`) remain stable as syntax and validation contracts.
 
+### Mechanical check coverage
+
+The local checker recognizes one-line native `actor`, `boundary`, `control`, and
+`entity` declarations with optional `<<stereotype>>` annotations and a final fill
+color, for example `entity "Stored Item" as E_Item <<catalog>> #LightBlue`.
+The declaration keyword sets the BCE role. Connector directions such as
+`-left-` and `-do->` follow [PlantUML notation](https://plantuml.com/class-diagram)
+and do not change which BCE pair is checked. Hidden layout constraints and
+links to detached notes are excluded from BCE communication.
+
+The checker reads a literal subset and does not expand includes or macros.
+An unresolved endpoint or a recognized unsupported declaration or link produces a
+located warning and partial BCE coverage. When syntax or preprocessing may
+provide the missing definition, the warning discloses that uncertainty.
+A resolved link in a prohibited pair still produces an error. Render the
+source separately when PlantUML syntax matters.
+
 ## The principle behind the rules
 
 Boundaries and entities are **nouns**; controls are **verbs**. Nouns communicate with verbs, verbs communicate with nouns or other verbs, and nouns do not communicate directly with other nouns.

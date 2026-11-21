@@ -14,11 +14,11 @@ Usage:
         [--robustez case_01_robustez.puml ...] \\
         [--dominio domain_model.puml] \\
         [--requisitos requirements.md] \\
-        [--pruebas test_plan.md]
+        [--pruebas test_plan.md] [--ordering-evidence ordering.json]
 
-Only --clases and --secuencia are required. Each absent input deactivates
-specific rules, which are declared as NOT EXECUTED in the output and downgrade
-the status.
+Only --clases is required. Missing inputs leave the corresponding checks
+unperformed. Located ordering evidence enables checks of declared prerequisites
+on supported sequence paths.
 
 Message provenance: annotate labels with <<synchCall>>, <<asynchCall>>,
 <<reply>>, <<asynchSignal>>, <<createMessage>> or <<deleteMessage>>.
@@ -40,6 +40,14 @@ import re
 import sys
 import unicodedata
 from dataclasses import dataclass, field
+from pathlib import Path
+
+# Resolve only the helper bundled in this installed skill, including under -I.
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from operation_evidence import (load_operation_evidence, operation_key, modeled_field_accessor,
+                                extract_operation_messages, operation_origins, sequence_source)
+from ordering_evidence import check_ordering, load_ordering_evidence
+from sequence_structure import branch_evidence, parse_secuencia as parse_sequence_structure
 
 # --------------------------------------------------------------------------
 # NUMBERS: each one with its origin. See references/metrics-and-triage.md.
@@ -139,20 +147,10 @@ REL_RE = re.compile(
 DIRECCION_RE = re.compile(r'-(?:up|down|left|right)-')
 
 # --- PlantUML: sequence ---
-MSG_DIR_RE = re.compile(
-    r'^\s*(?P<emisor>"[^"]+"|[\w]+)\s*(?P<flecha>--?>>?|<<?--?)\s*'
-    r'(?P<receptor>"[^"]+"|[\w]+)'
-    r'(?:\s*(?P<corto>\+\+|--|\*\*|!!))?\s*(?::\s*(?P<etiqueta>.*))?$',
-    re.MULTILINE,
-)
 DECL_SEC_RE = re.compile(
     r'^\s*(?:create\s+)?(?P<kind>actor|boundary|control|entity|participant|database|'
     r'collections|queue)\s+'
     r'(?:"(?P<label>[^"]+)"|(?P<bare>[\w]+))(?:\s+as\s+(?P<alias>[\w]+))?',
-    re.IGNORECASE | re.MULTILINE,
-)
-FRAGMENTO_RE = re.compile(
-    r'^\s*(?P<kw>alt|else|opt|loop|par|break|critical|group)\b(?P<etiqueta>.*)$',
     re.IGNORECASE | re.MULTILINE,
 )
 NOTA_ABRE = re.compile(
@@ -333,9 +331,9 @@ class Secuencia:
     receptores: dict = field(default_factory=dict)    # key -> {vocabulario}
     con_mensaje: set = field(default_factory=set)     # keys that receive something
     vocabulario: set = field(default_factory=set)
-    fragmentos: list = field(default_factory=list)    # (kw, label, line)
     n_mensajes: int = 0
     avisos_semanticos: list = field(default_factory=list)
+    operation_messages: list = field(default_factory=list)
 
 
 # --------------------------------------------------------------------------
@@ -519,15 +517,16 @@ def parse_clases(path: str, text: str) -> Modelo:
     alias = {}
     for mc in CLASE_RE.finditer(text):
         nombre = mc.group("q") or mc.group("n") or ""
-        linea = text[: mc.start()].count("\n") + 1
+        linea = text[: mc.start("tipo")].count("\n") + 1
         estereotipos = set(re.findall(r"<<([^>]+)>>",
                                       mc.group("estereotipos") or ""))
         c = Clase(nombre=nombre, linea=linea,
                   abstracta=bool(mc.group("abstracta")),
                   kind=mc.group("tipo").lower(), estereotipos=estereotipos)
         cuerpo, _ = cuerpo_de_clase(text, mc.end())
-        base = text[: mc.end()].count("\n") + 1
-        for off, cruda in enumerate(cuerpo.split("\n"), start=1):
+        inicio_cuerpo = text.index("{", mc.end()) + 1 if cuerpo else mc.end()
+        base = text[: inicio_cuerpo].count("\n") + 1
+        for off, cruda in enumerate(cuerpo.split("\n")):
             ln = cruda.strip()
             if (not ln or ln.startswith("'") or ln.startswith("..")
                     or ln.startswith("--") or ln.startswith("==")):
@@ -592,107 +591,31 @@ def parse_clases(path: str, text: str) -> Modelo:
     return m
 
 
-SORT_SEC_RE = re.compile(
-    r'<<\s*(synchCall|asynchCall|reply|asynchSignal|createMessage|deleteMessage)\s*>>',
-    re.IGNORECASE,
-)
-CREATE_SEC_RE = re.compile(
-    r'^\s*create\s+(?:(?:participant|actor|boundary|control|entity|database|queue|collections)\s+)?'
-    r'(?P<quien>"[^"]+"|[\w]+)(?:\s+as\s+(?P<alias>[\w]+))?'
-    r'(?:\s+(?:#[#\w]+|<<[^>]+>>))*\s*$', re.IGNORECASE,
-)
-
-
-def etiqueta_de_llamada(mm, creaciones: set) -> tuple[str, bool]:
-    """Return (call label, unresolved async); a Signal is not an Operation.
-
-    Label annotations: <<synchCall>>, <<asynchCall>>, <<reply>>,
-    <<asynchSignal>>, <<createMessage>>, <<deleteMessage>>. Explicit calls
-    require an operation signature. Unannotated solid synchronous arrows
-    retain legacy lexical matching; unannotated async arrows need review.
-    """
-    et = (mm.group("etiqueta") or "").strip()
-    flecha = mm.group("flecha") or ""
-    receptor = mm.group("emisor") if flecha.startswith("<") else mm.group("receptor")
-    receptor = receptor.strip('"')
-    if receptor in creaciones:
-        creaciones.remove(receptor)
-        return "", False
-    if mm.group("corto") in ("**", "!!"):
-        return "", False
-    sorts = {norm(m.group(1)) for m in SORT_SEC_RE.finditer(et)}
-    if sorts:
-        if len(sorts) != 1 or not sorts <= {"synchcall", "asynchcall"}:
-            return "", False
-        etiqueta = SORT_SEC_RE.sub("", et).strip()
-        if not re.match(r"^[A-Za-z_][\w]*\s*\(", etiqueta):
-            return "", False
-        return etiqueta, False
-    if "--" in flecha:
-        return "", False
-    if ">>" in flecha or "<<" in flecha:
-        return "", bool(et)
-    return et, False
-
-
 def parse_secuencia(path: str, text: str) -> Secuencia:
     s = Secuencia(path=path, text=text)
-    text = codigo_modelo(text)
-    alias = {}
-    for md in DECL_SEC_RE.finditer(text):
-        etiqueta = md.group("label") or md.group("bare") or ""
-        a = md.group("alias") or md.group("bare") or etiqueta
-        if a:
-            alias[a] = etiqueta
-            s.lineas_vida[clave(etiqueta)] = etiqueta
-            s.kinds[clave(etiqueta)] = (md.group("kind") or "").lower()
-
-    en_nota, creaciones = False, set()
-    for i, cruda in enumerate(text.split("\n"), start=1):
-        ln = cruda.strip()
-        # Note blocks contain free text that can start with 'alt' or
-        # look like a message. Skipping them avoids fragments and ghost messages.
-        if en_nota:
-            if NOTA_CIERRA.match(ln):
-                en_nota = False
-            continue
-        if NOTA_ABRE.match(ln):
-            en_nota = True
-            continue
-        mc = CREATE_SEC_RE.match(ln)
-        if mc:
-            creaciones.add(mc.group("alias") or mc.group("quien").strip('"'))
-            continue
-        mf = FRAGMENTO_RE.match(ln)
-        if mf:
-            s.fragmentos.append((mf.group("kw").lower(),
-                                 (mf.group("etiqueta") or "").strip(), i))
-            continue
-        mm = MSG_DIR_RE.match(ln)
-        if not mm:
-            continue
-        et, sin_resolver = etiqueta_de_llamada(mm, creaciones)
-        if sin_resolver:
-            s.avisos_semanticos.append(
-                f"[{path}] L{i}: unresolved asynchronous message provenance; declare "
-                f"<<asynchCall>> with an Operation signature or <<asynchSignal>>.")
-        emisor = mm.group("emisor").strip('"')
-        receptor = mm.group("receptor").strip('"')
-        if (mm.group("flecha") or "").startswith("<"):
-            emisor, receptor = receptor, emisor
-        destino = clave(alias.get(receptor, receptor))
-        origen = clave(alias.get(emisor, emisor))
+    code = sequence_source(text)
+    for declaration in DECL_SEC_RE.finditer(code):
+        label = declaration.group("label") or declaration.group("bare") or ""
+        if label:
+            s.lineas_vida[clave(label)] = label
+            s.kinds[clave(label)] = (declaration.group("kind") or "").lower()
+    s.operation_messages = extract_operation_messages(text, path)
+    for message in s.operation_messages:
+        if message.kind in ("unresolved_async", "unresolved_call"):
+            s.avisos_semanticos.append(f"[{path}] L{message.line}: unresolved asynchronous message "
+                "provenance or explicit call; declare <<asynchCall>> with an Operation signature "
+                "or <<asynchSignal>>.")
+        destination, origin = clave(message.receiver), clave(message.sender)
         s.n_mensajes += 1
-        s.con_mensaje.add(destino)
-        for k in (origen, destino):
-            s.lineas_vida.setdefault(k, k)
-        if et:
-            p = palabras(et)
-            mfun = re.match(r"^([A-Za-z_][\w]*)\s*\(", et)
-            if mfun:
-                p.add(norm(mfun.group(1)))
-            s.vocabulario |= p
-            s.receptores.setdefault(destino, set()).update(p)
+        s.con_mensaje.add(destination)
+        for key in (origin, destination):
+            s.lineas_vida.setdefault(key, key)
+        if message.kind in ("call", "legacy"):
+            words = palabras(message.label)
+            if message.operation:
+                words.add(norm(message.operation))
+            s.vocabulario |= words
+            s.receptores.setdefault(destination, set()).update(words)
     return s
 
 
@@ -853,26 +776,9 @@ def check_criterio_entrada(mod, secuencias, specs, errores, avisos) -> bool:
     return falla
 
 
-def operand_has_messages(text: str, start_line: int, message_pattern) -> bool:
-    """A guard is a declaration; only messages in its own operand realize it."""
-    depth = 0
-    for line in text.splitlines()[start_line:]:
-        if re.match(r"^\s*(?:alt|opt|loop|par|critical|break|group)\b", line, re.I):
-            depth += 1
-        elif re.match(r"^\s*end\s*$", line, re.I):
-            if depth == 0:
-                break
-            depth -= 1
-        elif re.match(r"^\s*else\b", line, re.I) and depth == 0:
-            break
-        if message_pattern.match(line):
-            return True
-    return False
-
-
-def check_r9_flujos(secuencias, specs, errores) -> int:
-    """Compare (CU, local flow) identities using executable branch labels only."""
-    por_cu = {}
+def check_r9_flujos(secuencias, specs, errores, avisos) -> tuple[int | None, bool]:
+    """Compare scoped flows without claiming absence from unparsed operands."""
+    por_cu: dict[str, list[tuple[dict[str, str], bool]]] = {}
     for s in secuencias:
         cus = identidad_cu(s.text)
         if len(cus) != 1:
@@ -880,11 +786,10 @@ def check_r9_flujos(secuencias, specs, errores) -> int:
                 f"RULE #9: [{s.path}] has no unambiguous CU identity; "
                 f"cannot pair its local flow evidence with a specification.")
             continue
-        cubiertos = por_cu.setdefault(next(iter(cus)), set())
-        for _kw, etiqueta, n in s.fragmentos:
-            if operand_has_messages(codigo_modelo(s.text), n, MSG_DIR_RE):
-                cubiertos |= flujos_de(etiqueta)
-    faltan, declarados_cu = set(), set()
+        structure = parse_sequence_structure(s.path, s.text)
+        por_cu.setdefault(next(iter(cus)), []).append(
+            (branch_evidence(structure, flujos_de), bool(structure.lineas_no_parseadas)))
+    faltan, inciertos, declarados_cu = set(), set(), set()
     for i, texto in enumerate(specs, start=1):
         cus = identidad_cu(texto)
         if len(cus) != 1:
@@ -898,85 +803,70 @@ def check_r9_flujos(secuencias, specs, errores) -> int:
                 f"RULE #9: {cu} has multiple supplied specifications; pairing "
                 f"is ambiguous. Supply one authoritative specification per CU.")
         declarados_cu.add(cu)
-        for flujo in flujos_de(texto) - por_cu.get(cu, set()):
-            faltan.add((cu, flujo))
+        evidence = por_cu.get(cu, [])
+        for flujo in flujos_de(texto):
+            states = {branches[flujo] for branches, _ in evidence if flujo in branches}
+            if "covered" in states:
+                continue
+            if "partial" in states or (not states and any(unknown for _, unknown in evidence)):
+                inciertos.add((cu, flujo))
+            else:
+                faltan.add((cu, flujo))
     for cu, flujo in sorted(faltan):
         errores.append(
             f"RULE #9: {cu} flow {flujo} is specified but does not appear in "
             f"an executable branch of its sequence diagrams.")
+    for cu, flujo in sorted(inciertos):
+        avisos.append(
+            f"RULE #9: {cu} flow {flujo} could not be verified because of unsupported "
+            "sequence statements. Review the referenced or unparsed behavior.")
     for cu in sorted(set(por_cu) - declarados_cu):
         errores.append(
             f"RULE #9: {cu} sequence has no matching supplied specification; "
             f"its flow coverage has not been checked.")
-    return len(faltan)
+    return (None, True) if inciertos else (len(faltan), False)
 
 
-def check_r8_asignacion(mod, secuencias, errores, avisos) -> int:
-    """Rule #8: each operation comes from a message ADDRESSED TO ITS CLASS.
-
-    Comparing against a global bag of vocabulary misses exactly the
-    book `Queue` defect: an operation on the wrong class.
-    """
-    voc_global, por_receptor = set(), {}
-    for s in secuencias:
-        voc_global |= s.vocabulario
-        avisos.extend(s.avisos_semanticos)
-        for k, v in s.receptores.items():
-            por_receptor.setdefault(k, set()).update(v)
-
-    padres = parse_generalizaciones(mod)
-    huerfanas = 0
-    # First pass: UPWARD origin of each class. a subclass
-    # inherits that of its ancestry — overwriting does not require its own message
-    # addressed to her, because the message goes to the general type.
-    # Provenance is ALWAYS evidence of messages, never names
-    # declared. An earlier version also linked operation names
-    # that the ancestors declared, and that "washed" the origin: a
-    # interface retrieved its own names through any producer
-    # indirect, and an operation that no message invoked went from ERROR to
-    # total silence. Joining names was redundant as well as dangerous: if the
-    # ascendant is legitimately covered, your message is ALREADY here for the
-    # chain of ancestors; If it is not, there is nothing to inherit.
-    heredada = {}
+def check_r8_asignacion(mod, secuencias, errores, avisos, operation_evidence=None):
+    """Share exact-call provenance and ambiguity rules with class-model checking."""
+    messages = [message for sequence in secuencias for message in sequence.operation_messages]
+    for sequence in secuencias:
+        avisos.extend(sequence.avisos_semanticos)
+    declarations = [(c.nombre, o.nombre, o.params) for c in mod.clases.values()
+                    for o in c.operaciones]
+    names = {key: c.nombre for key, c in mod.clases.items()}
+    parents = {names[key]: {names.get(parent, parent) for parent in values}
+               for key, values in parse_generalizaciones(mod).items() if key in names}
+    outcomes = operation_origins(declarations, messages, parents,
+        {c.nombre for c in mod.clases.values() if c.kind == "interface" or c.es_abstracta},
+        operation_evidence)
+    missing, partial = 0, False
     for c in mod.clases.values():
-        kc = clave(c.nombre)
-        propio = set(por_receptor.get(kc, set()))
-        for a in ascendientes(kc, padres):
-            propio |= por_receptor.get(a, set())
-        heredada[kc] = propio
-
-    # Second pass: DOWN. The operations of an interface or a
-    # abstract class does not receive them, it receives them whoever makes them — and there are
-    # You have to look at the ENTIRE source of the filmmaker, not just what he or she receives
-    # directly: if the creator in turn inherits the operation of a class
-    # base, the interface is still covered.
-    for c in mod.clases.values():
-        kc = clave(c.nombre)
-        propio = heredada[kc]
-        if c.kind == "interface" or c.es_abstracta:
-            for h in realizadores_transitivos(kc, padres):
-                propio |= heredada.get(h, set())
         for o in c.operaciones:
-            if ACCESOR_RE.match(o.nombre):
+            if modeled_field_accessor(c.kind, [a.nombre for a in c.atributos], o.nombre):
                 continue
-            p = palabras(o.nombre) | {norm(o.nombre)}
-            if p & propio:
+            status = outcomes[operation_key(c.nombre, o.nombre, o.params)]
+            if status in ("exact", "declared"):
                 continue
-            if p & voc_global:
-                avisos.append(
-                    f"RULE #8 [{mod.path}] L{o.linea}: "
-                    f"'{c.nombre}.{o.nombre}()' appears in the diagrams "
-                    f"sequence but NOT as a message addressed to '{c.nombre}'. "
-                    f"You may be in the wrong class. Check responsibility "
-                    f"allocation and the receiving end of the sequence message.")
-                continue
-            huerfanas += 1
-            errores.append(
-                f"RULE #8 [{mod.path}] L{o.linea}: the operation "
-                f"'{c.nombre}.{o.nombre}()' does not correspond to any message "
-                f"sequence diagrams. Either the message is missing, or there is too much "
-                f"operacion.")
-    return huerfanas
+            if status == "misplaced":
+                partial = True
+                avisos.append(f"RULE #8 [{mod.path}] L{o.linea}: '{c.nombre}.{o.nombre}()' appears "
+                    f"in the diagrams sequence but NOT as a message addressed to '{c.nombre}'. "
+                    "You may be in the wrong class. Resolve the receiver/classifier mapping; "
+                    "operation provenance is partial.")
+            elif status in ("candidate", "ambiguous"):
+                partial = True
+                avisos.append(f"RULE #8 [{mod.path}] L{o.linea}: unresolved operation provenance for "
+                    f"'{c.nombre}.{o.nombre}()': {status} legacy natural-language or overloaded call "
+                    "evidence. Review the complete label/receiver or supply --operation-evidence; "
+                    "word fragments and argument expressions do not establish a signature.")
+            else:
+                missing += 1
+                errores.append(f"RULE #8 [{mod.path}] L{o.linea}: the operation "
+                    f"'{c.nombre}.{o.nombre}()' does not correspond to any message sequence diagrams. "
+                    "Inspect the source; for a requirement, contract or decision outside this "
+                    "interaction, supply --operation-evidence.")
+    return missing, partial
 
 
 def check_r7_responsabilidades(mod, dominio, hay_dominio, avisos) -> None:
@@ -1343,7 +1233,7 @@ def check_presupuesto(pres, avisos) -> None:
 # --------------------------------------------------------------------------
 
 def validar(mod, secuencias, specs, robustez, dominio, req_texto,
-            pruebas_texto, hay):
+            pruebas_texto, hay, operation_evidence=None, ordering_evidence=None):
     errores, avisos, infos = [], [], []
     capas, degradadas = {}, []
     specs = [texto_documento(t) for t in specs]
@@ -1372,7 +1262,10 @@ def validar(mod, secuencias, specs, robustez, dominio, req_texto,
         capas["empty model"] = "executed"
         return errores, avisos, infos, capas, [], None, {}
 
-    detener = check_criterio_entrada(mod, secuencias, specs_utiles, errores, avisos)
+    # No supplied interaction means a scoped static review, not an empty
+    # interaction passed as evidence. Supplied empty sequences still fail entry.
+    detener = (check_criterio_entrada(mod, secuencias, specs_utiles, errores, avisos)
+               if secuencias else False)
     capas["entry criteria"] = "executed"
     if detener:
         return errores, avisos, infos, capas, [], None, {"detenido": True}
@@ -1391,19 +1284,52 @@ def validar(mod, secuencias, specs, robustez, dominio, req_texto,
     capas["rule 3 (types and signatures)"] = "executed"
     capas["rule 7 (responsibilities)"] = "executed"
 
-    huerfanas = check_r8_asignacion(mod, secuencias, errores, avisos)
-    check_r6_patrones(mod, secuencias, avisos)
-    capas["rule 8 (assignment)"] = "executed"
-    capas["rule 6 (real design)"] = "executed"
+    if secuencias:
+        huerfanas, partial_origins = check_r8_asignacion(mod, secuencias, errores, avisos, operation_evidence)
+        check_r6_patrones(mod, secuencias, avisos)
+        capas["rule 8 (assignment)"] = ("PARTIAL - unresolved operation origins"
+                                         if partial_origins else "executed")
+        if partial_origins:
+            degradadas.append("rule 8 (assignment)")
+        capas["rule 6 (real design)"] = "executed"
+    else:
+        huerfanas = None
+        for layer in ("rule 8 (assignment)", "rule 6 (real design)"):
+            capas[layer] = "NOT EXECUTED - sequence diagram missing (scoped class-only review)"
+            degradadas.append(layer)
+    if operation_evidence:
+        capas["explicit operation origins"] = "located sources checked; semantic adequacy requires review"
+        infos.extend(operation_evidence.values())
+        infos.append("Explicit operation origins: source locations checked; semantic adequacy "
+                     "requires review. Unlisted operations retain the existing provenance checks.")
 
-    faltan9 = check_r9_flujos(secuencias, specs_utiles, errores) if specs_utiles else 0
-    if hay["spec"]:
-        capas["rule 9 (alternative courses)"] = "executed"
+    ordering_layer = "declared message ordering"
+    if ordering_evidence:
+        ordering_errors, gaps, checked = check_ordering(secuencias, ordering_evidence)
+        errores.extend(ordering_errors)
+        avisos.extend(gaps)
+        infos.extend(checked)
+        capas[ordering_layer] = "PARTIAL - unresolved sequence evidence" if gaps else "executed"
+        if gaps:
+            degradadas.append(ordering_layer)
+    else:
+        capas[ordering_layer] = "NOT EXECUTED - no explicit ordering evidence supplied"
+
+    faltan9, partial_flows = (0 if secuencias else None), False
+    if secuencias and specs_utiles:
+        faltan9, partial_flows = check_r9_flujos(secuencias, specs_utiles, errores, avisos)
+    if hay["spec"] and secuencias:
+        capas["rule 9 (alternative courses)"] = (
+            "PARTIAL - unsupported sequence statements" if partial_flows else "executed")
+        if partial_flows:
+            degradadas.append("rule 9 (alternative courses)")
         capas["rule 10 (sequence vs text)"] = "executed (partial: the "\
             "faithful pairing is judged by one person)"
     else:
         for c in ("rule 9 (alternative courses)", "rule 10 (sequence vs text)"):
-            capas[c] = ("PARTIAL - some supplied specifications have no usable CU behavior"
+            capas[c] = ("NOT EXECUTED - sequence diagram missing (scoped class-only review)"
+                        if not secuencias else
+                        "PARTIAL - some supplied specifications have no usable CU behavior"
                         if specs_utiles else "NOT EXECUTED - use case specification missing or unusable")
             degradadas.append(c)
 
@@ -1424,11 +1350,11 @@ def validar(mod, secuencias, specs, robustez, dominio, req_texto,
         for t in robustez_util:
             controladores += parse_controladores(t)
         check_r1_pruebas(controladores, pruebas_texto, secuencias, specs_utiles, avisos)
-        if hay["robustez"] and hay["spec"]:
+        if hay["robustez"] and hay["spec"] and secuencias:
             capas["rule 1 (test plan)"] = "executed"
         else:
             capas["rule 1 (test plan)"] = (
-                "PARTIAL - robustness diagrams or specifications missing or unusable")
+                "PARTIAL - robustness diagrams, specifications or sequences missing or unusable")
             degradadas.append("rule 1 (test plan)")
     else:
         capas["rule 1 (test plan)"] = "NOT EXECUTED - test plan missing"
@@ -1471,8 +1397,7 @@ def veredicto_propuesto(errores, avisos, degradadas, detenido):
                 f"{len(errores)} open error level finding(s).")
     if degradadas:
         return ("NOT FULLY VERIFIED",
-                f"{len(degradadas)} rule(s) not executed due to lack of "
-                f"supplies: {', '.join(degradadas)}.")
+                f"{len(degradadas)} rule(s) not fully checked: {', '.join(degradadas)}.")
     if avisos:
         return ("ACCEPTED WITH REWORK VERIFICATION",
                 f"No errors, but {len(avisos)} warning(s) require your "
@@ -1484,7 +1409,7 @@ def veredicto_propuesto(errores, avisos, degradadas, detenido):
     # but they cannot be assumed satisfied. Say it in your own
     # verdict prevents someone from reading "ACCEPTED" as "fully reviewed."
     return ("ACCEPTED (subject to the two non-automatable rules)",
-            "Entry criterion met, all automatable rules "
+            "Entry criterion met, configured automated checks "
             "executed, zero errors and zero warnings. SLOPE of the "
             "rule #4—have someone who is going to build it confirm that it is "
             "constructible—and the inspection of the headers (#2). Without those "
@@ -1501,8 +1426,8 @@ def main(argv=None) -> int:
     p = argparse.ArgumentParser(
         description="Prepare the MKL Critical Design Review (CDR).")
     p.add_argument("--clases", required=True, help="design class model (.puml)")
-    p.add_argument("--secuencia", action="append", default=[], required=True,
-                   help="sequence diagram (.puml). Repeatable.")
+    p.add_argument("--secuencia", action="append", default=[],
+                   help="sequence diagram (.puml); repeatable. Omit for a scoped class-only check.")
     p.add_argument("--spec", action="append", default=[],
                    help="use case specification (.md). Repeatable.")
     p.add_argument("--robustez", action="append", default=[],
@@ -1510,9 +1435,18 @@ def main(argv=None) -> int:
     p.add_argument("--dominio", help="domain model (.puml)")
     p.add_argument("--requisitos", help="requirements list (.md)")
     p.add_argument("--pruebas", help="test plan (.md)")
+    p.add_argument("--operation-evidence", help="located requirement/contract/decision origins (JSON)")
+    p.add_argument("--ordering-evidence", help="located message prerequisites for sequence paths (JSON)")
     args = p.parse_args(argv)
 
     mod = parse_clases(args.clases, leer(args.clases))
+    try:
+        operation_evidence = load_operation_evidence(args.operation_evidence,
+            [(c.nombre, o.nombre, o.params) for c in mod.clases.values()
+             for o in c.operaciones]) if args.operation_evidence else {}
+        ordering_evidence = load_ordering_evidence(args.ordering_evidence) if args.ordering_evidence else []
+    except ValueError as exc:
+        p.error(str(exc))
     # Repeated paths are counted once: pass the same file twice
     # inflated the session budget without contributing anything.
     rutas_sec = list(dict.fromkeys(args.secuencia))
@@ -1529,7 +1463,8 @@ def main(argv=None) -> int:
            "pruebas": bool(args.pruebas)}
 
     errores, avisos, infos, capas, degradadas, pres, metricas = validar(
-        mod, secuencias, specs, robustez, dominio, req_texto, pruebas_texto, hay)
+        mod, secuencias, specs, robustez, dominio, req_texto, pruebas_texto, hay,
+        operation_evidence, ordering_evidence)
 
     n_ops = sum(len(c.operaciones) for c in mod.clases.values())
     n_recepciones = sum(len(c.recepciones) for c in mod.clases.values())
@@ -1541,6 +1476,8 @@ def main(argv=None) -> int:
           f"Operations: {n_ops} | Receptions: {n_recepciones} | Relationships: {len(mod.relaciones)}")
     print(f"Sequences: {len(secuencias)} | Specifications: {len(specs)} | "
           f"Robustness: {len(robustez)}")
+    if not secuencias:
+        print("Review scope: class-only static checks; interaction checks are not performed.")
     print()
 
     if pres:
@@ -1577,6 +1514,12 @@ def main(argv=None) -> int:
     else:
         print("WARNINGS: none")
     print()
+
+    if infos:
+        print("INFORMATION")
+        for info in infos:
+            print(f"  - {info}")
+        print()
 
     estado, razon = veredicto_propuesto(
         errores, avisos, degradadas, bool(metricas.get("detenido")))

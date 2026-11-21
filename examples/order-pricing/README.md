@@ -43,15 +43,17 @@ The program prints six JSON lines: four successful quotes matching the table abo
 {"coupon": "SAVE30", "result": {"ok": true, "subtotal": 25500, "discount": 3000, "payable": 22500, "currency": "CNY"}}
 ```
 
-Then run the combined checks:
+Then run the combined checks with the validators from your current checkout:
 
 ```bash
-python3 examples/order-pricing/scripts/verify.py
+python3 examples/order-pricing/scripts/verify.py --candidate-runtime
 ```
 
 A successful run ends with `Result: PASS`. Logs and the current result are written under `examples/order-pricing/validation/latest/`. The verifier checks analysis/architecture/design snapshots, runs all nine skill validators, verifies actual component allocation and blocking/revalidation behavior, compares inspection headers, and executes implementation tests/examples.
 
-It also reports `Formal gate: NOT FULLY VERIFIED; no human approval is claimed.` That is the declared review boundary: the technical example can pass while formal human/business acceptance is still absent. If the verifier reports a stale baseline, review the changed artifact before recording a replacement baseline.
+Candidate mode records the current validator hashes separately from the published baseline. To use the exact historical validators, [replay the reviewed runtime](HOW_TO_REPLAY.md#replay-the-reviewed-runtime).
+
+The verifier also reports `Formal gate: NOT FULLY VERIFIED; no human approval is claimed.` Formal human/business acceptance is separate from these checks. If the verifier reports a stale artifact hash, review the changed artifact before recording a replacement baseline.
 
 <a id="eight-stage-artifacts"></a>
 
@@ -113,7 +115,7 @@ examples/order-pricing/
 To regenerate diagrams, install PlantUML locally and run these commands from the repository root:
 
 ```bash
-python3 examples/order-pricing/scripts/verify.py --render
+python3 examples/order-pricing/scripts/verify.py --candidate-runtime --render
 python3 examples/order-pricing/scripts/build_viewer.py
 ```
 
@@ -149,6 +151,6 @@ After that, try the [discount extension](09-reference-implementation/README.md#e
 | How to intentionally revise the reviewed reference example | [Advanced replay and maintenance](HOW_TO_REPLAY.md) |
 | Original review and publication history | [Publication review](PUBLICATION_REVIEW.md), [origin notes](ORIGIN.json) and [source snapshot](SKILL_SOURCE.json) |
 
-The current validator baseline is **1.1.0**, source runtime `d247203`. The 2026-11-07 architecture replay retains the original business inputs and Python implementation; it does not claim blind regeneration or retroactively change the October review history. Historical review sections retain their original context; a local verification run supplies current execution evidence. Requirements, expected results and source baselines are recorded separately from formal acceptance.
+The reviewed validator baseline is recorded in [SKILL_SOURCE.json](SKILL_SOURCE.json). The 2026-11-07 architecture replay retains the original business inputs, Python implementation and October review history. A local verification run supplies current execution evidence for the selected validators. Requirements, expected results and source baselines are recorded separately from formal acceptance.
 
 This is a bounded teaching example. Tax, shipping, payment, authentication, persistence, concurrency, fault recovery and production time authority need additional design and verification in a real system. The technical review supports this example; formal human/customer/business acceptance remains **Not fully verified**. Inspection headers are review aids rather than executable Java implementations.

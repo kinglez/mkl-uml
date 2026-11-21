@@ -174,6 +174,63 @@ def load_json(path):
     return json.loads(path.read_text(encoding='utf-8'), object_pairs_hook=unique)
 
 
+def inspect_view_scope(level, scope, elements, view_id, errors):
+    """Locate the focal element and the children this view owns."""
+    focus = elements.get(scope) if isinstance(scope, str) else None
+    if focus is None:
+        finding(errors, 'VIEW_SCOPE_MISSING', view_id, 'Declared scope alias is absent from this view.')
+        return set()
+    if level == 'context':
+        if focus['kind'] != 'system' or focus['external'] or focus['boundary']:
+            finding(errors, 'VIEW_SCOPE_TYPE', view_id,
+                    'A context view scope must point to its focal System(...) element.')
+        return set()
+    if level not in ('container', 'component'):
+        return set()
+
+    owner_kind, child_kind = ('system', 'container') if level == 'container' else ('container', 'component')
+    if focus['kind'] != owner_kind or not focus['boundary']:
+        finding(errors, 'VIEW_SCOPE_TYPE', view_id,
+                'Expected the corresponding system/container boundary.')
+        return set()
+
+    owned = set()
+    for alias, entry in elements.items():
+        if entry['kind'] != child_kind or entry['boundary'] or entry['external']:
+            continue
+        parent, visited = entry['parent'], set()
+        while parent and parent != scope and parent not in visited:
+            visited.add(parent)
+            entry = elements[parent]
+            if entry['boundary'] and entry['kind'] == owner_kind:
+                break  # A different nearest typed owner cannot be crossed.
+            parent = entry['parent']
+        if parent == scope:
+            owned.add(alias)
+        else:
+            finding(errors, 'OWNERSHIP_MISMATCH', view_id,
+                    'Internal element is not inside the declared scope: ' + alias)
+    return owned
+
+
+def checked_view_levels(checked_views, errors):
+    """A zoom must link to a supplied checked parent when both levels are present."""
+    contexts = {scope for level, scope, _, _ in checked_views.values() if level == 'context'}
+    containers = [owned for level, _, owned, _ in checked_views.values() if level == 'container']
+    contained = set().union(*containers)
+    levels = set()
+    for view_id, (level, scope, _, ready) in checked_views.items():
+        if level == 'container' and contexts and scope not in contexts:
+            finding(errors, 'ZOOM_SCOPE_MISMATCH', view_id,
+                    f"Container view scope '{scope}' is not the focal system of a supplied context view.")
+        elif level == 'component' and containers and scope not in contained:
+            finding(errors, 'ZOOM_SCOPE_MISMATCH', view_id,
+                    f"Component view scope '{scope}' is not an internal container in a supplied container view.")
+        elif ready:
+            levels.add(level)
+    return levels
+
+
 def assess(record, root):
     errors, blockers, warnings = [], [], []
     def error(code, loc, message): finding(errors, code, loc, message)
@@ -253,8 +310,9 @@ def assess(record, root):
     for key,obj in requirements.items():
         if obj.get('kind')=='quality' and key not in quality_covered: block('QUALITY_SCENARIO_MISSING',key,'Quality input has no verification scenario.')
         if key not in decision_covered: block('DECISION_COVERAGE_MISSING',key,'No architectural response or retain decision linked.')
-    usable, canonical = set(), {}
+    checked_views, canonical = {}, {}
     for key,obj in views.items():
+        errors_before_view = len(errors)
         choice(obj,'level',LEVELS,key);choice(obj,'status',('ready','draft','not_applicable'),key);text(obj,('scope','reason'),key)
         if obj.get('status')=='not_applicable':
             if 'artifact' in obj: error('NA_HAS_ARTIFACT',key,'Non-applicable view cannot claim an artifact.')
@@ -273,29 +331,17 @@ def assess(record, root):
         except (OSError,ValueError,RuntimeError) as exc:
             error('ARTIFACT_INPUT',key,str(exc));continue
         errors.extend(parsed['errors']);warnings.extend(parsed['warnings'])
-        scope=obj.get('scope')
-        if not isinstance(scope,str) or scope not in parsed['elements']: error('VIEW_SCOPE_MISSING',key,'Declared scope alias is absent from this view.')
-        elif obj['level'] in ('container','component'):
-            expected='system' if obj['level']=='container' else 'container'
-            if parsed['elements'][scope]['kind']!=expected or not parsed['elements'][scope]['boundary']: error('VIEW_SCOPE_TYPE',key,'Expected the corresponding system/container boundary.')
-            child='container' if obj['level']=='container' else 'component'
-            for alias,entry in parsed['elements'].items():
-                if entry['kind']==child and not entry['boundary'] and not entry['external']:
-                    parent, visited = entry['parent'], set()
-                    while parent and parent != scope and parent not in visited:
-                        visited.add(parent)
-                        owner = parsed['elements'].get(parent, {})
-                        if owner.get('boundary') and owner.get('kind') == expected:
-                            break  # A different nearest typed owner cannot be crossed.
-                        parent = owner.get('parent')
-                    if parent != scope:
-                        error('OWNERSHIP_MISMATCH',key,'Internal element is not inside the declared scope: '+alias)
+        scope = obj.get('scope')
+        owned = inspect_view_scope(obj['level'], scope, parsed['elements'], key, errors)
         for alias,entry in parsed['elements'].items():
             prior=canonical.get(alias)
             if prior and (prior['kind']!=entry['kind'] or prior['label']!=entry['label'] or (prior['technology'] and entry['technology'] and prior['technology']!=entry['technology'])):
                 error('CROSS_VIEW_DRIFT',key,'Conflicting identity/name/technology for alias: '+alias)
             if not prior or not entry['boundary']: canonical[alias]=entry
-        if obj.get('status')=='ready' and not parsed['errors'] and not parsed['warnings']: usable.add(obj['level'])
+        if len(errors) == errors_before_view:
+            checked_views[key] = (obj['level'], scope, owned,
+                                  obj.get('status') == 'ready' and not parsed['warnings'])
+    usable = checked_view_levels(checked_views, errors)
     for level in levels:
         if level not in usable: block('REQUIRED_VIEW_MISSING',level,'Required view has no ready checked source.')
     handoff=record.get('handoff')

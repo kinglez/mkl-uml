@@ -35,6 +35,12 @@ import re
 import sys
 import unicodedata
 from dataclasses import dataclass, field
+from pathlib import Path
+
+# Resolve only the helper bundled in this installed skill, including under -I.
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from operation_evidence import (load_operation_evidence, operation_key, modeled_field_accessor,
+                                extract_operation_messages, operation_origins, sequence_source)
 
 # --------------------------------------------------------------------------
 # THRESHOLDS: skill conventions, NOT evidence.
@@ -468,46 +474,9 @@ DECL_SEC_RE = re.compile(
 )
 
 
-SORT_SEC_RE = re.compile(
-    r'<<\s*(synchCall|asynchCall|reply|asynchSignal|createMessage|deleteMessage)\s*>>',
-    re.IGNORECASE,
-)
-CREATE_SEC_RE = re.compile(
-    r'^\s*create\s+(?:(?:participant|actor|boundary|control|entity|database|queue|collections)\s+)?'
-    r'(?P<quien>"[^"]+"|[\w]+)(?:\s+as\s+(?P<alias>[\w]+))?'
-    r'(?:\s+(?:#[#\w]+|<<[^>]+>>))*\s*$', re.IGNORECASE,
-)
-
-
-def etiqueta_de_llamada(mm, creaciones: set) -> tuple[str, bool]:
-    """Return (call label, unresolved async); a Signal is not an Operation."""
-    et = (mm.group("etiqueta") or "").strip()
-    flecha = mm.group("flecha") or ""
-    receptor = mm.group("emisor") if flecha.startswith("<") else mm.group("receptor")
-    receptor = receptor.strip('"')
-    if receptor in creaciones:
-        creaciones.remove(receptor)
-        return "", False
-    if mm.group("corto") in ("**", "!!"):
-        return "", False
-    sorts = {norm(m.group(1)) for m in SORT_SEC_RE.finditer(et)}
-    if sorts:
-        if len(sorts) != 1 or not sorts <= {"synchcall", "asynchcall"}:
-            return "", False
-        etiqueta = SORT_SEC_RE.sub("", et).strip()
-        if not re.match(r"^[A-Za-z_][\w]*\s*\(", etiqueta):
-            return "", False
-        return etiqueta, False
-    if "--" in flecha:
-        return "", False
-    if ">>" in flecha or "<<" in flecha:
-        return "", bool(et)
-    return et, False
-
-
 def codigo_mensajes(text: str) -> str:
     """Keep the same executable-notation rules for every model scan."""
-    return codigo_modelo(text)[0]
+    return sequence_source(text)
 
 
 def specification_text(text: str) -> str:
@@ -523,47 +492,23 @@ def usable_specification(text: str) -> bool:
                           text, re.M))
 
 
-def parse_mensajes(text: str, avisos=None) -> tuple:
-    """Return (global_vocabulary, {class_key: {vocabulary addressed to it}}).
-
-    Receiver-specific vocabulary checks the provenance promise: operations
-    originate in messages **addressed to that class**. A global bag accepts
-    the book's Queue defect: an operation placed on the wrong class.
-    """
-    text = codigo_mensajes(text)
-    alias = {}
-    for md in DECL_SEC_RE.finditer(text):
-        etiqueta = md.group("label") or md.group("bare") or ""
-        a = md.group("alias") or md.group("bare") or etiqueta
-        if a:
-            alias[a] = etiqueta
-
-    voc, por_receptor, creaciones = set(), {}, set()
-    for linea, cruda in enumerate(text.split("\n"), 1):
-        mc = CREATE_SEC_RE.match(cruda)
-        if mc:
-            creaciones.add(mc.group("alias") or mc.group("quien").strip('"'))
+def parse_mensajes(text: str, avisos=None, operation_messages=None, path="") -> tuple:
+    """Keep legacy vocabulary for heuristic checks; provenance uses shared calls."""
+    messages = extract_operation_messages(text, path)
+    if operation_messages is not None:
+        operation_messages.extend(messages)
+    voc, por_receptor = set(), {}
+    for message in messages:
+        if message.kind in ("unresolved_async", "unresolved_call") and avisos is not None:
+            avisos.append(f"L{message.line}: unresolved asynchronous message provenance or explicit call; "
+                          "declare <<asynchCall>> with an Operation signature or <<asynchSignal>>.")
+        if message.kind not in ("call", "legacy"):
             continue
-        mm = MSG_DIR_RE.match(cruda)
-        if not mm:
-            continue
-        et, sin_resolver = etiqueta_de_llamada(mm, creaciones)
-        if sin_resolver and avisos is not None:
-            avisos.append(f"L{linea}: unresolved asynchronous message provenance; declare "
-                          f"<<asynchCall>> with an Operation signature or <<asynchSignal>>.")
-        if not et:
-            continue
-        p = palabras(et)
-        mfun = re.match(r"^([A-Za-z_][\w]*)\s*\(", et)
-        if mfun:
-            p.add(norm(mfun.group(1)))
-        voc |= p
-        emisor = mm.group("emisor").strip('"')
-        receptor = mm.group("receptor").strip('"')
-        if (mm.group("flecha") or "").startswith("<"):
-            emisor, receptor = receptor, emisor
-        destino = alias.get(receptor, receptor)
-        por_receptor.setdefault(clave(destino), set()).update(p)
+        words = palabras(message.label)
+        if message.operation:
+            words.add(norm(message.operation))
+        voc |= words
+        por_receptor.setdefault(clave(message.receiver), set()).update(words)
     return voc, por_receptor
 
 
@@ -629,13 +574,16 @@ def check_accesores(mod: Modelo, avisos: list) -> None:
     """Anti-pattern 11: getters and setters in the model."""
     tag = f"[{mod.path}]"
     for c in mod.clases.values():
-        hallados = [o for o in c.operaciones if ACCESOR_RE.match(o.nombre)]
+        # A query contract (including isAvailable) is not a generated field
+        # accessor merely because its name starts with get/is/set.
+        hallados = [o for o in c.operaciones if modeled_field_accessor(
+            c.kind, [a.nombre for a in c.atributos], o.nombre)]
         if hallados:
             ejemplo = ", ".join(o.nombre for o in hallados[:3])
             avisos.append(
                 f"{tag} L{c.linea}: class '{c.nombre}' declares {len(hallados)} "
-                f"accessor(s) ({ejemplo}). The source discourages them: they are generated "
-                f"from attributes and only clutter the diagram."
+                f"accessor(s) ({ejemplo}) matching modeled fields (review candidates). Keep any operation whose "
+                f"query, validation or interface contract matters; omit only trivial generated accessors."
             )
 
 
@@ -700,56 +648,42 @@ def check_dominio_completo(mod: Modelo, dominio: dict, avisos: list) -> None:
             )
 
 
-def check_procedencia_operaciones(mod: Modelo, voc_mensajes: set,
-                                  por_receptor: dict, hay_secuencia: bool,
-                                  errores: list, avisos: list) -> int:
-    """Every operation originates in a message ADDRESSED TO ITS CLASS.
-
-    Two levels:
-      - absent from ALL messages -> ERROR: no source
-      - present but addressed to ANOTHER class -> WARNING: misplaced operation,
-        the book's Queue defect
-    The latter is a warning because class/lifeline matching is heuristic:
-    a lifeline may have a different name from its class.
-    """
-    if not hay_secuencia:
-        return 0
-    tag = f"[{mod.path}]"
-    padres = parse_generalizaciones(mod)
-    huerfanas = 0
+def check_procedencia_operaciones(mod: Modelo, operation_messages, errores, avisos,
+                                  operation_evidence=None):
+    """Use exact receiving-class calls; retain legacy clues as partial evidence."""
+    declarations = [(c.nombre, o.nombre, o.params) for c in mod.clases.values()
+                    for o in c.operaciones]
+    names = {key: c.nombre for key, c in mod.clases.items()}
+    parents = {names[key]: {names.get(parent, parent) for parent in values}
+               for key, values in parse_generalizaciones(mod).items() if key in names}
+    outcomes = operation_origins(declarations, operation_messages or [], parents,
+        {c.nombre for c in mod.clases.values() if c.kind == "interface" or c.es_abstracta},
+        operation_evidence)
+    missing, partial = 0, False
     for c in mod.clases.values():
-        propio = set(por_receptor.get(clave(c.nombre), set()))
-        # A subclass inherits ancestor provenance. Overriding does not require
-        # a separate message addressed to the subclass: messages target the
-        # general type; specialization is a design decision.
-        for k in ascendientes(clave(c.nombre), padres):
-            propio |= por_receptor.get(k, set())
-            padre_cls = mod.clases.get(k)
-            if padre_cls:
-                propio |= {norm(op.nombre) for op in padre_cls.operaciones}
         for o in c.operaciones:
-            if ACCESOR_RE.match(o.nombre):
-                continue                  # warned separately
-            p = palabras(o.nombre) | {norm(o.nombre)}
-            if p & propio:
+            if modeled_field_accessor(c.kind, [a.nombre for a in c.atributos], o.nombre):
                 continue
-            if p & voc_mensajes:
-                avisos.append(
-                    f"{tag} L{o.linea}: '{c.nombre}.{o.nombre}()' appears in the "
-                    f"sequence diagrams, but NOT as a message addressed to "
-                    f"'{c.nombre}'. It may be on the wrong class: the defect "
-                    f"illustrated by the class that can only add and never "
-                    f"remove."
-                )
+            status = outcomes[operation_key(c.nombre, o.nombre, o.params)]
+            if status in ("exact", "declared"):
                 continue
-            huerfanas += 1
-            errores.append(
-                f"{tag} L{o.linea}: operation '{c.nombre}.{o.nombre}()' does not "
-                f"match any message in the supplied sequence diagrams. "
-                f"Revisit the sequence: if the behavior is needed, "
-                f"the message is missing; otherwise the operation is unnecessary."
-            )
-    return huerfanas
+            if status == "misplaced":
+                partial = True
+                avisos.append(f"[{mod.path}] L{o.linea}: '{c.nombre}.{o.nombre}()' appears in the "
+                    f"sequence diagrams, but NOT as a message addressed to '{c.nombre}'. It may be "
+                    "on the wrong class. Resolve the receiver/classifier mapping; provenance is partial.")
+            elif status in ("candidate", "ambiguous"):
+                partial = True
+                avisos.append(f"[{mod.path}] L{o.linea}: unresolved operation provenance for "
+                    f"'{c.nombre}.{o.nombre}()': {status} legacy natural-language or overloaded call "
+                    "evidence. Review the complete label/receiver or supply --operation-evidence; "
+                    "word fragments and argument expressions do not establish a signature.")
+            else:
+                missing += 1
+                errores.append(f"[{mod.path}] L{o.linea}: operation '{c.nombre}.{o.nombre}()' does not "
+                    "match any message in the supplied sequence diagrams. Inspect its source; for a "
+                    "requirement, contract or decision outside this interaction, supply --operation-evidence.")
+    return missing, partial
 
 
 def check_procedencia_atributos(mod: Modelo, dominio: dict, voc_spec: set,
@@ -969,7 +903,7 @@ def leer(path: str) -> str:
 
 
 def validar(mod, dominio, rel_dominio, voc_mensajes, por_receptor, voc_spec,
-            hay_dominio, hay_secuencia, hay_spec):
+            hay_dominio, hay_secuencia, hay_spec, operation_evidence=None, operation_messages=None):
     errores, avisos, infos = [], [], []
     capas, degradadas = {}, []
 
@@ -1003,11 +937,14 @@ def validar(mod, dominio, rel_dominio, voc_mensajes, por_receptor, voc_spec,
                             "anemia y responsabilidades"))
 
     if hay_secuencia:
-        huerfanas = check_procedencia_operaciones(
-            mod, voc_mensajes, por_receptor, True, errores, avisos)
+        huerfanas, partial_origins = check_procedencia_operaciones(
+            mod, operation_messages, errores, avisos, operation_evidence)
         check_patrones(mod, voc_mensajes, True, avisos)
         check_delta_completo(mod, voc_mensajes, True, avisos)
-        capas["procedencia de operaciones"] = "ejecutada"
+        capas["procedencia de operaciones"] = ("partial - unresolved operation origins"
+            if partial_origins else "ejecutada")
+        if partial_origins:
+            degradadas.append("procedencia de operaciones")
     else:
         huerfanas = 0
         capas["procedencia de operaciones"] = "NO EJECUTADA - falta el diagrama de secuencia"
@@ -1024,6 +961,11 @@ def validar(mod, dominio, rel_dominio, voc_mensajes, por_receptor, voc_spec,
         "clases_sin_procedencia": sin_proc if hay_dominio else None,
         "operaciones_sin_mensaje": huerfanas if hay_secuencia else None,
     }
+    if operation_evidence:
+        capas["explicit operation origins"] = "located sources checked; semantic adequacy requires review"
+        infos.extend(operation_evidence.values())
+        infos.append("Explicit operation origins: source locations checked; semantic adequacy "
+                     "requires review. Unlisted operations retain the existing provenance checks.")
     return errores, avisos, infos, metricas, capas, degradadas
 
 
@@ -1070,21 +1012,29 @@ def main(argv=None) -> int:
                    help="sequence diagram (.puml); repeatable.")
     p.add_argument("--spec", action="append", default=[],
                    help="use case specification (.md); repeatable.")
+    p.add_argument("--operation-evidence", help="located requirement/contract/decision origins (JSON)")
     args = p.parse_args(argv)
 
     mod = parse_clases(args.clases, leer(args.clases))
+    try:
+        operation_evidence = load_operation_evidence(args.operation_evidence,
+            [(c.nombre, o.nombre, o.params) for c in mod.clases.values()
+             for o in c.operaciones]) if args.operation_evidence else {}
+    except ValueError as exc:
+        p.error(str(exc))
     dom_text = leer(args.dominio) if args.dominio else ""
     dominio = parse_dominio(dom_text) if args.dominio else {}
     rel_dominio = parse_relaciones_dominio(dom_text) if args.dominio else set()
 
     voc_mensajes, por_receptor, avisos_semanticos = set(), {}, []
+    operation_messages = []
     sequence_evidence = []
     for s in args.secuencia:
         avisos_archivo = []
         source = leer(s)
         sequence_evidence.append(any(MSG_DIR_RE.match(line)
                                      for line in codigo_mensajes(source).splitlines()))
-        v, pr = parse_mensajes(source, avisos_archivo)
+        v, pr = parse_mensajes(source, avisos_archivo, operation_messages, s)
         avisos_semanticos.extend(f"[{s}] {a}" for a in avisos_archivo)
         voc_mensajes |= v
         for k, vals in pr.items():
@@ -1101,6 +1051,8 @@ def main(argv=None) -> int:
         hay_dominio=bool(dominio),
         hay_secuencia=bool(sequence_evidence) and all(sequence_evidence),
         hay_spec=bool(specification_evidence) and all(specification_evidence),
+        operation_evidence=operation_evidence,
+        operation_messages=operation_messages,
     )
     avisos.extend(avisos_semanticos)
     for label, paths, evidence in (("sequence", args.secuencia, sequence_evidence),
@@ -1129,8 +1081,10 @@ def main(argv=None) -> int:
     print()
 
     print("PROVENANCE")
+    operation_label = ("operations without supported origin .." if operation_evidence
+                       else "operations without message ..")
     for etiqueta, k in (("classes without provenance ..", "clases_sin_procedencia"),
-                        ("operations without message ..", "operaciones_sin_mensaje")):
+                        (operation_label, "operaciones_sin_mensaje")):
         v = metricas[k]
         print(f"  {etiqueta} {'n/a' if v is None else v}   (target: 0)")
     print()

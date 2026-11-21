@@ -33,7 +33,7 @@ cd mkl-uml
 ```
 
 Choose your agent. These commands install the skills available in the published
-GitHub revision into this project. Version 1.1.1 includes all nine skills:
+GitHub revision into this project. The suite includes all nine skills:
 
 ```bash
 # Codex
@@ -440,9 +440,9 @@ authorization boundaries, failure paths, dependency direction and requirement tr
 Assess SOLID claims against available evidence; record absent source/runtime verification.
 Only raise actionable findings supported by the reviewed artifacts.
 
-If only a class model is supplied, complete that scoped review and identify the missing
-interaction checks. The full CDR CLI needs both classes and a sequence; do not invent
-a sequence merely to make it run. Missing materials cannot establish full readiness.
+If only a class model is supplied, run the scoped static CDR checks and identify the
+interaction checks that need a supplied sequence. Keep the review within the available
+evidence.
 
 Save reviews/cdr.md with inputs/versions, findings and locations, impact, proposed
 corrections, actual tool results, coverage and remaining questions.
@@ -467,7 +467,7 @@ You can inspect and execute the committed example before generating any models. 
 
 ```bash
 python3 examples/order-pricing/09-reference-implementation/run_example.py
-python3 examples/order-pricing/scripts/verify.py
+python3 examples/order-pricing/scripts/verify.py --candidate-runtime
 ```
 
 The cart contains two CNY 120.00 books and one CNY 15.00 pen: **CNY 255.00**. The demo prints these results, plus unknown and expired coupon refusals:
@@ -481,7 +481,7 @@ The cart contains two CNY 120.00 books and one CNY 15.00 pen: **CNY 255.00**. Th
 
 JSON amounts are integer cents: `22500` means CNY 225.00. Quoting creates no order and leaves the inputs unchanged. No live service or Python dependency installation is needed.
 
-The verifier checks the **committed reference example**, including its reviewed source baselines, validators, headers and tests. It does not check your newly generated `uml/order-pricing/` folder. A successful run ends with `Result: PASS`; its separate formal-acceptance status remains `NOT FULLY VERIFIED` because no human/business approval is claimed.
+The verifier checks the **committed reference example**, including its reviewed artifacts, headers and tests. Candidate mode records the current validator hashes separately from the published runtime baseline. For the exact historical replay, omit `--candidate-runtime` and point `--skill-root` at the checkout identified in [SKILL_SOURCE.json](examples/order-pricing/SKILL_SOURCE.json). A successful run ends with `Result: PASS`. Formal acceptance remains `NOT FULLY VERIFIED`.
 
 Read the **[guided example tour](examples/order-pricing/README.md)** to follow the results back to their requirements and diagrams. Pre-rendered images are included. Add `--render` to the verifier only if you have PlantUML installed and want to regenerate them.
 

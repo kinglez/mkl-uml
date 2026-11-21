@@ -24,6 +24,10 @@ Two consequences worth stating plainly:
 
 ## Practical interpretation
 
+The [official PlantUML use case reference](https://plantuml.com/use-case-diagram) documents aliases and rectangular grouping. A subject rectangle with an alias still contains the same use cases. The bundled profile accepts quoted subject names with an optional `as` alias; it is not a full PlantUML parser. Space-separated word-count hints do not apply to unspaced Chinese, Japanese or Korean goal names; review their meaning directly.
+
+Actor declarations resolve names and aliases consistently for placement and participation checks, including `actor Caller as ACT_Caller` and `actor "Caller" as ACT_Caller`. Adding quotes to the display name does not change the participating role.
+
 Map standard ideas into actionable checks:
 
 | Source | Skill behavior |

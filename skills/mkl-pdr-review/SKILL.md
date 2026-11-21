@@ -66,6 +66,14 @@ python scripts/validate_pdr.py --robustez path/to/robustness.puml
 
 Use only available inputs accepted by `--help`. State execution, findings and omitted layers. Return a concise review for scoped work; a formal gate adds coverage, traceability, decisions and action tracking. No fixed self-audit count or assurance certificate is required.
 
+If the CLI locates an unresolved BCE endpoint or unsupported syntax, inspect the
+declaration, link and alias. Report that part of the mechanical review as partial.
+For a complete diagram, a control without communication links is a located warning,
+not proof that the behavior is mandatory. When a known step requires a particular
+control, supply optional `--behavior-map` using the located source and exact aliases;
+read [behavior-map.md](references/behavior-map.md). A mapped control disconnected
+from that step's entry produces an error; partial BCE evidence cannot prove disconnection.
+
 ## Focused references
 
 - For a formal PDR or a handoff to detailed design, read [pdr-guidelines.md](references/pdr-guidelines.md) and [review-protocol.md](references/review-protocol.md).

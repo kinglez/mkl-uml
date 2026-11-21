@@ -18,6 +18,26 @@ def text_sha256(path):
     return hashlib.sha256(path.read_text(encoding="utf-8").encode("utf-8")).hexdigest()
 
 
+def inspect_skill_runtime(root, expected, *, candidate=False):
+    """Identify the runtime without replacing the reviewed reference hashes."""
+    paths = set(expected)
+    if candidate:
+        paths.update(p.relative_to(root).as_posix() for p in root.glob("skills/*/scripts/*.py"))
+    actual = {name: text_sha256(root / name) for name in sorted(paths)}
+    if not candidate:
+        for name, digest in expected.items():
+            if actual[name] != digest:
+                raise ValueError(
+                    "Skill runtime differs from the reviewed baseline: " + name
+                    + ". Use --candidate-runtime to test the current validators."
+                )
+    return {
+        "mode": "candidate" if candidate else "reviewed",
+        "matches_reviewed_hashes": actual == expected,
+        "sha256": actual,
+    }
+
+
 def verify_review_baselines(demo, stages=("analysis", "architecture", "design")):
     """Check declared reviewed inputs and the mandatory edges in this example's chain."""
     required = {
@@ -40,12 +60,14 @@ def verify_review_baselines(demo, stages=("analysis", "architecture", "design"))
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--skill-root", type=Path, default=DEMO.parents[1],
-                        help="MKL UML repository root; inferred from this checkout by default")
+    parser.add_argument("--skill-root", type=Path,
+                        help="Explicit skill root for reviewed replay. Omit to test this checkout.")
     parser.add_argument("--render", action="store_true",
                         help="Also check PlantUML syntax and regenerate SVG/PNG with local PlantUML")
+    parser.add_argument("--candidate-runtime", action="store_true",
+                        help="Test current validators and record their hashes without replacing the reviewed runtime")
     args = parser.parse_args()
-    source = args.skill_root.resolve()
+    source = (args.skill_root or DEMO.parents[1]).resolve()
     logs = DEMO / "validation" / "latest"
     logs.mkdir(parents=True, exist_ok=True)
     results = []
@@ -78,10 +100,9 @@ def main():
         return run(name, [sys.executable, "-B", source / "skills" / skill / "scripts" / filename, *flags])
 
     source_record = json.loads((DEMO / "SKILL_SOURCE.json").read_text(encoding="utf-8"))
-    for path, expected in source_record["runtime_sha256"].items():
-        actual = text_sha256(source / path)
-        if actual != expected:
-            raise ValueError("Skill runtime differs from the reviewed baseline: " + path)
+    runtime = inspect_skill_runtime(source, source_record["runtime_sha256"],
+                                    candidate=args.candidate_runtime or args.skill_root is None)
+    print("Runtime mode:", runtime["mode"], flush=True)
     verify_review_baselines(DEMO)
 
     domain = DEMO / "01-domain/domain.puml"
@@ -164,7 +185,8 @@ def main():
     passed = all(item["passed"] for item in results)
     report = {"checked_at": datetime.now(timezone.utc).isoformat(), "passed": passed,
               "status": "PASS" if passed else "FAIL",
-              "source_skill_version": source_record["version"], "checks": results,
+              "source_skill_version": source_record["version"] if runtime["matches_reviewed_hashes"] else None,
+              "reviewed_skill_version": source_record["version"], "runtime": runtime, "checks": results,
               "workflow_stages": 9, "architecture_views": 4,
               "workflow_gate_tests": int(re.search(r"Ran (\d+) tests?", gate_result.stderr).group(1)) if re.search(r"Ran (\d+) tests?", gate_result.stderr) else None,
               "reference_unittest_methods": int(test_count.group(1)) if test_count else None,

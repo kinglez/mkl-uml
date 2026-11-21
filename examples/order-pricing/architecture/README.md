@@ -22,10 +22,12 @@ evidence: a rendered box or a matching hash is not approval of the architecture.
 Run the complete example from the repository root:
 
 ```bash
-python3 examples/order-pricing/scripts/verify.py
-python3 examples/order-pricing/scripts/verify.py --render
+python3 examples/order-pricing/scripts/verify.py --candidate-runtime
+python3 examples/order-pricing/scripts/verify.py --candidate-runtime --render
 ```
 
-The first command checks current reviewed handoffs, all nine skills, component-to-code
-allocation, blocking/revalidation probes and reference behavior. The second also renders
-local diagrams. Generated logs are under validation/latest/ and are not review baselines.
+The first command checks the reviewed handoffs with the current validators, verifies
+component-to-code allocation and blocking/revalidation behavior, and runs the reference tests.
+The second also renders local diagrams and requires PlantUML. Both write local logs under
+`validation/latest/`. See [historical replay](../HOW_TO_REPLAY.md#replay-the-reviewed-runtime)
+to use the published validator baseline.

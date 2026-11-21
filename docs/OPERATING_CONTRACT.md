@@ -29,7 +29,8 @@ independent work and ask only questions that change the requested result.
 | CDR | Supplied detailed-design targets | Classes, sequences, specification, applicable analysis/requirements/tests and human review evidence |
 
 CLI minimums: sequence `--secuencia`; class `--clases`; PDR `--robustez`;
-CDR `--clases` plus `--secuencia`. Optional inputs enable comparisons only when usable.
+CDR `--clases` for scoped static checks, plus `--secuencia` for interaction checks.
+Optional inputs enable comparisons only when usable.
 Never fabricate an artifact to satisfy a CLI. Supplied Spanish CLI flags remain compatible.
 
 ## Coverage and acceptance
@@ -91,8 +92,10 @@ requirement or justified design decision.
 Keep replies, Signals/receptions and creation/destruction distinct from operation calls.
 For mechanical provenance use `<<synchCall>>`, `<<asynchCall>>`, `<<reply>>`,
 `<<asynchSignal>>`, `<<createMessage>>` or `<<deleteMessage>>`; operation calls need
-a signature. Unannotated synchronous labels retain lexical matching; ambiguous async
-messages remain unverified. Parsers check profiles, not the complete UML metamodel.
+a complete operation name and receiving classifier. Unannotated natural-language
+labels provide review clues. Overloads and ambiguous asynchronous messages remain
+unverified when the input cannot identify the operation. Parsers check profiles,
+not the complete UML metamodel.
 
 Derived `/property` means derivable, not a storage/caching policy. Composition permits
 at most one composite owner at a time and detachment before composite deletion;

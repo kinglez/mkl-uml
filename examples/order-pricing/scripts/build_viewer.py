@@ -73,18 +73,18 @@ table{border-collapse:collapse;width:100%;margin-top:14px}th,td{text-align:left;
 @media(max-width:640px){main{padding:24px 14px}.panel,.intro,.execution{padding:18px}h1{font-size:27px}button{padding:8px 10px}}
 </style><main>
 <h1>MKL UML · Order pricing</h1><p>A complete reference example: business rules, nine architecture/UML workflow stages, independent review findings, executable code and literal acceptance expectations.</p>
-<div class="meta"><span class="badge">Validator baseline v__VERSION__</span><span class="badge">__VERDICT__</span><span class="badge">__COUNTS__</span></div>
+<div class="meta"><span class="badge">Reviewed validator baseline v__VERSION__</span><span class="badge">__VERDICT__</span><span class="badge">__COUNTS__</span></div>
 <div class="intro"><h2>The problem</h2><p>A Shopper submits product codes, quantities and an optional coupon. The system reads trusted catalog prices and returns the subtotal, discount and payable item amount, or an explicit refusal. The example is read-only and requires no external service.</p>
 <table><thead><tr><th>Subtotal</th><th>Coupon rule</th><th>Payable</th></tr></thead><tbody><tr><td>CNY 255.00</td><td>No coupon</td><td>CNY 255.00</td></tr><tr><td>CNY 255.00</td><td>SAVE30: CNY 30 off orders of CNY 200 or more</td><td>CNY 225.00</td></tr><tr><td>CNY 255.00</td><td>TENOFF: 10% off orders of CNY 100 or more</td><td>CNY 229.50</td></tr><tr><td>CNY 255.00</td><td>BIGSAVE: CNY 500 off, capped at the subtotal</td><td>CNY 0.00</td></tr></tbody></table>
 <p class="note">Money uses integer cents. Policies are teaching assumptions. AI technical reviews and passing tests provide bounded evidence; formal human/business acceptance remains Not fully verified.</p>
 <div class="files">__TOP_LINKS__</div></div>
 <div class="intro"><h2>How the outputs connect</h2><p>Requirements and analysis feed architecture; architecture constrains interactions/classes; CDR and executed code evidence challenge that chain. Existing directory prefixes remain stable.</p><img src="../../docs/assets/workflow.svg" alt="Analysis to architecture, detailed design, review and feedback" style="width:100%;height:auto"></div>
 <nav aria-label="Nine workflow stages">__NAV__</nav>__PANELS__
-<section class="execution"><h2>Run it locally</h2><p>From the repository root, Python's standard library runs the validators and reference tests. Add --render to regenerate SVG/PNG using PlantUML installed locally.</p>
+<section class="execution"><h2>Run it locally</h2><p>Run these commands from the repository root to use the validators in your current checkout. The last command regenerates SVG/PNG with local PlantUML.</p>
 <pre>python3 examples/order-pricing/09-reference-implementation/run_example.py
-python3 examples/order-pricing/scripts/verify.py
-python3 examples/order-pricing/scripts/verify.py --render</pre>
-<p>The README explains execution, review boundaries and each stage's artifacts. This offline reader uses embedded diagrams and requires no CDN or hosted renderer.</p></section>
+python3 examples/order-pricing/scripts/verify.py --candidate-runtime
+python3 examples/order-pricing/scripts/verify.py --candidate-runtime --render</pre>
+<p><a href="HOW_TO_REPLAY.md#replay-the-reviewed-runtime">Replay the reviewed runtime</a> to use the published validator baseline. This offline reader uses embedded diagrams and requires no CDN or hosted renderer.</p></section>
 </main><script>
 const tabs=[...document.querySelectorAll('nav button')];
 function select(id){if(!document.getElementById(id))id='stage-1';for(const t of tabs)t.setAttribute('aria-selected',String(t.dataset.target===id));for(const p of document.querySelectorAll('.panel'))p.hidden=p.id!==id;}

@@ -24,6 +24,16 @@ List each selected `CU-XX`, its `DS-XX`, and the related model, requirements and
 
 ## Reverse inspection
 
+For CLI checks of a selected interaction, explicit requirement/contract/decision
+origins can be supplied through [operation-evidence.md](operation-evidence.md).
+The record covers only named declarations; source authority and semantic adequacy
+remain review work. A class-only CLI check runs static preparation and records
+interaction-dependent rules as unperformed.
+The mechanical check for rule 9 uses the same branch structure as the sequence
+validator. Unsupported statements such as a reference to another interaction
+can leave the affected flow unverified. Inspect the referenced behavior before
+deciding whether the flow is missing or implemented.
+
 Inspect suspicious classes and follow their originating interactions. For example, an unexpectedly one-sided collection API may reveal an out-of-scope scenario, deliberate contract or wrongly allocated call. Confirm which explanation the artifacts support before changing either diagram. An absent inverse operation alone is not a defect.
 
 ## Applicable SOLID evidence

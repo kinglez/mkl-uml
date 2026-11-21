@@ -52,6 +52,13 @@ python scripts/validate_design_class_puml.py --clases path/to/classes.puml
 
 Add existing `--dominio` and `--spec` inputs when relevant; inspect `--help` for the supported CLI. Only `--clases` is mandatory for this tool; omitting a sequence leaves interaction provenance unverified. For class-only work, report that limitation and inspect notation with an available renderer. Lexical matches are evidence candidates, not proof of responsibility correctness.
 
+For an operation justified outside the selected interaction, use optional
+`--operation-evidence` with a located requirement, contract or decision. Read
+[operation-evidence.md](references/operation-evidence.md) for the record and overload
+matching. Treat accessor-name warnings as candidates; retain meaningful query contracts.
+Exact calls match a receiving classifier and complete operation name. Legacy prose
+and unresolved overloads remain partial; shared words cannot establish provenance.
+
 ## Focused references
 
 - For operation/attribute provenance, read [provenance-rules.md](references/provenance-rules.md).

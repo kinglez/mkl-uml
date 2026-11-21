@@ -30,14 +30,17 @@ import argparse
 import re
 import sys
 import unicodedata
-from dataclasses import dataclass, field
+from pathlib import Path
+
+# Keep source-copy installations and Python isolated mode self-contained.
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from sequence_structure import DECL_RE, Secuencia, branch_evidence, codigo_secuencia, parse_secuencia
 
 # --------------------------------------------------------------------------
 # Declared constants and thresholds (references/notation-rules.md)
 # --------------------------------------------------------------------------
 
 TIPOS_BCE = ("actor", "boundary", "control", "entity")
-TIPOS_INFRA = ("participant", "database", "queue", "collections")
 
 # Terms suggesting infrastructure mislabeled as a domain entity; multilingual input remains supported.
 INFRA_TERMS = (
@@ -56,49 +59,6 @@ MENSAJES_GENERICOS = (
 
 # Normalize equivalent flow identifiers: FA-01, FA1, FA 1, fa_01.
 FLUJO_RE = re.compile(r"\b(FA|FE)\s*[-_ ]?\s*0*(\d+)\b", re.IGNORECASE)
-
-# Participant declarations.
-# Trailing color (#LightCoral) and stereotype (<<x>>) are supported. Without
-# this suffix, colored declarations were NOT parsed, despite the robustness
-# contract REQUIRING color for alternate-only objects. Omitting it silently
-# disabled coverage for alternate-flow Controllers, precisely those most
-# easily forgotten during design.
-DECL_RE = re.compile(
-    r"^\s*(?:create\s+)?(?P<tipo>actor|boundary|control|entity|participant|database|queue|collections)\s+"
-    r'(?:"(?P<label>[^"]+)"|(?P<bare>[\w]+))'
-    r"(?:\s+as\s+(?P<alias>[\w]+))?"
-    r"(?:\s+(?:#[#\w]+|<<[^>]+>>))*\s*$",
-    re.IGNORECASE | re.MULTILINE,
-)
-
-# Messages support common PlantUML arrows and activation SHORTHAND
-# (`++`, `--`, `**`, `!!`) following the receiver.
-#
-# Without `corto`, `A -> B ++ : msg` did not match: the whole message
-# disappeared, making diagrams appear empty and producing false orphan
-# participant and uncovered-Controller errors. This syntax is recommended
-# by references/notation-rules.md. A parser failing its own documented
-# syntax is worse than a strict parser.
-MSG_RE = re.compile(
-    r'^\s*(?P<emisor>"[^"]+"|[\w]+)\s*'
-    r"(?P<flecha>--?>>?|<<?--?|->>|-->|->|<-)\s*"
-    r'(?P<receptor>"[^"]+"|[\w]+)'
-    r"(?:\s*(?P<corto>\+\+|--|\*\*|!!))?"
-    r"\s*(?::\s*(?P<etiqueta>.*))?$"
-)
-AUTOACT_RE = re.compile(r"^\s*autoactivate\s+(?P<estado>on|off)\b", re.IGNORECASE)
-NOTA_ABRE = re.compile(
-    r"^\s*(?:/')?\s*(?:h|r)?note\b(?!.*\bend\s*note\b)(?!.*:)", re.IGNORECASE
-)
-NOTA_CIERRA = re.compile(r"^\s*end\s*note\b", re.IGNORECASE)
-
-FRAG_ABRE = re.compile(
-    r"^\s*(?P<kind>alt|opt|loop|par|critical|break|group)\b\s*(?P<guarda>.*)$",
-    re.IGNORECASE,
-)
-FRAG_ELSE = re.compile(r"^\s*else\b\s*(?P<guarda>.*)$", re.IGNORECASE)
-FRAG_CIERRA = re.compile(r"^\s*end\b\s*$", re.IGNORECASE)
-ACT_RE = re.compile(r"^\s*(?P<op>activate|deactivate)\s+(?P<quien>[\w]+)", re.IGNORECASE)
 
 CLASS_RE = re.compile(
     r'^\s*(?:abstract\s+)?class\s+(?:"(?P<q>[^"]+)"|(?P<n>[\w]+))', re.MULTILINE
@@ -124,9 +84,9 @@ STOPWORDS = {
 # lifelines, messages, and nesting, but found NO accessible source.
 # Available comprehension studies did not isolate those variables.
 # These numbers are therefore local judgment, identifying where to inspect.
-# They all generate WARNINGS, never errors. Adjust unsuitable thresholds
+# They generate advisory diagnostics, never errors. Adjust unsuitable thresholds
 # for a domain without implying any standards violation.
-UMBRAL_RETORNOS = 0.40       # return-message proportion
+UMBRAL_RETORNOS = 0.40       # return-message proportion (information only)
 UMBRAL_CENTRALIZADO = 0.60   # proportion of messages sent by one participant
 PROFUNDIDAD_CADENA = 3       # consecutive self-calls before warning
 MAX_CAMINOS = 256            # execution-path enumeration cap
@@ -216,197 +176,6 @@ def leer(path: str) -> str:
 # --------------------------------------------------------------------------
 # Model
 # --------------------------------------------------------------------------
-
-@dataclass
-class Participante:
-    alias: str
-    label: str
-    tipo: str
-    linea: int
-
-    @property
-    def display(self) -> str:
-        return self.label or self.alias
-
-    @property
-    def es_infra(self) -> bool:
-        return self.tipo in TIPOS_INFRA
-
-
-@dataclass
-class Mensaje:
-    emisor: str
-    receptor: str
-    etiqueta: str
-    flecha: str
-    linea: int
-
-    @property
-    def es_retorno(self) -> bool:
-        return "--" in self.flecha and ">" in self.flecha
-
-
-@dataclass
-class Secuencia:
-    path: str
-    text: str
-    participantes: dict = field(default_factory=dict)
-    mensajes: list = field(default_factory=list)
-    arbol: list = field(default_factory=list)   # items: ('msg',Message) | ('act',operation,who,line) | ('frag',kind,[operands])
-    fragmentos: list = field(default_factory=list)  # (kind, guard, line, depth)
-    usa_activaciones: bool = False
-    autoactivate: bool = False
-    codigo: str = ""  # executable notation, with comments/notes blanked
-
-
-# --------------------------------------------------------------------------
-# Sequence parser with fragment tree
-# --------------------------------------------------------------------------
-
-def codigo_secuencia(text: str) -> str:
-    """Blank comments and note text, preserving source line numbers."""
-    text = re.sub(r"^[ \t]*/'[\s\S]*?(?:'/|\Z)",
-                  lambda m: "\n" * m.group().count("\n"), text, flags=re.MULTILINE)
-    lineas, en_nota = [], False
-    for crudo in text.split("\n"):
-        ln = crudo.strip()
-        if en_nota:
-            if re.match(r"^end\s*(?:[hr]?note|legend)\b", ln, re.I):
-                en_nota = False
-            lineas.append("")
-        elif not ln or ln.startswith("'"):
-            lineas.append("")
-        elif re.match(r"^(?:(?:h|r)?note|legend)\b", ln, re.IGNORECASE):
-            en_nota = ln.lower().startswith("legend") or bool(NOTA_ABRE.match(ln))
-            lineas.append("")
-        else:
-            lineas.append(crudo)
-    return "\n".join(lineas)
-
-
-def parse_secuencia(path: str, text: str) -> Secuencia:
-    s = Secuencia(path=path, text=text)
-    text = s.codigo = codigo_secuencia(text)
-    lineas = text.split("\n")
-
-    for m in DECL_RE.finditer(text):
-        label = m.group("label") or m.group("bare") or ""
-        alias = m.group("alias") or m.group("bare") or label
-        nlin = text[: m.start()].count("\n") + 1
-        s.participantes[alias] = Participante(alias, label, m.group("tipo").lower(), nlin)
-
-    def parsear(i: int, prof: int):
-        """Return (items, next_index); stop at 'else' or 'end'."""
-        items = []
-        while i < len(lineas):
-            crudo = lineas[i]
-            ln = crudo.strip()
-            n = i + 1
-            if not ln or ln.startswith("'") or ln.startswith("@") or ln.startswith("=="):
-                i += 1
-                continue
-            # note/hnote/rnote blocks contain free text, often the use case text
-            # allowed by the notation guide. It may begin with alt. Skip these blocks
-            # so free text does not enter the fragment tree and create false
-            # unclosed-fragment findings: end note is not a fragment terminator.
-            # Preserve the distinction between notes and fragments.
-            if NOTA_ABRE.match(ln):
-                i += 1
-                while i < len(lineas) and not NOTA_CIERRA.match(lineas[i].strip()):
-                    i += 1
-                i += 1
-                continue
-            mauto = AUTOACT_RE.match(ln)
-            if mauto:
-                if mauto.group("estado").lower() == "on":
-                    s.autoactivate = True
-                    s.usa_activaciones = True
-                items.append(("auto", mauto.group("estado").lower(), n))
-                i += 1
-                continue
-            if FRAG_CIERRA.match(ln) or FRAG_ELSE.match(ln):
-                if prof:
-                    return items, i
-                # Invalid top-level separators are diagnosed independently; do
-                # not let them truncate parsing of the remaining executable input.
-                i += 1
-                continue
-            ma = FRAG_ABRE.match(ln)
-            if ma:
-                kind = ma.group("kind").lower()
-                s.fragmentos.append((kind, ma.group("guarda").strip(), n, prof))
-                operandos = []
-                j = i + 1
-                while True:
-                    sub, j = parsear(j, prof + 1)
-                    operandos.append(sub)
-                    if j >= len(lineas):
-                        break
-                    mel = FRAG_ELSE.match(lineas[j].strip())
-                    if mel:
-                        # An else guard can also declare a flow. Register it so an FA/FE
-                        # labeled on an alternate branch is not falsely reported missing.
-                        # This is the normal case for use cases with multiple alternatives.
-                        # Coverage must include identifiers on all operands.
-                        # Preserve alternate-branch identifiers.
-                        s.fragmentos.append(("else", mel.group("guarda").strip(),
-                                             j + 1, prof))
-                        j += 1
-                        continue
-                    if FRAG_CIERRA.match(lineas[j].strip()):
-                        j += 1
-                        break
-                    break
-                # opt/loop may be skipped: include an empty path
-                if kind in ("opt", "loop", "break"):
-                    operandos.append([])
-                items.append(("frag", kind, operandos, n))
-                i = j
-                continue
-            mact = ACT_RE.match(ln)
-            if mact:
-                s.usa_activaciones = True
-                items.append(("act", mact.group("op").lower(), mact.group("quien"), n))
-                i += 1
-                continue
-            mm = MSG_RE.match(ln)
-            if mm:
-                emisor = mm.group("emisor").strip('"')
-                receptor = mm.group("receptor").strip('"')
-                flecha = mm.group("flecha")
-                # Left-facing arrow: sender is on the RIGHT.
-                # Without normalization, B <-- E was counted as sent by B, corrupting
-                # the distribution used by the centralized-control check. It also failed
-                # return recognition because the pattern looked for >.
-                # Normalize direction before assessing either property.
-                if flecha.startswith("<"):
-                    emisor, receptor = receptor, emisor
-                    flecha = flecha[1:][::-1].replace("<", ">") + ">"
-                    flecha = ("--" + ">") if "--" in mm.group("flecha") else "->"
-                msg = Mensaje(emisor, receptor, (mm.group("etiqueta") or "").strip(),
-                              flecha, n)
-                s.mensajes.append(msg)
-                items.append(("msg", msg))
-                # Shorthand: ++ activates the receiver; -- deactivates the sender.
-                # Translate to the same items as long-form commands for per-path
-                # activation-balance checking.
-                corto = mm.group("corto")
-                if corto in ("++", "--"):
-                    s.usa_activaciones = True
-                    if corto == "++":
-                        items.append(("act", "activate", receptor, n))
-                    else:
-                        items.append(("act", "deactivate", emisor, n))
-                i += 1
-                continue
-            i += 1
-        return items, i
-
-    s.arbol, consumidas = parsear(0, 0)
-    if consumidas != len(lineas):
-        raise ValueError("internal parser failed to consume the sequence")
-    return s
-
 
 class Caminos(list):
     """Complete retained paths and whether any alternatives were omitted."""
@@ -550,48 +319,25 @@ def check_estructura(s: Secuencia, errores: list, avisos: list) -> None:
         errores.append(f"{tag} executable content outside @startuml / @enduml boundaries")
     if not s.participantes:
         errores.append(f"{tag} the sequence diagram has no declared participants")
-    if not s.mensajes:
+    if not s.mensajes and s.lineas_no_parseadas and s.participantes:
+        avisos.append(f"{tag} no messages understood by the local sequence profile")
+    elif not s.mensajes:
         errores.append(f"{tag} the sequence diagram has no usable messages")
-    abiertos = []
-    en_nota = False
-    for ln_i, crudo in enumerate(lineas, 1):
-        ln = crudo.strip()
-        # This independent sweep must also skip notes: free text may start with
-        # alt, and end note does not close a fragment. A parser-only repair
-        # left the same false positive active here.
-        # Keep this sweep consistent with the parser.
-        if en_nota:
-            if NOTA_CIERRA.match(ln):
-                en_nota = False
-            continue
-        if NOTA_ABRE.match(ln):
-            en_nota = True
-            continue
-        ma = FRAG_ABRE.match(ln)
-        if ma:
-            abiertos.append(ma.group("kind").lower())
-        elif FRAG_ELSE.match(ln):
-            if not abiertos or abiertos[-1] not in ("alt", "par"):
-                errores.append(f"{tag} L{ln_i}: 'else' requires an open alt or par fragment")
-        elif FRAG_CIERRA.match(ln):
-            if abiertos:
-                abiertos.pop()
-            else:
-                errores.append(f"{tag} L{ln_i}: 'end' without an open fragment")
-    if abiertos:
-        errores.append(f"{tag} {len(abiertos)} fragment(s) remain unclosed by 'end'")
+    errores.extend(f"{tag} {error}" for error in s.errores_estructura)
+    if s.fragmentos_abiertos:
+        errores.append(f"{tag} {s.fragmentos_abiertos} fragment(s) remain unclosed by 'end'")
 
-    for kind, guarda, n, prof in s.fragmentos:
-        if kind == "else":
+    for operand in s.fragmentos:
+        if operand.tipo == "else":
             continue
         # prof is zero-based; the human-readable level is prof+1. Comparing the
         # raw index to the threshold missed the documented three-level case
         # (alt inside opt inside loop), requiring a fourth level to trigger.
         # Compare the human-readable nesting level.
-        nivel = prof + 1
+        nivel = operand.profundidad + 1
         if nivel > MAX_ANIDAMIENTO:
             avisos.append(
-                f"{tag} L{n}: fragment '{kind}' nested at level {nivel}. "
+                f"{tag} L{operand.linea}: fragment '{operand.tipo}' nested at level {nivel}. "
                 f"More than {MAX_ANIDAMIENTO} levels usually means the use case "
                 f"should be split rather than the diagram shrunk."
             )
@@ -609,7 +355,7 @@ def check_participantes(s: Secuencia, errores: list, avisos: list) -> None:
         usados.add(m.receptor)
 
     for p in s.participantes.values():
-        if p.alias not in usados and p.display not in usados:
+        if p.alias not in usados and p.display not in usados and not s.lineas_no_parseadas:
             errores.append(
                 f"{tag} L{p.linea}: participant '{p.display}' neither sends nor receives "
                 f"any messages. A sequence participant exists "
@@ -660,6 +406,9 @@ def check_activaciones(s: Secuencia, errores: list, avisos: list, pidio_activaci
     for camino in caminos:
         pila, modo_auto = {}, False
         for it in camino:
+            if it[0] == "unknown":
+                # An unparsed return, reference or directive may affect the stack.
+                break
             if it[0] == "auto":
                 modo_auto = it[1] == "on"
                 continue
@@ -676,27 +425,29 @@ def check_activaciones(s: Secuencia, errores: list, avisos: list, pidio_activaci
                         f"some execution path"
                     )
                     pila[quien] = 0
-        for quien, v in pila.items():
-            if v > 0:
-                problemas.add(
-                    f"{tag} activation leak: '{quien}' remains active without 'deactivate' "
-                    f"on some execution path"
-                )
+        else:
+            for quien, v in pila.items():
+                if v > 0:
+                    problemas.add(
+                        f"{tag} activation leak: '{quien}' remains active without 'deactivate' "
+                        f"on some execution path"
+                    )
     for p in sorted(problemas):
         errores.append(p)
 
 
-def check_retornos(s: Secuencia, avisos: list) -> None:
+def note_return_proportion(s: Secuencia, infos: list) -> None:
     tag = f"[{s.path}]"
     if not s.mensajes:
         return
     ret = [m for m in s.mensajes if m.es_retorno]
     prop = len(ret) / len(s.mensajes)
     if prop > UMBRAL_RETORNOS:
-        avisos.append(
-            f"{tag} {len(ret)} of {len(s.mensajes)} messages are returns ({prop:.0%}). "
-            f"Sources agree on omission unless useful: a consumed value, "
-            f"a meaningful synchronous reply, or an error branch. Model an asynchronous "
+        infos.append(
+            f"{tag} {len(ret)} of {len(s.mensajes)} messages are returns ({prop:.0%}) "
+            f"under the local labeling and arrow conventions. The proportion alone "
+            f"does not make replies redundant. Keep consumed values and distinct "
+            f"outcomes or errors. Model an asynchronous "
             f"callback as its own call or Signal."
         )
 
@@ -762,6 +513,8 @@ def check_autollamadas(s: Secuencia, avisos: list) -> None:
     for camino in enumerar_caminos(s.arbol):
         seguidas, inicio = 0, None
         for it in camino:
+            if it[0] == "unknown":
+                seguidas = 0
             if it[0] != "msg":
                 continue
             m = it[1]
@@ -864,40 +617,30 @@ def check_cobertura_controladores(s: Secuencia, rob: dict, errores: list) -> int
     return sin_cubrir
 
 
-def operand_has_messages(text: str, start_line: int, message_pattern) -> bool:
-    """A guard is a declaration; only messages in its own operand realize it."""
-    depth = 0
-    for line in text.splitlines()[start_line:]:
-        if re.match(r"^\s*(?:alt|opt|loop|par|critical|break|group)\b", line, re.I):
-            depth += 1
-        elif re.match(r"^\s*end\s*$", line, re.I):
-            if depth == 0:
-                break
-            depth -= 1
-        elif re.match(r"^\s*else\b", line, re.I) and depth == 0:
-            break
-        if message_pattern.match(line):
-            return True
-    return False
-
-
-def check_cobertura_flujos(s: Secuencia, spec_text: str, spec_path: str, errores: list) -> int:
+def check_cobertura_flujos(s: Secuencia, spec_text: str, spec_path: str,
+                          errores: list, avisos: list) -> int | None:
     tag = f"[{s.path}]"
     declarados = flujos_declarados(spec_text)
-    if not declarados:
-        return 0
-    texto_frag = " ".join(f"{k} {g}" for k, g, n, _p in s.fragmentos
-                          if operand_has_messages(s.codigo, n, MSG_RE))
-    dibujados = flujos_declarados(texto_frag) | flujos_declarados(
-        " ".join(m.etiqueta for m in s.mensajes if m.etiqueta)
-    )
-    faltan = sorted(declarados - dibujados)
-    for fid in faltan:
+    dibujados = flujos_declarados(" ".join(m.etiqueta for m in s.mensajes if m.etiqueta))
+    states = branch_evidence(s, flujos_declarados)
+
+    missing = 0
+    uncertain = False
+    for fid in sorted(declarados - dibujados):
+        evidence = states.get(fid)
+        if evidence == "covered":
+            continue
+        if evidence == "partial" or (evidence is None and s.lineas_no_parseadas):
+            uncertain = True
+            avisos.append(f"{tag} flow {fid}, declared in {spec_path}, could not be "
+                          "verified because of unsupported sequence statements.")
+            continue
+        missing += 1
         errores.append(
             f"{tag} flow {fid}, declared in {spec_path}, has no fragment in the "
             f"diagram. Basic and all alternate courses belong on the same diagram."
         )
-    return len(faltan)
+    return None if uncertain else missing
 
 
 def check_se_quedo_en_robustez(s: Secuencia, rob: dict, avisos: list) -> None:
@@ -936,7 +679,7 @@ def validar(s, rob, dominio, spec_text, spec_path, hay_rob, hay_dom, hay_spec,
     check_participantes(s, errores, avisos)
     check_actor(s, errores)
     check_activaciones(s, errores, avisos, pidio_activaciones)
-    check_retornos(s, avisos)
+    note_return_proportion(s, infos)
     check_nombres_mensaje(s, avisos)
     check_control_centralizado(s, avisos)
     check_autollamadas(s, avisos)
@@ -945,17 +688,23 @@ def validar(s, rob, dominio, spec_text, spec_path, hay_rob, hay_dom, hay_spec,
             f"[{s.path}] path enumeration exceeded its cap of {MAX_CAMINOS}; "
             f"per-path checks used complete retained paths as a sample, not exhaustively."
         )
-    capas["notacion y estructura"] = "ejecutada"
-    capas["asignacion de comportamiento (heuristica)"] = "ejecutada"
+    parsed_coverage = "ejecutada"
+    if s.lineas_no_parseadas:
+        parsed_coverage = "partial - unsupported statements"
+        for line in s.lineas_no_parseadas:
+            avisos.append(
+                f"[{s.path}] L{line}: statement not understood by the local sequence "
+                f"profile. Check the source with PlantUML and review its interaction effect."
+            )
+    capas["notacion y estructura"] = parsed_coverage
+    capas["asignacion de comportamiento (heuristica)"] = parsed_coverage
 
     if hay_rob:
-        metricas["controladores_sin_cubrir"] = check_cobertura_controladores(s, rob, errores)
+        if not s.lineas_no_parseadas:
+            metricas["controladores_sin_cubrir"] = check_cobertura_controladores(s, rob, errores)
         check_se_quedo_en_robustez(s, rob, avisos)
-        capas["cobertura de Controladores (guia #7)"] = "ejecutada"
+        capas["cobertura de Controladores (guia #7)"] = parsed_coverage
         faltan_part = []
-        for tipo in ("boundary", "entity", "actor"):
-            for k, nombre in rob.get(tipo, {}).items():
-                pass
         for p in s.participantes.values():
             if p.tipo in ("boundary", "entity", "actor"):
                 if key(p.display) not in rob.get(p.tipo, {}):
@@ -966,20 +715,21 @@ def validar(s, rob, dominio, spec_text, spec_path, hay_rob, hay_dom, hay_spec,
                 + ", ".join(sorted(faltan_part))
                 + ". Preserve upstream names or declare the change."
             )
-        capas["cierre de participantes contra DR-XX"] = "ejecutada"
+        capas["cierre de participantes contra DR-XX"] = parsed_coverage
     else:
         capas["cobertura de Controladores (guia #7)"] = "NO EJECUTADA - falta el diagrama de robustez"
         capas["cierre de participantes contra DR-XX"] = "NO EJECUTADA - falta el diagrama de robustez"
 
     if hay_dom:
         check_cierre_dominio(s, dominio, errores, infos)
-        capas["cierre de entidades contra el dominio"] = "ejecutada"
+        capas["cierre de entidades contra el dominio"] = parsed_coverage
     else:
         capas["cierre de entidades contra el dominio"] = "NO EJECUTADA - falta el modelo de dominio"
 
     if hay_spec:
-        metricas["flujos_sin_fragmento"] = check_cobertura_flujos(s, spec_text, spec_path, errores)
-        capas["cobertura de flujos alternativos"] = "ejecutada"
+        metricas["flujos_sin_fragmento"] = check_cobertura_flujos(
+            s, spec_text, spec_path, errores, avisos)
+        capas["cobertura de flujos alternativos"] = parsed_coverage
         capas["barrido texto <-> mensajes (guia #6)"] = "parcial - la correspondencia fina la haces tu"
     else:
         capas["cobertura de flujos alternativos"] = "NO EJECUTADA - falta la especificacion"

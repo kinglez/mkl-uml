@@ -52,6 +52,9 @@ python scripts/validate_sequence_puml.py --secuencia path/to/sequence.puml --con
 ```
 
 Add `--spec path/to/spec.md`, `--robustez path/to/robustness.puml`, or `--dominio path/to/domain.puml` only when the files exist and those checks are intended. Confirm supported flags with `--help`. Report syntax/profile errors, heuristics, missing evidence and bounded path coverage separately.
+If the checker reports partial coverage for unsupported statements, report which lines were
+not understood and any affected branch checks. Check full syntax separately with a local
+PlantUML renderer when available.
 
 ## Focused references
 

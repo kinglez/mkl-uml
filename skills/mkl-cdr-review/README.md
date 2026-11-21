@@ -23,6 +23,10 @@ From this skill directory, the following is executable. Every `path/to/...` argu
 python scripts/validate_cdr.py --clases path/to/classes.puml --secuencia path/to/sequence.puml
 ```
 
+Omit `--secuencia` for a class-only static preparation check; interaction checks
+remain unperformed and the result cannot establish full readiness. For explicit
+non-message operation origins, see [the optional evidence record](references/operation-evidence.md).
+
 Use `--help` for optional inputs and legacy flags. Exit 0 means no detected errors under the supported profile (warnings can remain); 1 means findings; 2 means invocation/input failure. Lexical checks, local MKL conventions and diagram quality heuristics are not a complete UML semantic validator. Inspect meaning and rendered syntax separately.
 
 The repository-level assertion suite checks fixed expected exits and important diagnostics across all fixture sets, plus parser and cross-artifact regressions. `tests/examples/` includes deliberately invalid examples; names alone do not establish their expected result. Spanish fixture paths and parser vocabulary are retained for compatibility.

@@ -36,7 +36,6 @@ class Incident {
 class Duration <<solucion>> {
   -hours : Integer
   +getHours() : Integer
-  +getLabel() : String
 }
 
 interface Sortable <<solucion>> {

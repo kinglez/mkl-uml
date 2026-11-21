@@ -32,12 +32,16 @@ import re
 import sys
 import unicodedata
 from dataclasses import dataclass, field
+from pathlib import Path
+
+# Resolve only the helper bundled in this skill, including with python -I.
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from bce_structure import BceStructure, parse_bce, split_source
+from behavior_map import BehaviorMapError, review_control_connectivity
 
 # --------------------------------------------------------------------------
 # Constants
 # --------------------------------------------------------------------------
-
-TYPES = ("actor", "boundary", "control", "entity")
 
 # Robustness analysis connection rules. Defined by
 # /mkl-uml-robustness-diagram; here they are consumed and counted (guideline #5).
@@ -74,7 +78,6 @@ SEQUENCE_FRAGMENTS = re.compile(
     re.IGNORECASE | re.MULTILINE,
 )
 CALL_SIGNATURE = re.compile(r"\b[a-zA-Z_][\w]*\s*\([^)]*\)")
-DIRECTED_ARROW = re.compile(r"(-+>|<-+|->>|<<-)")
 
 # Guideline #3: screens without their own name.
 GENERIC_BOUNDARY = (
@@ -88,19 +91,6 @@ REFERENCE_HEADING_RE = re.compile(
     r"\b(?:traceability|coverage|mapping|references|requirements|acceptance|"
     r"trazabilidad|cobertura|referencias|requisitos)\b", re.IGNORECASE)
 
-# PlantUML declarations in robustness diagrams.
-DECL_RE = re.compile(
-    r'^\s*(?P<type>actor|boundary|control|entity)\s+'
-    r'(?:"(?P<label>[^"]+)"|(?P<bare>[\w]+))'
-    r'(?:\s+as\s+(?P<alias>[\w]+))?'
-    r'(?:\s+(?P<color>#[#\w]+))?\s*$',
-    re.IGNORECASE | re.MULTILINE,
-)
-REL_RE = re.compile(
-    r'^\s*(?P<left>"[^"]+"|[\w]+)\s*(?P<conn>[-.]{1,2}[->|]*)\s*'
-    r'(?P<right>"[^"]+"|[\w]+)\s*(?::\s*(?P<label>.*))?$',
-    re.MULTILINE,
-)
 CLASS_RE = re.compile(
     r'^\s*(?:abstract\s+)?class\s+(?:"(?P<q>[^"]+)"|(?P<n>[\w]+))'
     r'(?:\s+as\s+\w+)?(?:\s*<<[^>]+>>)*', re.MULTILINE
@@ -253,25 +243,10 @@ def contiene_termino(nombre: str, terminos) -> str | None:
 # --------------------------------------------------------------------------
 
 @dataclass
-class Element:
-    alias: str
-    label: str
-    etype: str
-    line: int
-
-    @property
-    def display(self) -> str:
-        return self.label or self.alias
-
-
-@dataclass
 class Robustez:
     path: str
-    text: str
-    elements: dict = field(default_factory=dict)
-    relations: list = field(default_factory=list)
-    note_text: str = ""
-    cu_ids: set = field(default_factory=set)
+    structure: BceStructure
+    cu_ids: set[str]
 
 
 @dataclass
@@ -290,62 +265,17 @@ class Spec:
 # Parsers
 # --------------------------------------------------------------------------
 
-def codigo_modelo(text: str, conservar_comentarios=False) -> tuple[str, str]:
-    """Blank annotations in executable notation, preserving source locations.
-
-    PDR may use note text for flow labels, but a note cannot declare objects or
-    links. Single-line/quoted notes must not consume the next declaration.
-    """
-    text = re.sub(r"^[ \t]*/'[\s\S]*?(?:'/|\Z)",
-                  lambda m: "\n" * m.group().count("\n"), text, flags=re.MULTILINE)
-    codigo, notas, en_nota = [], [], False
-    for crudo in text.split("\n"):
-        ln = crudo.strip()
-        if en_nota:
-            notas.append(crudo)
-            codigo.append("")
-            if re.match(r"^end\s*(?:[hr]?note|legend)\b", ln, re.IGNORECASE):
-                en_nota = False
-        elif re.match(r"^(?:[hr]?note|legend)\b", ln, re.IGNORECASE):
-            notas.append(crudo)
-            codigo.append("")
-            header = re.sub(r'"(?:\\.|[^"\\])*"', "", ln)
-            en_nota = (":" not in header and not re.match(r'^(?:[hr]?note)\s+"', ln, re.IGNORECASE)
-                       and not re.search(r"\bend\s*(?:[hr]?note|legend)\b", ln, re.IGNORECASE))
-        else:
-            codigo.append("" if ln.startswith("'") and not conservar_comentarios else crudo)
-    return "\n".join(codigo), "\n".join(notas)
-
-
 def parse_robustez(path: str, text: str) -> Robustez:
-    cuerpo_txt, notas = codigo_modelo(text)
-    # Existing packages place CU identity in a single-line metadata comment.
-    # Keep that identity without allowing comment contents to declare the model.
-    identidad, _ = codigo_modelo(text, conservar_comentarios=True)
-    cu_ids = {f"CU-{int(i):02d}" for i in re.findall(r"\bCU-(\d+)\b", identidad)}
-    r = Robustez(path=path, text=cuerpo_txt, note_text=notas, cu_ids=cu_ids)
-
-    for m in DECL_RE.finditer(cuerpo_txt):
-        label = m.group("label") or m.group("bare") or ""
-        alias = m.group("alias") or m.group("bare") or label
-        line = cuerpo_txt[: m.start("type")].count("\n") + 1
-        r.elements[alias] = Element(alias, label, m.group("type").lower(), line)
-
-    for m in REL_RE.finditer(cuerpo_txt):
-        left = m.group("left").strip('"')
-        right = m.group("right").strip('"')
-        if left.lower() in ("startuml", "enduml"):
-            continue
-        line = cuerpo_txt[: m.start("left")].count("\n") + 1
-        r.relations.append(
-            (left, right, (m.group("label") or "").strip(), line, m.group("conn"))
-        )
-    return r
+    structure = parse_bce(text)
+    # Existing packages also record CU identity in single-line comments.
+    identity = structure.source.code + "\n" + structure.source.comments
+    cu_ids = {f"CU-{int(i):02d}" for i in re.findall(r"\bCU-(\d+)\b", identity)}
+    return Robustez(path, structure, cu_ids)
 
 
 def parse_dominio(text: str) -> dict:
     """Returns {clave: (nombre_original, {atributos})}."""
-    text, _notas = codigo_modelo(text)
+    text = split_source(text).code
     out = {}
     for m in CLASS_RE.finditer(text):
         name = m.group("q") or m.group("n")
@@ -373,7 +303,7 @@ def parse_dominio(text: str) -> dict:
 
 
 def parse_casos_uso(text: str) -> set[str]:
-    text, _notas = codigo_modelo(text)
+    text = split_source(text).code
     actores = set()
     for m in UC_ACTOR_RE.finditer(text):
         label = m.group("label") or m.group("bare") or ""
@@ -619,11 +549,11 @@ def check_sintaxis_robustez(rob: Robustez, errores: list, avisos: list) -> int:
     viol = 0
     tag = f"[{rob.path}]"
 
-    for left, right, label, line, conn in rob.relations:
-        le = rob.elements.get(left)
-        re_ = rob.elements.get(right)
-        if not le or not re_:
-            continue
+    for line, diagnostic in rob.structure.unchecked:
+        avisos.append(f"{tag} L{line}: guideline #5 - {diagnostic}")
+
+    for left, right, label, line, conn in rob.structure.relations:
+        le, re_ = rob.structure.elements[left], rob.structure.elements[right]
         par = frozenset({le.etype, re_.etype})
         if par in INVALID_PAIRS:
             viol += 1
@@ -639,11 +569,11 @@ def check_sintaxis_robustez(rob: Robustez, errores: list, avisos: list) -> int:
                 f"{le.etype}<->{re_.etype} between '{le.display}' and '{re_.display}'"
             )
 
-    if not rob.elements:
+    if not rob.structure.elements:
         viol += 1
         errores.append(f"{tag} guideline #5 - the diagram has no usable robustness declarations")
-    controles = [e for e in rob.elements.values() if e.etype == "control"]
-    if rob.elements and not controles:
+    controles = [e for e in rob.structure.elements.values() if e.etype == "control"]
+    if rob.structure.elements and not controles:
         viol += 1
         errores.append(
             f"{tag} guideline #5 - the diagram has no Controllers: without them no "
@@ -657,12 +587,12 @@ def check_robustez_como_secuencia(rob: Robustez, errores: list) -> None:
     tag = f"[{rob.path}]"
     senales = []
 
-    frags = {m.group(1).lower() for m in SEQUENCE_FRAGMENTS.finditer(rob.text)}
+    frags = {m.group(1).lower() for m in SEQUENCE_FRAGMENTS.finditer(rob.structure.source.code)}
     if frags:
         senales.append(f"sequence fragments ({', '.join(sorted(frags))})")
 
     firmas = [
-        (l, r, lb, ln) for (l, r, lb, ln, _c) in rob.relations
+        (l, r, lb, ln) for (l, r, lb, ln, _c) in rob.structure.relations
         if lb and CALL_SIGNATURE.search(lb)
     ]
     if firmas:
@@ -680,7 +610,7 @@ def check_robustez_como_secuencia(rob: Robustez, errores: list) -> None:
 def check_pattern_itis(rob: Robustez, avisos: list) -> None:
     """Guideline #2 / step 5."""
     tag = f"[{rob.path}]"
-    for e in rob.elements.values():
+    for e in rob.structure.elements.values():
         if e.etype != "control":
             continue
         hit = contiene_termino(e.display, PATTERN_TERMS)
@@ -695,7 +625,7 @@ def check_pattern_itis(rob: Robustez, avisos: list) -> None:
 def check_boundaries_genericos(rob: Robustez, avisos: list) -> None:
     """Guideline #3: screens have their own name."""
     tag = f"[{rob.path}]"
-    for e in rob.elements.values():
+    for e in rob.structure.elements.values():
         if e.etype != "boundary":
             continue
         n = norm(e.display)
@@ -712,7 +642,7 @@ def check_entidades(robs: list, dominio: dict, errores: list, infos: list) -> tu
     """Guideline #9. Returns (n_no_domain, derived_candidate_list)."""
     usadas = {}
     for rob in robs:
-        for e in rob.elements.values():
+        for e in rob.structure.elements.values():
             if e.etype == "entity":
                 usadas.setdefault(key(e.display), (e.display, rob.path, e.line))
 
@@ -749,8 +679,8 @@ def check_cobertura_flujos(rob: Robustez, spec: Spec, errores: list) -> int:
     declarados = set(spec.flujos.keys())
     if not declarados:
         return 0
-    etiquetas = " ".join(lb for (_l, _r, lb, _ln, _c) in rob.relations if lb)
-    dibujados = flujos_declarados(etiquetas) | flujos_declarados(rob.note_text)
+    etiquetas = " ".join(lb for (_l, _r, lb, _ln, _c) in rob.structure.relations if lb)
+    dibujados = flujos_declarados(etiquetas) | flujos_declarados(rob.structure.source.notes)
     sin_rama = sorted(declarados - dibujados)
     for fid in sin_rama:
         errores.append(
@@ -832,7 +762,7 @@ def check_actores(robs: list, actores_cu: set, avisos: list) -> None:
     if not actores_cu:
         return
     for rob in robs:
-        for e in rob.elements.values():
+        for e in rob.structure.elements.values():
             if e.etype != "actor":
                 continue
             if key(e.display) not in actores_cu:
@@ -847,9 +777,9 @@ def check_cobertura_marcador(rob: Robustez, spec: Spec) -> tuple:
     if not spec.pasos:
         return (0, 0, [])
     vocab = set()
-    for e in rob.elements.values():
+    for e in rob.structure.elements.values():
         vocab |= palabras(e.display)
-    for (_l, _r, lb, _ln, _c) in rob.relations:
+    for (_l, _r, lb, _ln, _c) in rob.structure.relations:
         vocab |= palabras(lb)
 
     cubiertos, sin_cubrir = 0, []
@@ -918,7 +848,7 @@ def emparejar(robs: list, specs: list, avisos=None) -> list:
     return pares
 
 
-def validar(robs, specs, dominio, actores_cu, hay_dominio, hay_spec, hay_cu):
+def validar(robs, specs, dominio, actores_cu, hay_dominio, hay_spec, hay_cu, behavior_map=None):
     errores, avisos, infos = [], [], []
     metricas = {
         "cobertura_marcador": None,
@@ -928,6 +858,7 @@ def validar(robs, specs, dominio, actores_cu, hay_dominio, hay_spec, hay_cu):
     }
     capas = {}
     pairing_incomplete = False
+    bce_incomplete = any(rob.structure.unchecked for rob in robs)
 
     # --- Guideline #5 and #2: by diagram ---
     viol = 0
@@ -937,8 +868,18 @@ def validar(robs, specs, dominio, actores_cu, hay_dominio, hay_spec, hay_cu):
         check_pattern_itis(rob, avisos)
         check_boundaries_genericos(rob, avisos)
     metricas["violaciones_sintaxis"] = viol
-    capas["#5 robustness syntax"] = "executed"
+    capas["#5 robustness syntax"] = (
+        "partial - unresolved endpoints or unsupported BCE syntax" if bce_incomplete else "executed"
+    )
     capas["#2 do not refer to detailed design"] = "executed"
+    connectivity = review_control_connectivity({rob.path: rob.structure for rob in robs}, behavior_map)
+    errores.extend(connectivity.errors)
+    avisos.extend(connectivity.warnings)
+    infos.extend(connectivity.information)
+    capas["control connectivity"] = (
+        "partial - unresolved or unsupported BCE evidence" if connectivity.partial
+        else "executed (structural; required controls checked only with an explicit behavior map)"
+    )
 
     # --- Guideline #9: entities in the domain ---
     if hay_dominio:
@@ -959,7 +900,7 @@ def validar(robs, specs, dominio, actores_cu, hay_dominio, hay_spec, hay_cu):
         # nothing that is typed on the screen.
         sin_atributos = []
         for rob in robs:
-            for e in rob.elements.values():
+            for e in rob.structure.elements.values():
                 if e.etype != "entity":
                     continue
                 entrada = dominio.get(key(e.display))
@@ -1000,6 +941,12 @@ def validar(robs, specs, dominio, actores_cu, hay_dominio, hay_spec, hay_cu):
                     f"guidelines #10, #7 and #6 were not tested for this diagram."
                 )
                 continue
+            if rob.structure.unchecked:
+                avisos.append(
+                    f"[{rob.path}] guidelines #10 and #7 - diagram correspondence was not "
+                    "checked for this file because some BCE evidence could not be parsed."
+                )
+                continue
             total_sin_rama += check_cobertura_flujos(rob, spec, errores)
             c, t, sin_cubrir = check_cobertura_marcador(rob, spec)
             cub_tot += c
@@ -1020,6 +967,9 @@ def validar(robs, specs, dominio, actores_cu, hay_dominio, hay_spec, hay_cu):
         if pairing_incomplete:
             capas["#10 highlighter test"] = "partial - unpaired or ambiguous CU artifacts"
             capas["#7 alternate courses"] = "partial - unpaired or ambiguous CU artifacts"
+        if bce_incomplete:
+            for g in ("#10 highlighter test", "#7 alternate courses"):
+                capas[g] = "partial - some BCE diagram correspondence could not be checked"
     else:
         for g in ("#10 highlighter test", "#7 alternate courses",
                   "#6 user/system dialog"):
@@ -1034,13 +984,15 @@ def validar(robs, specs, dominio, actores_cu, hay_dominio, hay_spec, hay_cu):
             "partial - no use case diagram, actors are not verified"
         )
 
-    capas["#4 technical and non-technical"] = "NOT AUTOMATABLE - verified in the minutes"
+    capas["#4 technical and non-technical"] = "NOT AUTOMATABLE - requires reviewer evidence in the minutes"
     capas["#1 the six steps"] = "compound - add #10, #5, #7 and #2"
 
     # Layers degraded by an ABSENT input that could have been provided. It is what
     # only one who must push the verdict to the intermediate state; the layers
     # partials by nature do not count (see verdict()).
     degradadas = ["CU artifact pairing"] if pairing_incomplete else []
+    if bce_incomplete:
+        degradadas.append("#5 robustness syntax (unresolved endpoints or unsupported notation)")
     if not hay_dominio:
         degradadas += ["#9 entities in the domain", "#8 data flow"]
     if not hay_spec:
@@ -1083,8 +1035,8 @@ def veredicto(errores, avisos, metricas, capas=None) -> tuple:
     sin_ejecutar = list(capas or [])
     if sin_ejecutar:
         return ("NOT FULLY VERIFIED",
-                f"{len(sin_ejecutar)} layer(s) not executed or partial due to missing "
-                f"inputs ({', '.join(sin_ejecutar)}): package cannot be declared "
+                f"{len(sin_ejecutar)} layer(s) not executed or partial "
+                f"({', '.join(sin_ejecutar)}): package cannot be declared "
                 f"fully verified")
     if any(v is None for _n, v in duras) or cob is None:
         return ("NOT FULLY VERIFIED",
@@ -1117,7 +1069,7 @@ def veredicto(errores, avisos, metricas, capas=None) -> tuple:
 
 
 def presupuesto(robs, specs) -> str:
-    lineas = sum(r.text.count("\n") for r in robs) + sum(s.text.count("\n") for s in specs)
+    lineas = sum(r.structure.source.code.count("\n") for r in robs) + sum(s.text.count("\n") for s in specs)
     paginas = max(1.0, lineas / LINEAS_POR_PAGINA)
     horas = paginas / RITMO_PAGINAS_HORA
     aviso = ""
@@ -1149,6 +1101,7 @@ def main(argv=None) -> int:
                    help="textual specification of the use case (.md). Repeatable.")
     p.add_argument("--dominio", help="domain model (.puml)")
     p.add_argument("--casos-uso", dest="casos_uso", help="use case diagram (.puml)")
+    p.add_argument("--behavior-map", help="optional located required-control/entry mappings (.json)")
     args = p.parse_args(argv)
 
     robs = [parse_robustez(path, leer(path)) for path in args.robustez]
@@ -1157,10 +1110,14 @@ def main(argv=None) -> int:
     dominio = parse_dominio(leer(args.dominio)) if args.dominio else {}
     actores_cu = parse_casos_uso(leer(args.casos_uso)) if args.casos_uso else set()
 
-    errores, avisos, infos, metricas, capas, degradadas = validar(
-        robs, specs_utiles, dominio, actores_cu,
-        hay_dominio=bool(dominio), hay_spec=bool(specs_utiles), hay_cu=bool(actores_cu),
-    )
+    try:
+        errores, avisos, infos, metricas, capas, degradadas = validar(
+            robs, specs_utiles, dominio, actores_cu,
+            hay_dominio=bool(dominio), hay_spec=bool(specs_utiles), hay_cu=bool(actores_cu),
+            behavior_map=args.behavior_map,
+        )
+    except BehaviorMapError as exc:
+        p.exit(2, f"ERROR: invalid behavior map: {exc}\n")
 
     for spec in specs:
         if not spec.pasos:

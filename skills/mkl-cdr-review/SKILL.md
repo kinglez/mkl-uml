@@ -64,9 +64,19 @@ From this skill directory, this command is executable; paths are placeholders:
 python scripts/validate_cdr.py --clases path/to/classes.puml --secuencia path/to/sequence.puml
 ```
 
-For a class-only request, inspect the supplied model directly and report the scoped
-findings plus unperformed interaction checks. This CLI requires both targets; do not
-create a sequence just to satisfy it. A manual scoped review needs no sibling skill.
+For a class-only request, omit `--secuencia` to run scoped static checks. The CLI
+reports unperformed interaction checks and **Not fully verified**; inspect semantics
+manually without creating a sequence. This path needs no sibling skill. For contracts
+or requirements outside a selected interaction, use optional `--operation-evidence`;
+read [operation-evidence.md](references/operation-evidence.md) for located sources and
+overload matching. Unlisted operations keep the existing provenance checks.
+Exact calls use the receiving classifier and complete operation name. Legacy prose
+and unresolved overloads remain partial; shared words cannot establish provenance.
+
+When a source requires a prerequisite before an observable message, locate the
+source and both modeled messages. Use [message ordering evidence](references/ordering-evidence.md)
+to check the supported sequence paths. Report unmatched mappings or unsupported
+paths as unverified and compare the actual behavior with the source.
 
 Add existing `--spec`, `--dominio`, `--robustez`, `--requisitos` and `--pruebas` inputs only when relevant; inspect `--help` for supported cardinalities. Missing optional CLI files can still be mandatory evidence for the requested formal scope. Declare omitted layers and human checks.
 

@@ -40,12 +40,14 @@ metadata:
 
 Return valid `@startuml` / `@enduml` PlantUML. Keep readable names and stable aliases, show only useful details, and preserve the user's requested notation and language. For a code-only request, return the artifact without a compulsory report bundle.
 
-The bundled validator checks the repository's **strict conceptual profile**, which is narrower than UML. In particular, enriched notation can be valid UML while violating that profile. Report profile findings separately from semantic defects.
+The bundled validator defaults to the repository's **strict conceptual profile**, which is narrower than UML. Preserve evidence-backed cardinalities and conceptual attributes when requested; use `--profile enriched` to check that model. Both profiles reject operations; the enriched profile permits typed attributes, visibility and cardinalities without proving their business correctness. Report profile findings separately from semantic defects.
 
 From this skill directory, this is an executable command; `path/to/model.puml` is an input placeholder:
 
 ```bash
 python scripts/validate_domain_puml.py path/to/model.puml
+# For a requested enriched conceptual model:
+python scripts/validate_domain_puml.py path/to/model.puml --profile enriched
 ```
 
 State whether it actually ran. Exit 0 means no detected errors under that profile, 1 means findings, and 2 means invocation/input failure. Check syntax with an available PlantUML renderer separately.

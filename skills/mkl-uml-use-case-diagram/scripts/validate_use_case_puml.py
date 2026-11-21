@@ -45,8 +45,22 @@ def normalize(text: str) -> str:
     return strip_accents_basic(text.lower())
 
 
+SUBJECT_RE = re.compile(r'\brectangle\s+"[^"]+"(?:\s+as\s+\w+)?\s*\{')
+ACTOR_RE = re.compile(r'^[ \t]*actor[ \t]+(?:"(?P<label>[^"]+)"|(?P<name>\w+))'
+                      r'(?:[ \t]+as[ \t]+(?P<alias>\w+))?', re.M)
+
+
+def parse_actors(text: str) -> list[tuple[str, str]]:
+    """Resolve display names and optional aliases once for all actor checks."""
+    actors = []
+    for match in ACTOR_RE.finditer(text):
+        name = match.group("label") or match.group("name")
+        actors.append((name, match.group("alias") or name))
+    return actors
+
+
 def extract_system_body(text: str) -> str:
-    match = re.search(r'\brectangle\s+"[^"]+"\s*\{', text)
+    match = SUBJECT_RE.search(text)
     if not match:
         return ""
     start = match.end()
@@ -121,7 +135,7 @@ def main(path: str, dominant_hint: str | None = None) -> int:
         if required not in text:
             add_warning(f"missing recommended directive: {required}")
 
-    if not re.search(r'\brectangle\s+"[^"]+"\s*\{', text):
+    if not SUBJECT_RE.search(text):
         add_error('missing system boundary: rectangle "System Name" { ... }')
 
     if re.search(r'^\s*class\s+', text, re.MULTILINE):
@@ -134,9 +148,7 @@ def main(path: str, dominant_hint: str | None = None) -> int:
         add_error("multiplicity detected; use case diagrams should not include multiplicities")
 
     usecases = re.findall(r'^\s*usecase\s+"([^"]+)"\s+as\s+(\w+)', text, re.MULTILINE)
-    quoted_actors = re.findall(r'^\s*actor\s+"([^"]+)"\s+as\s+(\w+)', text, re.MULTILINE)
-    unquoted_actors = re.findall(r'^\s*actor\s+(\w+)\s*(?:$|\n)', text, re.MULTILINE)
-    actors = quoted_actors + [(name, name) for name in unquoted_actors]
+    actors = parse_actors(text)
 
     if not usecases:
         add_error("no use cases declared")
@@ -150,7 +162,7 @@ def main(path: str, dominant_hint: str | None = None) -> int:
     # Check rough placement: actors should not be inside the system boundary and use cases should not be outside it.
     system_body = extract_system_body(text)
     if system_body:
-        if re.search(r'^\s*actor\s+', system_body, re.MULTILINE):
+        if parse_actors(system_body):
             add_error("actor declaration detected inside system boundary")
         outside_text = text.replace(system_body, "")
         if re.search(r'^\s*usecase\s+', outside_text, re.MULTILINE):
@@ -214,7 +226,8 @@ def main(path: str, dominant_hint: str | None = None) -> int:
             )
         if not alias.startswith("CU_"):
             add_warning(f"use case alias '{alias}' should preferably start with CU_")
-        if len(visible.split()) < 2:
+        # Space-separated word counts do not measure goal specificity in CJK.
+        if len(visible.split()) < 2 and not re.search(r"[\u3040-\u30ff\u3400-\u9fff\uac00-\ud7af]", visible):
             add_warning(f"use case '{visible}' may be too vague; prefer infinitive verb + domain complement")
 
     # Actors that look like internal components.

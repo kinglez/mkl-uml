@@ -213,7 +213,7 @@ To run the **maintained reference**, use the terminal from the repository root:
 
 ```bash
 python3 examples/order-pricing/09-reference-implementation/run_example.py
-python3 examples/order-pricing/scripts/verify.py
+python3 examples/order-pricing/scripts/verify.py --candidate-runtime
 ```
 
 These commands check the committed reference, **not your generated files**.

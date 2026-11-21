@@ -25,6 +25,8 @@ The authority for message semantics is [OMG UML 2.5.1](https://www.omg.org/spec/
 | Unknown/ambiguous | Record the unresolved sort, signature or receiver. A dashed/open arrow alone may not establish intent. |
 
 Use an explicit synchronous reply when the value matters to subsequent visible behavior or distinguishes a meaningful result/error. Omit uninformative replies where the interaction remains understandable. For asynchronous completion, use the appropriate new call or Signal, never a UML reply to an asynchronous call.
+The checker treats an explicit message sort as stronger evidence than an arrow style. Its
+reply proportion is informational and does not determine which replies to remove.
 
 Self-calls follow the same sort/signature rule. `MessageKind` (`complete`, `lost`, `found`, `unknown`) concerns known message ends and differs from `MessageSort`. Provenance requirements apply to the selected scope; UML does not require every class operation to appear in one interaction.
 
@@ -71,6 +73,15 @@ end
 ```
 
 Preserve the established filename `caso_NN_secuencia.puml` when applicable. Use phase dividers when useful. A Note may summarize scenario text, but the external specification remains the source for cross-artifact checks and Note content cannot masquerade as actual participants/messages.
+The checker covers a local subset of [PlantUML sequence syntax](https://plantuml.com/sequence-diagram).
+It reports unrecognized statements by line and marks notation coverage partial. Some of
+these statements can be valid PlantUML, such as the `return` shorthand. Use the local
+renderer with [`--check-syntax`](https://plantuml.com/command-line) for PlantUML syntax.
+Branch coverage uses the same parsed operands as activation checks. A labelled operand
+with a parsed message has mechanical evidence. An understood but empty operand fails
+coverage. When the operand contains unsupported statements and no parsed message, its
+coverage is unverified. Activation balance is checked only through the understood
+prefix of a path if it encounters an unsupported statement.
 
 ## Choose the artifact for the question
 

@@ -550,7 +550,7 @@
       "exit_code": 1,
       "contains": [
         "this diagram looks like a SEQUENCE diagram",
-        "has no branch in the diagram"
+        "#7 alternate courses: partial - some BCE diagram correspondence could not be checked"
       ]
     },
     {

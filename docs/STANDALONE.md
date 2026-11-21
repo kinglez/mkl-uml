@@ -49,6 +49,6 @@ Review the actual content before relying on it.
 
 A review needs a real target. Missing comparison material limits that comparison;
 it does not require generating every earlier stage.
-The PDR CLI needs a robustness diagram. The CDR CLI needs both a class model and
-a sequence. With only a class model, request a scoped manual review and keep interaction
-checks unverified. See [exact input and review rules](OPERATING_CONTRACT.md) when needed.
+The PDR CLI needs a robustness diagram. The CDR CLI supports scoped static checks with
+only a class model. Add a sequence for interaction checks. See
+[exact input and review rules](OPERATING_CONTRACT.md) when needed.

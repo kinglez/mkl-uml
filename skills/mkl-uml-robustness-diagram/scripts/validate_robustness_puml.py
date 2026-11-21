@@ -24,6 +24,10 @@ import sys
 import unicodedata
 from pathlib import Path
 
+# Resolve only the helper bundled in this skill, including with python -I.
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from bce_structure import Element, parse_bce, split_source
+
 # Types and rules.
 
 TYPES = ("actor", "boundary", "control", "entity")
@@ -124,22 +128,6 @@ def flujos_declarados(text: str) -> set[str]:
 
 # Parsing.
 
-DECL_RE = re.compile(
-    r'^\s*(?P<type>actor|boundary|control|entity)\s+'
-    r'(?:"(?P<label>[^"]+)"\s+as\s+(?P<alias1>\w+)|(?P<alias2>\w+)(?:\s+as\s+(?P<alias3>\w+))?)'
-    # Optional fill color marks objects exclusive to alternative courses.
-    r'(?:\s+(?P<color>#[#\w]+))?\s*$',
-    re.IGNORECASE,
-)
-
-# Flexible PlantUML relationship connector and optional label.
-REL_RE = re.compile(
-    r'^\s*(?P<left>\w+)\s*'
-    r'(?P<conn><?[-.]{1,3}(?:\[[^\]]*\])?[-.]{0,3}>?)\s*'
-    r'(?P<right>\w+)\s*'
-    r'(?::\s*(?P<label>.*?))?\s*$'
-)
-
 CLASS_RE = re.compile(
     r'^\s*(?:abstract\s+)?(?:class|entity|enum)\s+'
     r'(?:"(?P<q>[^"]+)"|(?P<p>[\wÀ-ſ]+))',
@@ -147,114 +135,9 @@ CLASS_RE = re.compile(
 )
 
 
-class Element:
-    __slots__ = ("alias", "label", "etype", "line", "color")
-
-    def __init__(self, alias: str, label: str, etype: str, line: int, color: str = ""):
-        self.alias = alias
-        self.label = label
-        self.etype = etype.lower()
-        self.line = line
-        self.color = color or ""
-
-    @property
-    def display(self) -> str:
-        return self.label or self.alias
-
-
-def model_code(text: str, keep_notes: bool = False) -> str:
-    """Keep note flow labels when requested, but exclude commented models."""
-    text = re.sub(r"^[ \t]*/'[\s\S]*?(?:'/|\Z)",
-                  lambda m: "\n" * m.group().count("\n"), text, flags=re.M)
-    if keep_notes:
-        return text
-    lines, annotation = [], False
-    for raw in text.split("\n"):
-        line = raw.strip()
-        if annotation:
-            lines.append("")
-            if re.match(r"^end\s*(?:[hr]?note|legend)\b", line, re.I):
-                annotation = False
-        elif re.match(r"^(?:[hr]?note|legend)\b", line, re.I):
-            lines.append("")
-            header = re.sub(r'"(?:\\.|[^"\\])*"', "", line)
-            annotation = not (":" in header or re.match(r'^[hr]?note\s+"', line, re.I))
-        else:
-            lines.append("" if line.startswith("'") else raw)
-    return "\n".join(lines)
-
-
-def parse_diagram(text: str):
-    text = model_code(text, keep_notes=True)
-    elements: dict[str, Element] = {}
-    relations: list[tuple[str, str, str, int, str]] = []  # left, right, label, line, connector
-    unparsed: list[tuple[int, str]] = []
-    note_lines: list[str] = []  # attached use case text for coverage checks
-
-    in_block = False  # inside a multiline note/legend
-
-    for n, raw in enumerate(text.splitlines(), start=1):
-        line = raw.strip()
-
-        # Skip note/legend blocks when parsing relationships, but retain their text
-        # for declared-flow coverage checks.
-        if in_block:
-            if re.match(r"^end\s*([hr]?note|legend)\b", line, re.IGNORECASE):
-                in_block = False
-            else:
-                note_lines.append(line)
-            continue
-
-        if not line or line.startswith("'") or line.startswith("@"):
-            continue
-
-        if re.match(r"^([hr]?note|legend)\b", line, re.IGNORECASE):
-            # One-line note forms have inline text or a quoted alias declaration.
-            single_line = re.search(r":\s*\S", re.sub(r'"(?:\\.|[^"\\])*"', "", line)) or re.search(
-                r'^\s*[hr]?note\s+"[^"]*"\s+as\s+\w+', line, re.IGNORECASE
-            )
-            if single_line:
-                note_lines.append(line)
-            else:
-                in_block = True
-            continue
-
-        if line.lower().startswith(("skinparam", "title", "hide", "left to", "top to", "!")):
-            continue
-
-        decl = DECL_RE.match(line)
-        if decl:
-            etype = decl.group("type").lower()
-            alias = decl.group("alias1") or decl.group("alias3") or decl.group("alias2")
-            label = decl.group("label") or (decl.group("alias2") if decl.group("alias3") else "") or ""
-            elements[alias] = Element(alias, label, etype, n, decl.group("color") or "")
-            continue
-
-        rel = REL_RE.match(line)
-        if rel and rel.group("conn"):
-            if re.search(r"\[[^\]]*\bhidden\b[^\]]*\]", rel.group("conn"), re.I):
-                continue  # PlantUML layout constraint, not modeled communication.
-            relations.append(
-                (
-                    rel.group("left"),
-                    rel.group("right"),
-                    rel.group("label") or "",
-                    n,
-                    rel.group("conn"),
-                )
-            )
-            continue
-
-        # Report relationship-like lines that were not parsed.
-        if re.search(r"[-.]{2}", line):
-            unparsed.append((n, line))
-
-    return elements, relations, unparsed, "\n".join(note_lines)
-
-
 def parse_domain_classes(text: str) -> dict[str, str]:
     """Return domain classes as {normalized_key: original_name}."""
-    text = model_code(text)
+    text = split_source(text).code
     names: dict[str, str] = {}
     for line in text.splitlines():
         m = CLASS_RE.match(line.strip())
@@ -281,7 +164,11 @@ def validate(text: str, domain_text: str | None = None):
         if directive not in text:
             warnings.append(f"missing recommended output directive: {directive}")
 
-    elements, relations, unparsed, note_text = parse_diagram(text)
+    structure = parse_bce(text)
+    elements, relations = structure.elements, structure.relations
+    unchecked = len(structure.unchecked)
+    for n, diagnostic in structure.unchecked:
+        warnings.append(f"line {n}: {diagnostic}")
 
     if not elements:
         errors.append(
@@ -289,9 +176,6 @@ def validate(text: str, domain_text: str | None = None):
             "a robustness diagram requires typed elements"
         )
         return errors, warnings, {}
-
-    for n, line in unparsed:
-        warnings.append(f"line {n}: relationship-like syntax could not be parsed: {line}")
 
     by_type: dict[str, list[Element]] = {t: [] for t in TYPES}
     for el in elements.values():
@@ -334,11 +218,7 @@ def validate(text: str, domain_text: str | None = None):
     for left, right, label, n, conn in relations:
         if ">" in conn or "<" in conn:
             directed_lines.append(n)
-        el_l, el_r = elements.get(left), elements.get(right)
-        if el_l is None or el_r is None:
-            missing = left if el_l is None else right
-            warnings.append(f"line {n}: relationship references undeclared alias '{missing}'")
-            continue
+        el_l, el_r = elements[left], elements[right]
 
         pair = frozenset({el_l.etype, el_r.etype})
         if pair in INVALID_PAIRS:
@@ -393,8 +273,8 @@ def validate(text: str, domain_text: str | None = None):
         )
 
     # Every alternative/exception declared in attached text must be represented.
-    declarados = flujos_declarados(note_text)
-    if declarados:
+    declarados = flujos_declarados(structure.source.notes)
+    if declarados and not unchecked:
         blob = " ".join(
             [lab for _, _, lab, _, _ in relations] + [e.display for e in elements.values()]
         )
@@ -527,6 +407,7 @@ def validate(text: str, domain_text: str | None = None):
         "control": len(by_type["control"]),
         "entity": len(by_type["entity"]),
         "relaciones": len(relations),
+        "unchecked": unchecked,
         "object_discovery": discovery,
     }
     return errors, warnings, stats
@@ -571,6 +452,7 @@ def main(argv: list[str]) -> int:
 
     print("Robustness diagram validation")
     print("==================================")
+    print(f"Source: {path}")
     if stats:
         print(
             f"\nElements: {stats['elementos']} "
@@ -578,6 +460,8 @@ def main(argv: list[str]) -> int:
             f"control {stats['control']}, entity {stats['entity']}) | "
             f"relationships: {stats['relaciones']}"
         )
+        if stats["unchecked"]:
+            print(f"BCE relationship coverage: partial ({stats['unchecked']} unresolved or unsupported line(s))")
 
     print("\nERRORS:" if errors else "\nERRORS: none")
     for e in errors:

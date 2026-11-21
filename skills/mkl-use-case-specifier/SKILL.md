@@ -55,10 +55,15 @@ From this skill directory, this command is executable; the specification path is
 python scripts/validate_use_case_spec.py path/to/specification.md
 ```
 
-The CLI recognizes English, legacy Spanish and Chinese structural field labels,
-line/table identifiers and Markdown identifier headings such as `### FA-01`.
+The CLI recognizes nonempty English, legacy Spanish and Chinese structural field values,
+line/table identifiers and Markdown identifier headings such as `### FA-01` or `### 1. FA-01`.
+Multiline outcomes belong to their flow's heading section; a sibling flow's exit does not close another flow.
+The basic flow needs at least one populated numbered step, using a list, a step table, or the inline summary form; explanatory prose alone is not a flow.
 Writing-risk lexicons cover English/Spanish only; inspect other prose manually.
 Outcome keywords are hints, not proof that an alternative has a correct exit.
+ATX heading recognition follows [CommonMark](https://spec.commonmark.org/0.31.2/#atx-headings); the validator supports the documented specification forms, not arbitrary Markdown structures.
+Its single evidence reader excludes HTML comments and ordinary backtick/tilde fenced examples from fields, steps, IDs, flow outcomes and writing hints. Fences follow the [CommonMark fence rules](https://spec.commonmark.org/0.31.2/#fenced-code-blocks), including matching delimiters and unclosed blocks; nested Markdown containers are outside this profile.
+The bundled template supplies placeholder vocabulary: `[Actor]` and unfilled step placeholders cannot complete a field or step. Markdown links are preserved; a missing template is reported as partial placeholder checking.
 
 The validator checks a supported Markdown/legacy vocabulary profile. Inspect semantic completeness and verify flow references separately; passing syntax or lexical checks does not prove behavior completeness. State which checks actually ran.
 

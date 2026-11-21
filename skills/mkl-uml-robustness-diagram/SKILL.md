@@ -47,7 +47,7 @@ This executable command, run from this skill directory, checks local BCE syntax;
 python scripts/validate_robustness_puml.py path/to/robustness.puml
 ```
 
-Report actual execution and detected errors separately from manual correspondence checks. Missing evidence makes those checks partial; no script proves complete analysis coverage.
+Report actual execution and detected errors separately from manual correspondence checks. A link with unresolved endpoints makes the BCE check partial. Inspect the indicated lines, syntax and declaration aliases before drawing a conclusion. See the [supported notation](references/robustness-rules.md#mechanical-check-coverage).
 
 ## Focused references
 

@@ -1,5 +1,23 @@
 # Release notes
 
+## 1.2.0 — 2026-11-21
+
+Source tag: `v1.2.0`.
+
+- Tighten structural and evidence checks across the nine independently installable
+  skills. Bundle the shared BCE, sequence and operation evidence parsers with their
+  standalone consumers.
+- Add PDR findings for isolated controls and an optional behavior map for checking
+  required control connectivity. Add optional CDR rules for checking message
+  prerequisites across supported interaction paths.
+- Check operation origins against exact calls or located evidence. Retain scoped
+  class-only checks when sequences are unavailable.
+- Verify the worked example with the current checkout's validators from its
+  guides and offline reader. Replay the published validator snapshot using the
+  commit pinned in `SKILL_SOURCE.json`.
+
+See the [validation record](VALIDATION.md) for local results and scope.
+
 ## 1.1.1 — 2026-11-07
 
 Source tag: [`v1.1.1`](https://github.com/kinglez/mkl-uml/tree/v1.1.1).

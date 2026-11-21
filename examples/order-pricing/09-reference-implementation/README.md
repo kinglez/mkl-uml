@@ -6,10 +6,10 @@ From the **repository root**:
 
 ```bash
 python3 -B examples/order-pricing/09-reference-implementation/run_example.py
-python3 -B examples/order-pricing/scripts/verify.py
+python3 -B examples/order-pricing/scripts/verify.py --candidate-runtime
 ```
 
-The example prints main-cart payable amounts **25500, 22500, 22950 and 0 cents**, plus unknown-Coupon and exact-expiry refusals. All monetary calculations use integer CNY cents. The aggregate verifier runs the UML validators, declaration comparison and reference checks without requiring a renderer. Add `--render` to regenerate SVG/PNG when local PlantUML is available.
+The example prints main-cart payable amounts **25500, 22500, 22950 and 0 cents**, plus unknown-Coupon and exact-expiry refusals. All monetary calculations use integer CNY cents. The aggregate verifier uses the current checkout's UML validators and runs declaration comparison and reference checks without requiring a renderer. Add `--render` to regenerate SVG/PNG when local PlantUML is available. See [historical replay](../HOW_TO_REPLAY.md#replay-the-reviewed-runtime) for the published validator baseline.
 
 To run the implementation tests and extension directly:
 

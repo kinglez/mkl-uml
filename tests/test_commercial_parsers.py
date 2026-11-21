@@ -188,12 +188,47 @@ class CommercialParserTests(unittest.TestCase):
         self.assert_exit(result, 0)
         self.assertNotIn('there are no manual pairs', result.stdout)
 
-    def test_reply_warning_preserves_asynchronous_message_semantics(self):
+    def test_reply_proportion_is_information_and_respects_explicit_message_sorts(self):
         result = self.sequence('Booking --> Console : reserved\nBooking --> Console : shown\n')
         self.assert_exit(result, 0)
-        self.assertIn('messages are returns', result.stdout)
+        self.assertIn('messages are returns', result.stdout.split('INFORMATION', 1)[1])
         self.assertNotIn('asynchronous return', result.stdout)
         self.assertIn('Signal', result.stdout)
+        result = self.sequence('Booking --> Console : changed <<asynchSignal>>\n'
+                               'Booking -> Console : outcome <<reply>>\n'
+                               'Booking -> Console : value <<reply>>\n')
+        self.assert_exit(result, 0)
+        self.assertIn('2 of 4 messages are returns', result.stdout)
+
+    def test_sequence_identifies_unsupported_statements_without_claiming_invalid_syntax(self):
+        result = self.sequence('autonumber\n== Phase ==\nhide footbox\n'
+                               'activate Booking\nreturn result\nunknown_statement\n'
+                               'deactivate Booking\n')
+        self.assert_exit(result, 0)
+        self.assertIn('notation and structure: partial - unsupported statements', result.stdout)
+        self.assertEqual(2, result.stdout.count('statement not understood by the local sequence'))
+        self.assertIn('L12: statement not understood', result.stdout)
+        self.assertIn('L13: statement not understood', result.stdout)
+
+    def test_sequence_flow_coverage_distinguishes_unknown_empty_and_handled_operands(self):
+        spec = self.file('coverage.md', '# CU-01\n## Basic flow\n1. The caller submits.\n'
+                         '## FA-01 Alternative\nThe system rejects the request.\n')
+        for body, other, expected, signal in (
+                ('ref over Console, Booking : Alternate interaction', '',
+                 0, 'flow FA-01, declared in'),
+                ('', 'ref over Console, Booking : Unrelated interaction',
+                 1, 'has no fragment in the diagram'),
+                ('Booking --> Console : declined', '', 0, 'alternate-flow coverage: executed')):
+            with self.subTest(body=body, other=other):
+                diagram = self.file('coverage.puml', '@startuml\n' + DIRECTIVES + COLLABORATION
+                                    + 'alt FA-01\n' + body + '\nelse normal\n'
+                                    + 'Booking --> Console : accepted\n' + other + '\nend\n@enduml\n')
+                result = self.cli(SEQUENCE, '--secuencia', diagram, '--spec', spec)
+                self.assert_exit(result, expected)
+                self.assertIn(signal, result.stdout)
+                if body.startswith('ref'):
+                    self.assertIn('could not be verified because of unsupported', result.stdout)
+                    self.assertIn('alternate-flow coverage: partial', result.stdout)
 
     def test_input_failures_use_exit_two_without_tracebacks(self):
         invalid = self.temp / 'invalid.puml'

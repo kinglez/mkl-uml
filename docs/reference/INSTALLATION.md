@@ -4,19 +4,19 @@
 For a normal project installation, start with [Install and start](../INSTALLATION.md).
 Use this page for pinned sources, offline files and host-specific setups.
 
-Use these only when you need a pinned source, offline files or a host-specific upload. The source tag for this release is **[v1.1.1](https://github.com/kinglez/mkl-uml/tree/v1.1.1)**. Historical release evidence remains in the [release notes](../RELEASE_NOTES.md).
+The source tag for this edition is **v1.2.0**. Historical release evidence remains in the [release notes](../RELEASE_NOTES.md).
 
 ## Pinned source or bundled npx installer
 
-The pinned commands below install **v1.1.1** with all nine skills, including C4 architecture.
+The pinned commands below install **v1.2.0** with all nine skills once the tag is available on GitHub. To install from a local tag or checkout, use the local-source command.
 
 The bundled installer adds self-contained documentation and legal notices. It requires Node.js **20+**, Python **3.9+** and Git for the GitHub source. It installs all nine skills by default and refuses to overwrite existing target skill directories.
 
 Run from any directory, choosing your agent:
 
 ```bash
-npx --yes --allow-git=all --package "git+https://github.com/kinglez/mkl-uml.git#v1.1.1" mkl-uml install --agent codex
-npx --yes --allow-git=all --package "git+https://github.com/kinglez/mkl-uml.git#v1.1.1" mkl-uml install --agent claude-code
+npx --yes --allow-git=all --package "git+https://github.com/kinglez/mkl-uml.git#v1.2.0" mkl-uml install --agent codex
+npx --yes --allow-git=all --package "git+https://github.com/kinglez/mkl-uml.git#v1.2.0" mkl-uml install --agent claude-code
 ```
 
 `--allow-git=all` permits this Git dependency with npm 12. npm 11 and earlier can omit it. This option applies to that command. See [npm configuration](https://docs.npmjs.com/cli/using-npm/config/).
@@ -71,7 +71,7 @@ To share the whole bundled installer as a local npm tarball instead:
 ```bash
 mkdir -p dist
 npm pack --ignore-scripts --pack-destination dist
-npx --yes --package ./dist/mkl-uml-1.1.1.tgz mkl-uml install --agent codex
+npx --yes --package ./dist/mkl-uml-1.2.0.tgz mkl-uml install --agent codex
 ```
 
 These methods use GitHub or local files. They do not publish an npm registry package or submit a marketplace listing.

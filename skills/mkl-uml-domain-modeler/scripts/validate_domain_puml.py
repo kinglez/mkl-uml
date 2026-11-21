@@ -9,6 +9,7 @@ hub-like class is legitimate in the domain.
 
 from __future__ import annotations
 
+import argparse
 import re
 import sys
 from collections import Counter
@@ -103,9 +104,11 @@ PROCEDURAL_LABEL_TERMS = {
 }
 
 RELATION_RE = re.compile(r"^\s*([A-Za-z_ÁÉÍÓÚÑáéíóúñ][\wÁÉÍÓÚÑáéíóúñ]*)\s+.*?(?:--|\.\.|<\|).+?\s+([A-Za-z_ÁÉÍÓÚÑáéíóúñ][\wÁÉÍÓÚÑáéíóúñ]*)\b")
-CLASS_RE = re.compile(r'^\s*(?:abstract\s+)?(?:class|enum)\s+'
+CLASS_RE = re.compile(r'^\s*(?:abstract\s+)?(?P<kind>class|enum)\s+'
                       r'(?:"(?P<q>[^"]+)"|(?P<n>\w+))'
-                      r'(?:\s+as\s+(?P<alias>\w+))?', re.M)
+                      r'(?:[ \t]+as[ \t]+(?P<alias>\w+))?'
+                      r'(?:[ \t]*(?:<<[^>\n]+>>|#[^\s{}]+))*'
+                      r'(?P<body_open>[ \t]*(?:\n[ \t]*)?\{)?', re.M)
 
 
 def read_model(path: Path) -> str:
@@ -146,10 +149,10 @@ def technical_term_in(name: str) -> str | None:
 
 
 def class_blocks(text: str):
-    pattern = re.compile(
-        r'^\s*(?:abstract\s+)?class\s+(?:"(?P<q>[^"]+)"|(?P<n>\w+))'
-        r'(?:\s+as\s+\w+)?(?:\s*<<[^>]+>>)*\s*\{', re.M)
-    for match in pattern.finditer(text):
+    # Declaration discovery and member checks must see the same decorated classes.
+    for match in CLASS_RE.finditer(text):
+        if match.group("kind") != "class" or not match.group("body_open"):
+            continue
         depth, end = 1, match.end()
         while end < len(text) and depth:
             depth += (text[end] == "{") - (text[end] == "}")
@@ -170,8 +173,9 @@ def detect_classes(text: str) -> list[str]:
 def relation_pairs(text: str) -> list[tuple[str, str, str]]:
     pairs: list[tuple[str, str, str]] = []
     endpoint = r'("[^"]+"|\w+)'
-    pattern = re.compile(rf'^\s*{endpoint}\s*(?:<\|--|--\|>|<--|-->|[o*]--|--[o*]|--)'
-                         rf'\s*{endpoint}\s*(?::\s*(.*))?$', re.M)
+    cardinality = r'(?:"[^"\n]+"\s*)?'
+    pattern = re.compile(rf'^\s*{endpoint}\s*{cardinality}(?:<\|--|--\|>|<--|-->|[o*]--|--[o*]|--)'
+                         rf'\s*{cardinality}{endpoint}\s*(?::\s*(.*))?$', re.M)
     for match in pattern.finditer(text):
         pairs.append((match[1].strip('"'), match[2].strip('"'), match[3] or ""))
     return pairs
@@ -205,7 +209,7 @@ def model_code(text: str) -> str:
     return "\n".join(lines)
 
 
-def validate(text: str) -> tuple[list[str], list[str]]:
+def validate(text: str, profile: str = "strict") -> tuple[list[str], list[str]]:
     errors: list[str] = []
     warnings: list[str] = []
     original_text, text = text, model_code(text)
@@ -222,7 +226,7 @@ def validate(text: str) -> tuple[list[str], list[str]]:
 
     # Multiplicities usually appear as quoted role/cardinality markers on associations.
     multiplicity_pattern = re.compile(r'"\s*(?:\d+|\*|\d+\.\.\d+|\d+\.\.\*|0\.\.1|1\.\.\*)\s*"')
-    if multiplicity_pattern.search(text):
+    if profile == "strict" and multiplicity_pattern.search(text):
         errors.append("Multiplicity/cardinality markers were detected; remove them from the domain model.")
 
     # Look inside class bodies for methods, types, visibility, and IDs.
@@ -233,9 +237,9 @@ def validate(text: str) -> tuple[list[str], list[str]]:
                 continue
             if "(" in line or ")" in line:
                 errors.append(f"Operation-like member detected in {class_name}: {line}")
-            if re.match(r"^[+\-#~]", line):
+            if profile == "strict" and re.match(r"^[+\-#~]", line):
                 errors.append(f"Visibility marker detected in {class_name}: {line}")
-            if re.search(r":\s*[A-Za-z_]", line):
+            if profile == "strict" and re.search(r":\s*[^\W\d]", line):
                 errors.append(f"Type annotation detected in {class_name}: {line}")
             if re.search(r"\b(?:id|ID|Id|codigo|Codigo|Código|fk|FK)[A-Za-z_]*\b|[a-z](?:ID|Id)\b", line):
                 warnings.append(f"Identifier-like attribute in {class_name}: {line}")
@@ -325,18 +329,19 @@ def main(argv: list[str]) -> int:
     except Exception:
         pass  # older consoles: better to continue than to abort
 
-    if len(argv) != 2:
-        print("Usage: validate_domain_puml.py path/to/model.puml")
-        return 2
-
-    path = Path(argv[1])
+    parser = argparse.ArgumentParser(description="Check a conceptual domain model profile.")
+    parser.add_argument("path", help="path to the domain model .puml file")
+    parser.add_argument("--profile", choices=("strict", "enriched"), default="strict",
+                        help="strict keeps the academic profile; enriched allows typed attributes and cardinalities")
+    args = parser.parse_args(argv[1:])
+    path = Path(args.path)
     try:
         text = read_model(path)
     except (OSError, UnicodeError) as exc:
         print(f"ERROR: cannot read UTF-8 input {path}: {exc}")
         return 2
 
-    errors, warnings = validate(text)
+    errors, warnings = validate(text, args.profile)
 
     if errors:
         print("ERRORS")

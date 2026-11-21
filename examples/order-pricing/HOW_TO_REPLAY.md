@@ -179,14 +179,14 @@ The [reference implementation](09-reference-implementation/README.md) is additio
 
 ## Run verification and replay a change
 
-From the repository root:
+From the repository root, verify with your current checkout's validators:
 
 ```bash
-python3 examples/order-pricing/scripts/verify.py
-python3 examples/order-pricing/scripts/verify.py --render
+python3 examples/order-pricing/scripts/verify.py --candidate-runtime
+python3 examples/order-pricing/scripts/verify.py --candidate-runtime --render
 ```
 
-The second command also requires local PlantUML. The [published record](VALIDATION.json) describes publication checks; a rerun writes current logs under the example's `validation/latest/`. A stale source hash blocks the reviewed handoff. Identify the affected semantics and review them before recording a replacement baseline.
+The second command also requires local PlantUML. Both commands write logs under the example's `validation/latest/` and record the current validator hashes separately from the [published record](VALIDATION.json). A stale reviewed artifact hash still blocks verification. Review the affected artifacts before recording a replacement baseline.
 
 For a controlled change, replace the first line of this prompt with the intended rule and literal expected outcomes:
 
@@ -198,8 +198,29 @@ IDs and retain retired identities. Record the impact and old review's limits in
 CHANGE_IMPACT.md. Update affected requirements, models, interactions, members and
 tests; recheck their semantic links and applicable validators. Obtain expected
 values independently of the implementation. After genuine affected-scope review,
-update the relevant handoff record, run scripts/verify.py, and report actual
-results, unresolved scope and missing formal acceptance evidence.
+update the relevant handoff record, run the current-runtime verification command
+above, and report actual results, unresolved scope and missing formal acceptance evidence.
 ```
 
 Validators check supported syntax/profiles and selected heuristics; rendering checks a different layer. Neither supplies exhaustive business verification, OMG certification or universal SOLID proof. See [the workflow assessment](WORKFLOW_REVIEW.md) and the [actual change exercise](CHANGE_IMPACT.md).
+
+## Replay the reviewed runtime
+
+To check this example with the published validators, run the verifier without
+`--candidate-runtime` and point `--skill-root` at the commit recorded in
+[`SKILL_SOURCE.json`](SKILL_SOURCE.json). The verifier checks the validators'
+SHA-256 hashes against that record.
+
+From the repository root in a POSIX shell, use a checkout whose Git history
+includes the recorded commit:
+
+```bash
+reviewed_commit="$(python3 -c 'import json; print(json.load(open("examples/order-pricing/SKILL_SOURCE.json", encoding="utf-8"))["commit"])')" &&
+reviewed_skill_root="$(mktemp -d)" &&
+git archive --output="$reviewed_skill_root/skills.tar" "$reviewed_commit" skills &&
+tar -xf "$reviewed_skill_root/skills.tar" -C "$reviewed_skill_root" &&
+python3 examples/order-pricing/scripts/verify.py --skill-root "$reviewed_skill_root"
+```
+
+If you already have a separate checkout of the recorded commit, pass its path
+as `--skill-root`. Add `--render` to include diagram rendering with local PlantUML.

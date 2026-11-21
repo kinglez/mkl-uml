@@ -95,6 +95,27 @@ class CommercialCDRTests(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stdout)
         self.assertNotIn("FA-99", result.stdout)
 
+    def test_rule9_distinguishes_a_referenced_alternative_from_an_empty_one(self):
+        classes = self.write("classes.puml", "@startuml\nclass Worker <<solution>> {\n"
+                             "+evaluate() : String\n}\n@enduml\n")
+        spec = self.write("scope.md", "# CU-01 Evaluate input\n## Basic flow\n"
+                          "1. Caller submits input.\n2. Worker replies.\n"
+                          "## FA-01 Alternate\nThe worker refuses.\n")
+        for body, exit_code in (("ref over Caller, Worker : Alternate interaction", 0), ("", 1)):
+            with self.subTest(body=body):
+                sequence = self.write("trace.puml", "@startuml\n' CU-01\n"
+                                      "actor Caller\nparticipant Worker\n"
+                                      "Caller -> Worker : evaluate()\nalt FA-01\n"
+                                      + body + "\nelse normal\nWorker --> Caller : accepted\nend\n@enduml\n")
+                result = self.run_cli(CDR, "--clases", classes, "--secuencia", sequence, "--spec", spec)
+                self.assertEqual(result.returncode, exit_code, result.stdout + result.stderr)
+                if body:
+                    self.assertIn("rule 9 (alternative courses): PARTIAL", result.stdout)
+                    self.assertIn("FA-01 could not be verified", result.stdout)
+                    self.assertIn("PROPOSED VERDICT: NOT FULLY VERIFIED", result.stdout)
+                else:
+                    self.assertIn("does not appear in an executable branch", result.stdout)
+
     def test_missing_robustness_withholds_test_coverage_acceptance(self):
         result = self.cdr(robustez=[])
         self.assert_unverified(result)

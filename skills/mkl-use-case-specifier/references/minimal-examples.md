@@ -1,7 +1,7 @@
 <!-- English-edition adaptation: Copyright 2026 kingle.zhuang. See NOTICE for upstream attribution. -->
 # Minimal Examples
 
-## Example 1: create a full specification
+## Example 1: specify one bounded goal
 
 **User input**
 
@@ -9,8 +9,8 @@
 
 **Expected behavior**
 
-- Use the full template.
-- Complete document control with pending values when information is unavailable.
+- Start with the summary form: actor, goal, trigger, preconditions, basic flow, relevant alternatives, postconditions, rules and acceptance criteria.
+- Use document control and the full template only when complexity or a requested formal handoff warrants them; missing prototypes do not require inventing a document bundle.
 - Write the main flow as actor/system steps.
 - Keep RN-01 and RN-02 in the business rules section.
 - Create acceptance criteria for the main, alternate, and exception flows.

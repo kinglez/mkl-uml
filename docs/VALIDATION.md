@@ -6,6 +6,15 @@ This is a maintainer reference. To use a skill, start with the
 
 ## Latest recorded checks
 
+| Check for v1.2.0 | Local result |
+|---|---|
+| Regression suite | 359 tests passed |
+| Validator smoke tests | 89 invocations completed |
+| Order-pricing example | 21 checks passed in candidate mode, including syntax checks and SVG/PNG rendering of 10 diagrams |
+| Standalone review checks | Replayed the PDR disconnected-control and CDR premature-message cases from isolated skill packages, with corrected and incomplete-input controls |
+
+## Version 1.1.1 checks
+
 Version 1.1.1 includes the corrective update based on v1.1.0 (`7445f41`) and the
 simplified documentation. The following records describe local executions on
 2026-11-07. Hosted CI is recorded separately in the repository's Actions runs.
@@ -37,7 +46,14 @@ Run from the repository root:
 ```bash
 python3 -m unittest discover -s tests -v
 python3 tools/run_all_validators.py --check-structure
+python3 tools/sync_skill_modules.py
 ```
+
+Standalone skills carry their own copies of shared validator modules. Edit
+`bce_structure.py` in the robustness skill and `operation_evidence.py` in the
+design-class skill. Edit `sequence_structure.py` in the sequence skill. Run
+`python3 tools/sync_skill_modules.py --write` to refresh the PDR and CDR copies.
+CI checks the copies without writing them.
 
 For archive/npm payload checks, use the [advanced installation reference](reference/INSTALLATION.md#check-a-distribution-you-build).
 Release status and older versions are in [release notes](RELEASE_NOTES.md).
